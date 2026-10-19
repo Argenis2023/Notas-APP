@@ -1,0 +1,475 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cuestionario para tu app</title>
+<style>
+:root{
+  --bg:#f5f7f6; --card:#ffffff; --text:#1c2321; --muted:#5b6762; --line:#d5dcd9;
+  --accent:#0f766e; --accent-soft:#e0f2ef; --accent-text:#ffffff; --wa:#128c4a;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#111716; --card:#1a2220; --text:#e8eeec; --muted:#9aa8a3; --line:#2f3b38;
+    --accent:#2dd4bf; --accent-soft:#12312d; --accent-text:#07201d; --wa:#22c55e; }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--text);
+  font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:720px;margin:0 auto;padding:16px 16px 56px}
+header.brand{padding:8px 0 4px}
+header.brand b{font-size:.85rem;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+.top{position:sticky;top:0;background:var(--bg);padding:10px 0 8px;z-index:5}
+.bar{height:8px;background:var(--line);border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);transition:width .3s}
+.paso{margin:6px 0 0;font-size:.85rem;color:var(--muted)}
+h2{font-size:1.45rem;margin:14px 0 4px;line-height:1.25}
+.intro{margin:0 0 14px;color:var(--muted)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin:0 0 12px}
+.card h3{font-size:1.02rem;margin:0 0 4px;line-height:1.35}
+.hint{margin:0 0 10px;font-size:.88rem;color:var(--muted)}
+.welcome{background:var(--accent-soft);border-color:transparent}
+.welcome p{margin:.3rem 0}
+.inp{width:100%;font:inherit;color:var(--text);background:var(--bg);border:1px solid var(--line);
+  border-radius:10px;padding:11px 12px;margin-top:6px}
+.inp:focus{outline:2px solid var(--accent);outline-offset:1px}
+textarea.inp{resize:vertical;min-height:96px}
+.opts{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.opt{display:flex;gap:10px;align-items:flex-start;padding:11px 12px;border:1px solid var(--line);
+  border-radius:10px;cursor:pointer;background:var(--bg)}
+.opt input{margin-top:3px;accent-color:var(--accent);width:18px;height:18px;flex:none}
+.opt:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+.otro{margin-top:8px}
+.matrix{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+.mrow{padding:10px 0;border-top:1px solid var(--line)}
+.mrow:first-child{border-top:0;padding-top:0}
+.mrow p{margin:0 0 6px;font-weight:600;font-size:.95rem}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg label{flex:1 1 30%;min-width:96px;position:relative}
+.sr{position:absolute;opacity:0;inset:0;width:100%;height:100%;margin:0;cursor:pointer}
+.seg span{display:block;text-align:center;padding:9px 6px;font-size:.85rem;border:1px solid var(--line);
+  border-radius:9px;background:var(--bg)}
+.seg input:checked + span{background:var(--accent);border-color:var(--accent);color:var(--accent-text);font-weight:700}
+.seg input:focus-visible + span{outline:2px solid var(--accent);outline-offset:2px}
+.nav{display:flex;justify-content:space-between;gap:10px;margin-top:18px}
+.btn{font:inherit;font-weight:700;border:0;border-radius:11px;padding:13px 20px;cursor:pointer;
+  background:var(--accent);color:var(--accent-text)}
+.btn.sec{background:transparent;color:var(--text);border:1px solid var(--line)}
+.btn.wa{background:var(--wa);color:#fff}
+.btn.block{width:100%;margin-top:8px}
+.preview{white-space:pre-wrap;word-break:break-word;font:.82rem/1.5 ui-monospace,Menlo,Consolas,monospace;
+  background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;max-height:340px;overflow:auto}
+.msg{min-height:1.4em;font-weight:600;color:var(--accent);margin:10px 0 0}
+.note{font-size:.85rem;color:var(--muted)}
+.confirm{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+.confirm .btn{flex:1 1 140px}
+.reset{background:none;border:0;color:var(--muted);text-decoration:underline;font:inherit;font-size:.85rem;
+  cursor:pointer;padding:0;margin-top:22px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="brand"><b>Diseñemos tu app</b></header>
+  <div id="app"></div>
+  <div id="resetzone"><button class="reset" data-act="reset" type="button">Borrar mis respuestas y empezar de nuevo</button></div>
+</div>
+
+<script>
+/* ============ CONFIGURACIÓN (edita estas dos líneas antes de compartir el archivo) ============
+   whatsapp: número con código de país y sin "+" ni espacios. Ejemplos: Chile "56912345678", Venezuela "584121234567"
+   email:    correo al que llegarán las respuestas
+   Si las dejas vacías, WhatsApp y el correo se abren igual y ella elige el contacto. */
+const CONFIG = {
+  whatsapp: "",
+  email: "",
+  asunto: "Respuestas del cuestionario de la app para docentes"
+};
+/* ================================================================================== */
+
+const OTRO = "Otro";
+const KEY = "cuestionario-app-docente-v1";
+
+const SECTIONS = [
+  { titulo: "Sobre ti y tu trabajo",
+    intro: "Para entender tu día a día y adaptar la app a tu realidad.",
+    preguntas: [
+      { id:"nombre", t:"text", q:"¿Cómo te llamas?", c:"Nombre", ph:"Tu nombre" },
+      { id:"niveles", t:"check", q:"¿En qué niveles haces clases?", c:"Niveles", otro:true,
+        opts:["Educación inicial","Primaria (1° a 6° grado)","Media general (1° a 5° año)","Media técnica","Educación universitaria"] },
+      { id:"asignaturas", t:"text", q:"¿Qué asignaturas enseñas?", c:"Asignaturas", ph:"Ej: Lenguaje, Historia" },
+      { id:"n_cursos", t:"num", q:"¿Cuántas secciones o grupos tienes a cargo, más o menos?", c:"Secciones o grupos a cargo", min:0 },
+      { id:"n_estud", t:"num", q:"¿Cuántos estudiantes tienes en total, más o menos?", c:"Estudiantes en total", min:0 },
+      { id:"dispositivos", t:"check", q:"¿Desde qué dispositivos usarías la app?", c:"Dispositivos", otro:true,
+        opts:["Celular Android","iPhone","Tablet","Computador"] },
+      { id:"hoy", t:"check", q:"¿Cómo registras hoy las notas y evaluaciones?", c:"Cómo registra hoy", otro:true,
+        opts:["Cuaderno o papel","Excel o Google Sheets","Plataforma de la institución","Otra app","No llevo un registro ordenado"] },
+      { id:"dolor", t:"area", q:"¿Qué es lo que más tiempo o paciencia te quita hoy?", c:"Lo que más tiempo le quita",
+        ph:"Cuéntalo con tus palabras" }
+    ]},
+  { titulo: "Estudiantes y secciones",
+    intro: "Qué información necesitas guardar de cada estudiante.",
+    preguntas: [
+      { id:"datos_est", t:"check", q:"¿Qué datos de cada estudiante quieres guardar?", c:"Datos del estudiante", otro:true,
+        opts:["Nombre completo","Número de cédula o cédula escolar","Número de lista","Grado o año y sección","Contacto del representante","Fecha de nacimiento",
+              "Asistencia","Observaciones de conducta","Necesidades educativas especiales"] },
+      { id:"alias", t:"radio", q:"Para el análisis con IA, ¿está bien que cada estudiante aparezca con un código (ej. Estudiante 14) en vez de su nombre?",
+        c:"Código en vez de nombre para la IA",
+        hint:"Es por la privacidad de los menores: la IA es un servicio externo y no debería recibir nombres.",
+        opts:["Sí, siempre con código","Con código en la IA, pero con nombre en los reportes impresos","Prefiero nombres siempre","No estoy segura"] },
+      { id:"importar", t:"radio", q:"¿Tienes listas de estudiantes en Excel que quieras importar?", c:"Importar listas",
+        opts:["Sí, todas","Algunas","No, las escribiría a mano"] }
+    ]},
+  { titulo: "Notas y evaluaciones",
+    intro: "Cómo calculas y registras tus calificaciones.",
+    preguntas: [
+      { id:"escala", t:"radio", q:"¿Qué escala de notas usas?", c:"Escala de notas", otro:true,
+        opts:["1 a 20 puntos","Literal (A, B, C, D, E)","Porcentaje","Descriptiva (ej. Consolidado, En proceso)"] },
+      { id:"minimo", t:"radio", q:"¿Cuál es la nota mínima para aprobar una asignatura?", c:"Nota mínima aprobatoria", otro:true,
+        opts:["10 puntos (de 20)","Depende de la institución o la materia","No aplica"] },
+      { id:"decimales", t:"radio", q:"¿Las notas llevan decimales?", c:"Decimales en las notas",
+        opts:["No, solo números enteros (se redondea)","Sí, con un decimal","Sí, con dos decimales"] },
+      { id:"periodos", t:"radio", q:"¿Cómo se dividen tus períodos?", c:"Períodos", otro:true,
+        opts:["Lapsos (3 por año escolar)","Semestres","Trimestres","Año completo"] },
+      { id:"tipos_eval", t:"check", q:"¿Qué tipos de evaluación registras?", c:"Tipos de evaluación", otro:true,
+        opts:["Pruebas escritas","Trabajos o proyectos","Disertaciones","Guías o tareas","Participación en clases",
+              "Evaluación formativa","Autoevaluación o coevaluación"] },
+      { id:"promedio", t:"radio", q:"¿Cómo se calculan tus promedios?", c:"Cálculo de promedios",
+        opts:["Promedio simple","Ponderado por porcentaje","Mixto (algunas notas ponderadas)","Por puntos acumulados"] },
+      { id:"calculos", t:"check", q:"¿Qué quieres que la app calcule sola?", c:"Cálculos automáticos",
+        opts:["Promedio del lapso o semestre","Promedio anual","Nota mínima para aprobar","Promedio de la sección","Redondeos según las normas"] },
+      { id:"reglamento", t:"area", q:"¿Hay normas de evaluación de tu institución que la app deba respetar?",
+        c:"Normas de evaluación", ph:"Ej: redondeo, nota mínima, cantidad mínima de evaluaciones por lapso" }
+    ]},
+  { titulo: "Listas de cotejo e indicadores",
+    intro: "La base para detectar en qué está fallando cada estudiante.",
+    preguntas: [
+      { id:"usa_cotejo", t:"radio", q:"¿Ya usas listas de cotejo o rúbricas?", c:"Usa listas de cotejo",
+        opts:["Sí, seguido","A veces","No, pero quiero empezar"] },
+      { id:"niveles_logro", t:"radio", q:"¿Qué niveles de logro prefieres?", c:"Niveles de logro", otro:true,
+        opts:["Logrado, en proceso, no logrado","4 niveles (destacado, logrado, medianamente logrado, por lograr)",
+              "Sí o No por indicador","Puntaje (ej. 0 a 3)"] },
+      { id:"ejemplos_ind", t:"area", q:"Escribe 5 ejemplos o más de indicadores que usas o usarías.", c:"Ejemplos de indicadores",
+        ph:"Ej: entrega a tiempo, usa fuentes, aplica el método, participa en clases" },
+      { id:"plantillas", t:"radio", q:"¿Tus indicadores cambian de una evaluación a otra?", c:"Reutilización de indicadores",
+        opts:["Son distintos en cada evaluación","Son parecidos por asignatura y los reutilizo","Son los mismos para todo","No lo sé"] },
+      { id:"sugerir_ind", t:"radio", q:"¿Quieres que la app te sugiera indicadores?", c:"Sugerencia de indicadores",
+        opts:["Sí, con IA","Sí, con plantillas base que yo pueda editar","No, los defino yo"] },
+      { id:"umbral", t:"num", q:"¿Bajo qué porcentaje de logro consideras que un indicador está débil?", c:"Umbral de indicador débil (%)",
+        hint:"Por ejemplo 60. La app marcará en alerta lo que quede bajo este valor.", min:0, max:100 },
+      { id:"cotejo_nota", t:"radio", q:"¿La lista de cotejo se convierte en nota?", c:"Lista de cotejo y nota",
+        opts:["Sí, se transforma en nota","No, es solo informativa","Depende de la evaluación"] }
+    ]},
+  { titulo: "Análisis y reportes",
+    intro: "Qué documentos necesitas y cómo debería ayudarte la IA.",
+    preguntas: [
+      { id:"tipos_rep", t:"check", q:"¿Qué reportes necesitas?", c:"Reportes necesarios", otro:true,
+        opts:["Individual por estudiante","Grupal de la sección","Para representantes","Para coordinación o dirección",
+              "Evolución durante el año","Comparativo entre secciones"] },
+      { id:"contenido_rep", t:"check", q:"¿Qué debería incluir el reporte individual?", c:"Contenido del reporte individual",
+        opts:["Promedio y nivel general","Resultados por indicador con semáforo","Fortalezas","Deficiencias",
+              "Recomendaciones para el estudiante","Recomendaciones para mí como docente","Gráfico de evolución",
+              "Espacio para mis observaciones","Firma y fecha de revisión"] },
+      { id:"formato", t:"check", q:"¿En qué formato quieres los reportes?", c:"Formato de reportes",
+        opts:["PDF","Word","Excel","Solo verlos en pantalla","Enviarlos directo por WhatsApp o correo"] },
+      { id:"largo", t:"radio", q:"¿Qué largo prefieres para el reporte individual?", c:"Largo del reporte",
+        opts:["1 página","2 páginas","Una versión corta y otra completa"] },
+      { id:"ia", t:"radio", q:"¿Te gustaría que una IA redacte análisis y recomendaciones?", c:"Interés en IA",
+        hint:"Siempre sería un borrador que tú revisas y editas antes de guardarlo.",
+        opts:["Sí, como borrador que yo reviso","Solo para reportes de la sección completa","Prefiero solo reglas fijas, sin IA","No lo sé"] },
+      { id:"tono", t:"radio", q:"¿Qué tono deberían tener los reportes?", c:"Tono",
+        opts:["Formal y técnico","Cercano y motivador","Depende de quién lo lee"] },
+      { id:"banco", t:"radio", q:"¿Prefieres escribir tus propias recomendaciones para cada indicador?", c:"Recomendaciones propias",
+        opts:["Sí, ya tengo mis recomendaciones","Algunas, el resto que las proponga la app","Prefiero que las proponga la IA"] },
+      { id:"ia_dudas", t:"area", q:"¿Alguna preocupación sobre usar IA con información de estudiantes?", c:"Preocupaciones sobre IA",
+        ph:"Escribe lo que te inquiete, aunque te parezca obvio" }
+    ]},
+  { titulo: "Notificaciones",
+    intro: "Avisos que te ayuden a no olvidar cosas importantes.",
+    preguntas: [
+      { id:"avisos", t:"check", q:"¿Qué avisos te serían útiles?", c:"Avisos útiles", otro:true,
+        opts:["Evaluaciones próximas","Entregas por corregir","Estudiante bajo el umbral","Cierre de período",
+              "Reportes pendientes de enviar","Reuniones con representantes"] },
+      { id:"canal", t:"check", q:"¿Por dónde quieres recibirlos?", c:"Canal de avisos",
+        opts:["En el celular (notificación de la app)","Correo","WhatsApp","No necesito avisos"] },
+      { id:"anticipacion", t:"radio", q:"¿Con cuánta anticipación?", c:"Anticipación",
+        opts:["El mismo día","1 día antes","3 días antes","1 semana antes","Que yo pueda elegir en cada caso"] },
+      { id:"hora", t:"text", q:"¿A qué hora te acomoda recibirlos?", c:"Hora de avisos", ph:"Ej: 7:30 de la mañana" }
+    ]},
+  { titulo: "Uso en el día a día",
+    intro: "Detalles prácticos que cambian cómo se construye la app.",
+    preguntas: [
+      { id:"internet", t:"radio", q:"¿Tienes internet donde registras y corriges?", c:"Internet disponible",
+        opts:["Siempre","A veces me falta (sala, casa)","Muchas veces no tengo"] },
+      { id:"offline", t:"radio", q:"¿Necesitas usarla sin internet y que se sincronice después?", c:"Uso sin internet",
+        opts:["Es imprescindible","Sería útil","No es necesario"] },
+      { id:"usuarios", t:"radio", q:"¿La usarías solo tú?", c:"Usuarios",
+        opts:["Solo yo","También colegas","Hoy solo yo, pero quizás después otros"] },
+      { id:"acceso", t:"radio", q:"¿Cómo prefieres iniciar sesión?", c:"Inicio de sesión",
+        opts:["Correo y contraseña","Con mi cuenta de Google","Un código que llegue a mi correo"] },
+      { id:"respaldo", t:"radio", q:"¿Te gustaría poder descargar todos tus datos en Excel como respaldo?", c:"Respaldo en Excel",
+        opts:["Sí, es importante","Sería un extra","No lo necesito"] }
+    ]},
+  { titulo: "Tus prioridades",
+    intro: "Lo último: ordena qué tan importante es cada función. Sirve para decidir qué se construye primero.",
+    preguntas: [
+      { id:"prioridades", t:"matrix", q:"Marca una opción para cada función", c:"Prioridades",
+        choices:["Imprescindible","Me gustaría","No la necesito"],
+        items:[
+          ["registro","Registrar notas rápido"],
+          ["promedios","Cálculo automático de promedios y nota mínima"],
+          ["cotejo","Listas de cotejo con indicadores"],
+          ["debiles","Detección de indicadores débiles"],
+          ["rep_ind","Reporte individual en PDF"],
+          ["rep_grupal","Reporte de la sección completa"],
+          ["rep_apod","Reporte para representantes"],
+          ["ia","Análisis y recomendaciones con IA"],
+          ["avisos","Notificaciones y recordatorios"],
+          ["asistencia","Registro de asistencia"],
+          ["importar","Importar listas desde Excel"],
+          ["exportar","Exportar respaldo a Excel"],
+          ["graficos","Gráficos de evolución"],
+          ["offline","Uso sin internet"]
+        ] },
+      { id:"cuando", t:"radio", q:"¿Para cuándo la necesitarías?", c:"Plazo",
+        opts:["Lo antes posible","Antes de que termine el lapso o semestre","Para el próximo año escolar","Sin apuro"] },
+      { id:"ideas", t:"area", q:"¿Algo que no te pregunté y que la app debería hacer?", c:"Ideas extra",
+        ph:"Cualquier idea, queja o deseo sirve" }
+    ]}
+];
+
+/* ---------- estado ---------- */
+let state = { step: 0, answers: {} };
+try {
+  const saved = JSON.parse(localStorage.getItem(KEY));
+  if (saved && typeof saved === "object" && saved.answers) state = saved;
+} catch (e) {}
+function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+
+const esc = s => String(s).replace(/[&<>"']/g, c =>
+  ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
+
+/* ---------- render de preguntas ---------- */
+function renderQ(q) {
+  const a = state.answers[q.id];
+  const o = state.answers[q.id + "__otro"] || "";
+  let body = "";
+
+  if (q.t === "text" || q.t === "num") {
+    const attrs = q.t === "num"
+      ? `type="number" inputmode="numeric" min="${q.min ?? 0}"${q.max != null ? ` max="${q.max}"` : ""}`
+      : `type="text"`;
+    body = `<input class="inp" ${attrs} data-id="${q.id}" value="${esc(a || "")}" placeholder="${esc(q.ph || "")}">`;
+  } else if (q.t === "area") {
+    body = `<textarea class="inp" rows="4" data-id="${q.id}" placeholder="${esc(q.ph || "")}">${esc(a || "")}</textarea>`;
+  } else if (q.t === "radio" || q.t === "check") {
+    const type = q.t === "radio" ? "radio" : "checkbox";
+    const opts = q.otro ? [...q.opts, OTRO] : q.opts;
+    body = '<div class="opts">' + opts.map(op => {
+      const on = type === "radio" ? a === op : Array.isArray(a) && a.includes(op);
+      const label = op === OTRO ? "Otro (escríbelo abajo)" : op;
+      return `<label class="opt"><input type="${type}" name="${q.id}" data-id="${q.id}" value="${esc(op)}" ${on ? "checked" : ""}><span>${esc(label)}</span></label>`;
+    }).join("") + "</div>";
+    if (q.otro) body += `<input class="inp otro" type="text" data-otro="${q.id}" value="${esc(o)}" placeholder="Si elegiste Otro, escribe aquí">`;
+  } else if (q.t === "matrix") {
+    const m = a || {};
+    body = '<div class="matrix">' + q.items.map(it =>
+      `<div class="mrow"><p>${esc(it[1])}</p><div class="seg">` +
+      q.choices.map(ch =>
+        `<label><input type="radio" class="sr" name="${q.id}__${it[0]}" data-matrix="${q.id}" data-item="${it[0]}" value="${esc(ch)}" ${m[it[0]] === ch ? "checked" : ""}><span>${esc(ch)}</span></label>`
+      ).join("") + "</div></div>"
+    ).join("") + "</div>";
+  }
+
+  return `<section class="card"><h3>${esc(q.q)}</h3>${q.hint ? `<p class="hint">${esc(q.hint)}</p>` : ""}${body}</section>`;
+}
+
+function render() {
+  const app = document.getElementById("app");
+  if (state.step >= SECTIONS.length) return renderFinal(app);
+
+  const s = SECTIONS[state.step];
+  const pct = Math.round((state.step / SECTIONS.length) * 100);
+  const welcome = state.step === 0 ? `
+    <div class="card welcome">
+      <p><b>Hola 👋</b></p>
+      <p>Estas preguntas sirven para diseñar la app exactamente como la necesitas. Toma unos 10 minutos, no hay respuestas correctas ni incorrectas, y puedes saltarte lo que no sepas.</p>
+      <p>Tus respuestas se guardan solas en este dispositivo, así que puedes cerrar y seguir después. Al final podrás enviarlas por WhatsApp o correo.</p>
+    </div>` : "";
+
+  app.innerHTML = `
+    <div class="top"><div class="bar"><i style="width:${pct}%"></i></div>
+      <p class="paso">Sección ${state.step + 1} de ${SECTIONS.length}</p></div>
+    ${welcome}
+    <h2>${esc(s.titulo)}</h2>
+    <p class="intro">${esc(s.intro)}</p>
+    ${s.preguntas.map(renderQ).join("")}
+    <div class="nav">
+      ${state.step > 0 ? '<button class="btn sec" data-act="prev" type="button">Anterior</button>' : "<span></span>"}
+      <button class="btn" data-act="next" type="button">${state.step === SECTIONS.length - 1 ? "Revisar y enviar" : "Siguiente"}</button>
+    </div>`;
+  window.scrollTo(0, 0);
+}
+
+/* ---------- formato de respuestas ---------- */
+function fmt(q) {
+  const a = state.answers[q.id];
+  const o = (state.answers[q.id + "__otro"] || "").trim();
+  if (q.t === "matrix") {
+    const m = a || {};
+    const lines = [];
+    q.choices.forEach(ch => {
+      const names = q.items.filter(it => m[it[0]] === ch).map(it => it[1]);
+      if (names.length) lines.push(ch + ": " + names.join("; "));
+    });
+    return lines.join("\n");
+  }
+  if (Array.isArray(a)) {
+    return a.map(x => (x === OTRO ? (o ? "Otro: " + o : "Otro") : x)).join(", ");
+  }
+  if (a === OTRO) return o ? "Otro: " + o : "Otro";
+  return (a == null ? "" : String(a)).trim();
+}
+
+function buildText() {
+  const L = [];
+  const nombre = (state.answers.nombre || "").trim();
+  L.push("CUESTIONARIO DE REQUERIMIENTOS · App para docentes");
+  L.push("Respondido por: " + (nombre || "(sin nombre)"));
+  L.push("Fecha: " + new Date().toLocaleDateString("es-VE"));
+  SECTIONS.forEach((s, i) => {
+    const lines = [];
+    s.preguntas.forEach(q => {
+      const v = fmt(q);
+      if (!v) return;
+      if (q.t === "matrix") lines.push("- " + q.c + ":\n" + v.split("\n").map(x => "   " + x).join("\n"));
+      else lines.push("- " + q.c + ": " + v);
+    });
+    if (lines.length) { L.push(""); L.push((i + 1) + ". " + s.titulo.toUpperCase()); L.push(...lines); }
+  });
+  return L.join("\n");
+}
+
+function counts() {
+  let total = 0, done = 0;
+  SECTIONS.forEach(s => s.preguntas.forEach(q => { total++; if (fmt(q)) done++; }));
+  return { total, done };
+}
+
+/* ---------- pantalla final ---------- */
+function renderFinal(app) {
+  const { total, done } = counts();
+  const canShare = typeof navigator.share === "function";
+  app.innerHTML = `
+    <div class="top"><div class="bar"><i style="width:100%"></i></div><p class="paso">Último paso</p></div>
+    <h2>Revisa y envía tus respuestas</h2>
+    <p class="intro">Respondiste ${done} de ${total} preguntas. Puedes volver a completar lo que falte o enviarlo así.</p>
+    <pre class="preview" id="preview">${esc(buildText())}</pre>
+    <button class="btn wa block" data-act="whatsapp" type="button">Enviar por WhatsApp</button>
+    <button class="btn block" data-act="email" type="button">Enviar por correo</button>
+    ${canShare ? '<button class="btn sec block" data-act="share" type="button">Compartir con otra app</button>' : ""}
+    <button class="btn sec block" data-act="copy" type="button">Copiar el texto</button>
+    <button class="btn sec block" data-act="download" type="button">Descargar como archivo</button>
+    <p class="msg" id="msg" role="status"></p>
+    <p class="note">WhatsApp y el correo se abren con el mensaje ya escrito; solo falta que presiones enviar. Si el correo se abre cortado, usa "Copiar el texto" o "Descargar como archivo".</p>
+    <div class="nav"><button class="btn sec" data-act="back" type="button">Volver a editar</button><span></span></div>`;
+  window.scrollTo(0, 0);
+}
+
+function say(t) { const m = document.getElementById("msg"); if (m) m.textContent = t; }
+
+async function copyText(t) {
+  try { await navigator.clipboard.writeText(t); return true; } catch (e) {}
+  try {
+    const ta = document.createElement("textarea");
+    ta.value = t; ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.select();
+    const ok = document.execCommand("copy");
+    document.body.removeChild(ta); return ok;
+  } catch (e) { return false; }
+}
+
+/* Confirmación dentro de la página (confirm() lo bloquean algunos navegadores y visores) */
+function resetZone(asking) {
+  const z = document.getElementById("resetzone");
+  if (!z) return;
+  z.innerHTML = asking
+    ? '<p class="note"><b>¿Seguro que quieres borrar todas tus respuestas?</b> No se puede deshacer.</p>' +
+      '<div class="confirm"><button class="btn" data-act="reset-yes" type="button">Sí, borrar todo</button>' +
+      '<button class="btn sec" data-act="reset-no" type="button">Cancelar</button></div>'
+    : '<button class="reset" data-act="reset" type="button">Borrar mis respuestas y empezar de nuevo</button>';
+  if (asking) z.scrollIntoView({ block: "end", behavior: "smooth" });
+}
+
+/* ---------- eventos ---------- */
+document.addEventListener("input", e => {
+  const t = e.target;
+  if (t.dataset.otro !== undefined) {
+    state.answers[t.dataset.otro + "__otro"] = t.value; save();
+  } else if (t.dataset.id && (t.tagName === "TEXTAREA" || t.type === "text" || t.type === "number")) {
+    state.answers[t.dataset.id] = t.value; save();
+  }
+});
+
+document.addEventListener("change", e => {
+  const t = e.target;
+  if (t.dataset.matrix) {
+    const m = state.answers[t.dataset.matrix] = state.answers[t.dataset.matrix] || {};
+    m[t.dataset.item] = t.value; save();
+  } else if (t.type === "radio" && t.dataset.id) {
+    state.answers[t.dataset.id] = t.value; save();
+  } else if (t.type === "checkbox" && t.dataset.id) {
+    const sel = document.querySelectorAll('input[type="checkbox"][data-id="' + t.dataset.id + '"]:checked');
+    state.answers[t.dataset.id] = Array.from(sel).map(x => x.value); save();
+  }
+});
+
+document.addEventListener("click", async e => {
+  const b = e.target.closest("[data-act]");
+  if (!b) return;
+  const act = b.dataset.act;
+  const text = buildText();
+
+  if (act === "next") { state.step++; save(); render(); }
+  else if (act === "prev") { state.step--; save(); render(); }
+  else if (act === "back") { state.step = SECTIONS.length - 1; save(); render(); }
+  else if (act === "reset") { resetZone(true); }
+  else if (act === "reset-no") { resetZone(false); }
+  else if (act === "reset-yes") {
+    state = { step: 0, answers: {} }; save(); resetZone(false); render();
+  }
+  else if (act === "whatsapp") {
+    const num = (CONFIG.whatsapp || "").replace(/\D/g, "");
+    const url = "https://wa.me/" + num + "?text=" + encodeURIComponent(text);
+    window.open(url, "_blank");
+    say("Se abrió WhatsApp con tus respuestas. Solo falta presionar enviar.");
+  }
+  else if (act === "email") {
+    const url = "mailto:" + encodeURIComponent(CONFIG.email || "") +
+      "?subject=" + encodeURIComponent(CONFIG.asunto) +
+      "&body=" + encodeURIComponent(text);
+    window.location.href = url;
+    say("Se abrió tu correo con las respuestas. Solo falta presionar enviar.");
+  }
+  else if (act === "share") {
+    try { await navigator.share({ title: CONFIG.asunto, text }); say("Listo, gracias."); }
+    catch (err) { say("No se compartió. Puedes usar otra opción."); }
+  }
+  else if (act === "copy") {
+    say((await copyText(text)) ? "Texto copiado. Pégalo donde quieras enviarlo." : "No se pudo copiar. Prueba con descargar.");
+  }
+  else if (act === "download") {
+    const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "respuestas-cuestionario.txt";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    say("Archivo descargado.");
+  }
+});
+
+render();
+</script>
+</body>
+</html>
