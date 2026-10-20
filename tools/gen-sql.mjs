@@ -48,6 +48,7 @@ ${cols.join(',\n')}
 );
 create index if not exists ${name}_sync on public.${name} (user_id, server_updated_at);
 alter table public.${name} enable row level security;
+grant select, insert, update, delete on public.${name} to authenticated;
 drop policy if exists "solo el dueño" on public.${name};
 create policy "solo el dueño" on public.${name}
   for all to authenticated

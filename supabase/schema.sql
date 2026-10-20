@@ -28,6 +28,7 @@ create table if not exists public.secciones (
 );
 create index if not exists secciones_sync on public.secciones (user_id, server_updated_at);
 alter table public.secciones enable row level security;
+grant select, insert, update, delete on public.secciones to authenticated;
 drop policy if exists "solo el dueño" on public.secciones;
 create policy "solo el dueño" on public.secciones
   for all to authenticated
@@ -52,6 +53,7 @@ create table if not exists public.lapsos (
 );
 create index if not exists lapsos_sync on public.lapsos (user_id, server_updated_at);
 alter table public.lapsos enable row level security;
+grant select, insert, update, delete on public.lapsos to authenticated;
 drop policy if exists "solo el dueño" on public.lapsos;
 create policy "solo el dueño" on public.lapsos
   for all to authenticated
@@ -81,6 +83,7 @@ create table if not exists public.estudiantes (
 );
 create index if not exists estudiantes_sync on public.estudiantes (user_id, server_updated_at);
 alter table public.estudiantes enable row level security;
+grant select, insert, update, delete on public.estudiantes to authenticated;
 drop policy if exists "solo el dueño" on public.estudiantes;
 create policy "solo el dueño" on public.estudiantes
   for all to authenticated
@@ -103,6 +106,7 @@ create table if not exists public.asignaturas (
 );
 create index if not exists asignaturas_sync on public.asignaturas (user_id, server_updated_at);
 alter table public.asignaturas enable row level security;
+grant select, insert, update, delete on public.asignaturas to authenticated;
 drop policy if exists "solo el dueño" on public.asignaturas;
 create policy "solo el dueño" on public.asignaturas
   for all to authenticated
@@ -127,6 +131,7 @@ create table if not exists public.evaluaciones (
 );
 create index if not exists evaluaciones_sync on public.evaluaciones (user_id, server_updated_at);
 alter table public.evaluaciones enable row level security;
+grant select, insert, update, delete on public.evaluaciones to authenticated;
 drop policy if exists "solo el dueño" on public.evaluaciones;
 create policy "solo el dueño" on public.evaluaciones
   for all to authenticated
@@ -151,6 +156,7 @@ create table if not exists public.indicadores (
 );
 create index if not exists indicadores_sync on public.indicadores (user_id, server_updated_at);
 alter table public.indicadores enable row level security;
+grant select, insert, update, delete on public.indicadores to authenticated;
 drop policy if exists "solo el dueño" on public.indicadores;
 create policy "solo el dueño" on public.indicadores
   for all to authenticated
@@ -174,6 +180,7 @@ create table if not exists public.resultados (
 );
 create index if not exists resultados_sync on public.resultados (user_id, server_updated_at);
 alter table public.resultados enable row level security;
+grant select, insert, update, delete on public.resultados to authenticated;
 drop policy if exists "solo el dueño" on public.resultados;
 create policy "solo el dueño" on public.resultados
   for all to authenticated
@@ -198,6 +205,7 @@ create table if not exists public.notas (
 );
 create index if not exists notas_sync on public.notas (user_id, server_updated_at);
 alter table public.notas enable row level security;
+grant select, insert, update, delete on public.notas to authenticated;
 drop policy if exists "solo el dueño" on public.notas;
 create policy "solo el dueño" on public.notas
   for all to authenticated
@@ -220,6 +228,7 @@ create table if not exists public.asistencia (
 );
 create index if not exists asistencia_sync on public.asistencia (user_id, server_updated_at);
 alter table public.asistencia enable row level security;
+grant select, insert, update, delete on public.asistencia to authenticated;
 drop policy if exists "solo el dueño" on public.asistencia;
 create policy "solo el dueño" on public.asistencia
   for all to authenticated
@@ -244,6 +253,7 @@ create table if not exists public.recomendaciones (
 );
 create index if not exists recomendaciones_sync on public.recomendaciones (user_id, server_updated_at);
 alter table public.recomendaciones enable row level security;
+grant select, insert, update, delete on public.recomendaciones to authenticated;
 drop policy if exists "solo el dueño" on public.recomendaciones;
 create policy "solo el dueño" on public.recomendaciones
   for all to authenticated
@@ -270,6 +280,7 @@ create table if not exists public.reportes (
 );
 create index if not exists reportes_sync on public.reportes (user_id, server_updated_at);
 alter table public.reportes enable row level security;
+grant select, insert, update, delete on public.reportes to authenticated;
 drop policy if exists "solo el dueño" on public.reportes;
 create policy "solo el dueño" on public.reportes
   for all to authenticated
@@ -297,6 +308,7 @@ create table if not exists public.configuracion (
 );
 create index if not exists configuracion_sync on public.configuracion (user_id, server_updated_at);
 alter table public.configuracion enable row level security;
+grant select, insert, update, delete on public.configuracion to authenticated;
 drop policy if exists "solo el dueño" on public.configuracion;
 create policy "solo el dueño" on public.configuracion
   for all to authenticated
@@ -320,6 +332,7 @@ create table if not exists public.avisos (
 );
 create index if not exists avisos_sync on public.avisos (user_id, server_updated_at);
 alter table public.avisos enable row level security;
+grant select, insert, update, delete on public.avisos to authenticated;
 drop policy if exists "solo el dueño" on public.avisos;
 create policy "solo el dueño" on public.avisos
   for all to authenticated
@@ -341,6 +354,7 @@ create table if not exists public.suscripciones_push (
 );
 create index if not exists suscripciones_push_sync on public.suscripciones_push (user_id, server_updated_at);
 alter table public.suscripciones_push enable row level security;
+grant select, insert, update, delete on public.suscripciones_push to authenticated;
 drop policy if exists "solo el dueño" on public.suscripciones_push;
 create policy "solo el dueño" on public.suscripciones_push
   for all to authenticated
