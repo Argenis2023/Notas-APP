@@ -44,8 +44,9 @@ export async function diccionario(ctx) {
       </section>
       <section aria-labelledby="dic-h" id="dic-hist-w" ${historial.length ? '' : 'hidden'}>
         <h2 id="dic-h">Palabras que ya buscaste</h2>
-        <p class="hint">Se guardan en este celular y se pueden ver sin internet.</p>
+        <p class="hint">Se guardan solo en este celular (no en la nube) y se pueden ver sin internet.</p>
         <div class="chips" id="dic-hist">${historial.map(h => html`<button type="button" class="chip-b" data-p="${h.p}">${h.p}</button>`)}</div>
+        <p><button type="button" class="btn secondary" id="b-dic-borrar">Borrar historial</button></p>
       </section>`,
     mount(root) {
       const res = $('#dic-res', root), inp = $('#dic_palabra', root), btn = $('#b-dic', root);
@@ -83,6 +84,13 @@ export async function diccionario(ctx) {
         }
         btn.disabled = false; btn.textContent = 'Buscar y explicar';
       }
+      $('#b-dic-borrar', root).addEventListener('click', async () => {
+        lista = [];
+        await setMeta('diccionario', []);
+        pintarHist();
+        res.innerHTML = '';
+        toast('Historial borrado');
+      });
       $('#f-dic', root).addEventListener('submit', ev => { ev.preventDefault(); buscar(inp.value); });
       $('#dic-hist', root).addEventListener('click', ev => {
         const b = ev.target.closest('[data-p]');
