@@ -82,6 +82,8 @@ export async function panelInicio(ctx, seccion, completo, q = '') {
         : html`<p class="lapso-linea"><a href="#/ajustes">Pon las fechas del lapso en Ajustes</a> para ver cuánto falta.</p>`) : ''}
     </section>
 
+    <div class="inicio-cols">
+    <div class="col">
     ${avInicio.length ? html`
       <section aria-labelledby="avisos-t">
         <h2 id="avisos-t">Avisos</h2>
@@ -116,6 +118,8 @@ export async function panelInicio(ctx, seccion, completo, q = '') {
         ${resto.length > 4 ? html`<p class="hint">Y ${resto.length - 4} más en <a href="#/evaluar">Evaluar</a>.</p>` : ''}
       </section>` : ''}
 
+    </div>
+    <div class="col">
     ${proms.length ? html`
       <section aria-labelledby="cur-t">
         <h2 id="cur-t">El curso en este lapso</h2>
@@ -146,5 +150,7 @@ export async function panelInicio(ctx, seccion, completo, q = '') {
         ${fila(`#/reportes${lapso ? `?l=${lapso.numero}` : ''}`, 'reportes', 'Reportes e informes', 'Notas, informe del curso y PDF')}
         ${fila('#/reportes/banco', 'libro', 'Mis recomendaciones', `${plural(s.recomendaciones.length, 'guardada', 'guardadas')}`)}
       </ul>
-    </section>`;
+    </section>
+    </div>
+    </div>`;
 }

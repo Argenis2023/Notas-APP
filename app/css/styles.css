@@ -605,3 +605,35 @@ select:focus { outline: 3px solid var(--acento); outline-offset: 1px; border-col
 .lock { position: fixed; inset: 0; z-index: 100; background: var(--papel); overflow-y: auto; }
 body.bloqueada #shell, body.bloqueada #gate, body.bloqueada #toast { display: none !important; }
 #lock_pin { letter-spacing: 0.3em; font-size: 1.3rem; }
+
+/* ---------- tablet y computador ---------- */
+/* Inicio en dos columnas: lo de hoy a la izquierda, el curso y los accesos a la derecha. */
+.inicio-cols { display: block; }
+@media screen and (min-width: 48rem) {
+  /* menú lateral en lugar de la barra inferior */
+  #shell { padding-left: 12.5rem; }
+  .tabs {
+    top: 0; right: auto; bottom: 0; width: 12.5rem; min-height: 0;
+    display: flex; flex-direction: column; justify-content: flex-start; gap: 0.25rem;
+    padding: 1.25rem 0.75rem; border-top: 0; border-right: 1px solid var(--linea);
+  }
+  .tabs a { flex-direction: row; justify-content: flex-start; gap: 0.8rem; padding: 0.7rem 0.9rem; border-radius: 10px; font-size: 0.95rem; }
+  .tabs a svg, .tabs a[aria-current='page'] svg { width: 1.5rem; height: 1.5rem; padding: 0; background: none; }
+  .tabs a:hover { background: var(--fondo-suave); }
+  .tabs a[aria-current='page'] { background: var(--acento-suave); }
+  main { max-width: 46rem; padding: 1.5rem 2rem 3rem; }
+  .toast { bottom: 1.5rem; left: calc(50% + 6.25rem); }
+  .informe { max-width: 52rem; margin-left: auto; margin-right: auto; }
+}
+@media screen and (min-width: 64rem) {
+  main:has(.inicio-cols, .tabla-wrap, table, .hoja) { max-width: 76rem; }
+  .inicio-cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 2.5rem; align-items: start; }
+  /* listas largas en dos columnas */
+  .hoja { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--linea); }
+  .hoja li { background: var(--hoja); border-bottom: 0; }
+  .hoja li:last-child:nth-child(odd) { grid-column: 1 / -1; }
+  .inicio-cols .hoja { display: block; background: var(--hoja); }
+  .inicio-cols .hoja li { border-bottom: 1px solid var(--linea); }
+  .inicio-cols .hoja li:last-child { border-bottom: 0; }
+}
+.ir-a .fila { padding-left: 0.9rem; }
