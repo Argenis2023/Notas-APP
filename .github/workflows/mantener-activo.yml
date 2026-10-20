@@ -1,0 +1,26 @@
+# Consulta la API de Supabase cada 3 días para que el plan gratis no pause el proyecto por inactividad.
+# Usa solo la URL y la clave anon (públicas), tomadas de app/config.json.
+name: Mantener activo Supabase
+
+on:
+  schedule:
+    - cron: '17 12 */3 * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Consultar la API
+        run: |
+          URL=$(jq -r .supabaseUrl app/config.json)
+          KEY=$(jq -r .supabaseAnonKey app/config.json)
+          if [ -z "$URL" ] || [ "$URL" = "null" ]; then echo "Sin configuración de Supabase"; exit 0; fi
+          # Una lectura real a una tabla (RLS devuelve vacío sin sesión, pero cuenta como actividad)
+          CODE=$(curl -sS -o /dev/null -w '%{http_code}' "$URL/rest/v1/secciones?select=id&limit=1" -H "apikey: $KEY" -H "Authorization: Bearer $KEY")
+          echo "Respuesta: $CODE"
+          test "$CODE" = "200"
