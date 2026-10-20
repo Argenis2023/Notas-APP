@@ -72,9 +72,7 @@ const chipNota = (n, cfg) => (n === null || n === undefined ? html`<span class="
 const chipSituacion = (ok, ok1 = 'Aprobada', no = 'Por reforzar') => html`<span class="chip-sit ${ok ? 'ok' : 'baja'}">${ok ? ok1 : no}</span>`;
 const firmas = (s) => html`
   <section class="informe-firmas" aria-label="Firmas">
-    <div class="firma"><span class="firma-linea"></span><span class="firma-rol">Docente</span><strong>${s.inst && s.inst.docente ? s.inst.docente : ''}</strong></div>
-    <div class="firma"><span class="firma-linea"></span><span class="firma-rol">Representante</span></div>
-    <div class="firma"><span class="firma-linea"></span><span class="firma-rol">Director(a) y sello</span></div>
+    <div class="firma"><span class="firma-linea"></span><strong>${s.inst && s.inst.docente ? s.inst.docente : ''}</strong><span class="firma-rol">Docente</span></div>
   </section>
   <p class="informe-pie">Generado con Cuaderno docente · ${fechaLarga(new Date().toISOString().slice(0, 10))}</p>`;
 
@@ -171,7 +169,7 @@ export async function reportes(ctx, q) {
       ${hayDatos ? html`
         <div class="acciones">
           <a class="btn primary" href="#/reportes/curso?l=${lapso.numero}">Informe del curso</a>
-          <a class="btn secondary" href="#/reportes/banco">Banco de recomendaciones</a>
+          <a class="btn secondary" href="#/reportes/banco">Mis recomendaciones</a>
         </div>
         <ol class="hoja">${filas.map(({ e, prom, debiles, bajas }) => html`
           <li><a class="fila" href="#/reportes/e/${e.id}?l=${lapso.numero}">
@@ -184,10 +182,10 @@ export async function reportes(ctx, q) {
         <p class="hint">El número en el margen es el promedio general del estudiante en el lapso.</p>`
         : html`<div class="vacio">
             <p><strong>Todavía no hay notas en el lapso ${lapso?.numero ?? ''}.</strong></p>
-            <p>Cuando pases la lista de cotejo de alguna evaluación, aquí aparecerán los informes de cada estudiante y del curso.</p>
+            <p>Cuando completes la lista de cotejo de alguna evaluación, aquí aparecerán los informes de cada estudiante y del curso.</p>
             <p><a class="btn primary" href="#/evaluar">Ir a Evaluar</a></p>
           </div>
-          <p><a href="#/reportes/banco">Banco de recomendaciones</a></p>`}`,
+          <p><a href="#/reportes/banco">Mis recomendaciones</a></p>`}`,
   };
 }
 
@@ -381,7 +379,7 @@ export async function reporteCurso(ctx, q) {
             <h3 class="informe-h">Cómo se reparten las notas</h3>
             <ul class="barras distrib">${dist.map(d => html`<li class="barra-fila">
               <span class="barra-clave">${d.texto} puntos</span>
-              <span class="barra-pista" role="img" aria-label="${d.cantidad} estudiantes"><span class="barra-relleno ${d.max < s.cfg.minimo_aprobatorio ? 'debil' : 'fuerte'}" style="width:${d.cantidad ? Math.max(3, (d.cantidad / maxDist) * 100) : 0}%"></span></span>
+              <span class="barra-pista" role="img" aria-label="${d.cantidad === 1 ? '1 estudiante' : d.cantidad + ' estudiantes'}"><span class="barra-relleno ${d.max < s.cfg.minimo_aprobatorio ? 'debil' : 'fuerte'}" style="width:${d.cantidad ? Math.max(3, (d.cantidad / maxDist) * 100) : 0}%"></span></span>
               <span class="barra-valor">${d.cantidad}</span>
               <span class="barra-estado ${d.max < s.cfg.minimo_aprobatorio ? 'debil' : 'fuerte'}">${d.max < s.cfg.minimo_aprobatorio ? 'Por debajo del mínimo' : 'Aprobado'}</span>
             </li>`)}</ul>
@@ -426,7 +424,7 @@ export async function reporteCurso(ctx, q) {
 // =====================================================================
 export async function banco(ctx) {
   const seccion = await getSeccion();
-  if (!seccion) return sinSeccion('Banco de recomendaciones');
+  if (!seccion) return sinSeccion('Mis recomendaciones');
   const s = await cargarSnapshot(seccion);
   const asigIds = new Set(s.asignaturas.map(a => a.id));
   const recs = s.recomendaciones.filter(r => asigIds.has(r.asignatura_id));

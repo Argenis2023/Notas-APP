@@ -1,5 +1,5 @@
 // Arranque de la app: base de datos, sesión, sincronización, rutas y actualizaciones.
-import { db, bus, getSeccion, borrarTodoLocal, TABLE_NAMES } from './data.js';
+import { db, bus, getSeccion, borrarTodoLocal, TABLE_NAMES, normalizarNombresGuardados } from './data.js';
 import { createSync } from './sync.js';
 import { html, toast, infoEstado, mensajeError } from './ui.js';
 import * as V from './views.js';
@@ -244,6 +244,7 @@ async function boot() {
 
   sync = createSync({ remote: ctx.sesion ? supa.remote : null, onStatus: pintarEstado });
   await sync.init();
+  try { await normalizarNombresGuardados(); } catch { /* si falla, los nombres quedan como estaban */ }
 
   $('#shell').hidden = false;
   $('#chip').addEventListener('click', () => {

@@ -54,7 +54,7 @@ export function datosDescripcion(s, estudiante, lapso, extra = '') {
     for (const l of logroEstudiante(s, a.id, lapso.id, estudiante.id)) lineas.push(`- ${l.clave}: ${l.pct}% (${etiqueta(l.pct, s)})`);
   }
   const nota = anonimizarTexto(extra, s.estudiantes, estudiante);
-  if (nota) lineas.push('', `Observación de la docente: ${nota}`);
+  if (nota) lineas.push('', `Observación adicional: ${nota}`);
   return lineas.join('\n');
 }
 

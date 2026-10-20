@@ -561,14 +561,13 @@ select:focus { outline: 3px solid var(--acento); outline-offset: 1px; border-col
 .chip-sit.ok { background: color-mix(in srgb, var(--verde) 12%, var(--hoja)); color: var(--verde); }
 .chip-sit.baja { background: color-mix(in srgb, var(--ambar) 30%, var(--hoja)); color: var(--tinta); }
 .informe-asig { margin: 0 0 0.4rem; }
-.informe-desc #desc-impresa { padding: 0.7rem 0.9rem; border-left: 4px solid var(--acento); background: var(--acento-suave); border-radius: 0 8px 8px 0; line-height: 1.55; }
-.informe-firmas { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.4rem; margin-top: 2.4rem; }
-.firma { display: grid; gap: 0.1rem; text-align: center; font-size: 0.85rem; }
+.informe-desc #desc-impresa { text-align: justify; hyphens: auto; -webkit-hyphens: auto; padding: 0.7rem 0.9rem; border-left: 4px solid var(--acento); background: var(--acento-suave); border-radius: 0 8px 8px 0; line-height: 1.55; }
+.informe-firmas { display: flex; justify-content: flex-end; margin-top: 2.4rem; }
+.firma { display: grid; gap: 0.1rem; width: min(100%, 15rem); text-align: center; font-size: 0.85rem; }
 .firma-linea { display: block; height: 1.8rem; border-bottom: 1px solid var(--tinta); }
 .firma-rol { color: var(--tinta-suave); font-size: 0.78rem; }
 .firma strong { font-size: 0.85rem; min-height: 1.1rem; }
 .informe-pie { margin: 1.2rem 0 0; text-align: center; font-size: 0.74rem; color: var(--tinta-suave); }
-@media (max-width: 30rem) { .informe-firmas { grid-template-columns: 1fr; gap: 1rem; } }
 @media print {
   .informe-banda { padding: 9mm 14mm; -webkit-print-color-adjust: exact; print-color-adjust: exact; flex-wrap: nowrap; }
   .informe-banda .informe-logo { width: 20mm; height: 20mm; }
@@ -590,7 +589,8 @@ select:focus { outline: 3px solid var(--acento); outline-offset: 1px; border-col
   .chip-nota, .chip-sit, .informe-desc #desc-impresa { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .barra-fila { font-size: 10pt; }
   .informe-desc #desc-impresa { font-size: 10.5pt; }
-  .informe-firmas { margin-top: 14mm; break-inside: avoid; }
+  .informe-firmas { margin-top: 16mm; break-inside: avoid; }
+  .firma { width: 62mm; }
   .informe-pie { font-size: 8pt; }
 }
 .informe .tabla tbody th { background: transparent; font-weight: 500; }

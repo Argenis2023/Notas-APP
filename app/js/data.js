@@ -133,6 +133,33 @@ export async function listEstudiantes(seccionId) {
 
 // Crea un estudiante: asigna el código para la IA (Estudiante N, nunca se reutiliza)
 // y el siguiente número de lista si no se indicó.
+// Nombres de personas: si vienen todo en mayúscula o todo en minúscula se dejan como nombre propio.
+const PARTICULAS = new Set(['de', 'del', 'la', 'las', 'los', 'y', 'e', 'da', 'do', 'van', 'von']);
+export function nombrePropio(txt) {
+  const t = String(txt ?? '').replace(/\s+/g, ' ').trim();
+  if (!t || (t !== t.toLocaleUpperCase('es') && t !== t.toLocaleLowerCase('es'))) return t;
+  return t.toLocaleLowerCase('es').split(' ').map((w, i) => (i > 0 && PARTICULAS.has(w) ? w : w.replace(/(^|[-'’])(\p{L})/gu, (_, a, c) => a + c.toLocaleUpperCase('es')))).join(' ');
+}
+const limpiarEstudiante = d => {
+  const o = { ...d };
+  for (const k of ['nombre_completo', 'representante_nombre']) if (typeof o[k] === 'string') o[k] = nombrePropio(o[k]);
+  return o;
+};
+// Una sola vez: arregla los nombres que ya estaban guardados todo en mayúscula.
+export async function normalizarNombresGuardados() {
+  if (await getMeta('nombres-normalizados')) return;
+  const lista = await list('estudiantes');
+  if (!lista.length) return;
+  for (const e of lista) {
+    const n = nombrePropio(e.nombre_completo), r = nombrePropio(e.representante_nombre);
+    const patch = {};
+    if (n !== (e.nombre_completo || '')) patch.nombre_completo = n;
+    if (e.representante_nombre && r !== e.representante_nombre) patch.representante_nombre = r;
+    if (Object.keys(patch).length) await update('estudiantes', e.id, patch);
+  }
+  await setMeta('nombres-normalizados', true);
+}
+
 export async function addEstudiante(seccionId, data) {
   let row;
   await db.transaction('rw', db.secciones, db.estudiantes, async () => {
@@ -151,7 +178,7 @@ export async function addMany(seccionId, items) {
   for (const item of items) {
     const numero = coerce('int', item.numero_lista);
     const fila = await create('estudiantes', {
-      ...item,
+      ...limpiarEstudiante(item),
       seccion_id: seccionId,
       numero_lista: numero ?? siguienteNumero,
       codigo_ia: `Estudiante ${codigo}`,

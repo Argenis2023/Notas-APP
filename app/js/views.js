@@ -1,7 +1,7 @@
 // Pantallas de la app. Cada una devuelve { title, html, mount?, onStatus?, live? }.
 import {
   getSeccion, crearSeccion, getLapsos, lapsoActual, listEstudiantes, addEstudiante, get, update, remove,
-  importEstudiantes, anioEscolarActual, exportAll, restoreAll, validateBackup, listAsignaturas, listEvaluaciones,
+  importEstudiantes, nombrePropio, anioEscolarActual, exportAll, restoreAll, validateBackup, listAsignaturas, listEvaluaciones,
 } from './data.js';
 import { html, raw, icon, toast, fechaCorta, haceCuanto, infoEstado } from './ui.js';
 import { VERSION } from './version.js';
@@ -179,7 +179,7 @@ export async function estudianteForm(ctx, id) {
       <p><a class="volver" href="#/estudiantes">${icon('atras', 18)} Estudiantes</a></p>
       <form id="f-est" class="stack" novalidate>
         ${campo({ id: 'nombre_completo', label: 'Nombre completo', value: e?.nombre_completo, required: true, extra: 'autocomplete="off"' })}
-        ${campo({ id: 'numero_lista', label: 'N° de lista', value: e ? e.numero_lista : siguiente, type: 'number', extra: 'inputmode="numeric" min="1" step="1"' })}
+        ${campo({ id: 'numero_lista', label: 'N.º de lista', value: e ? e.numero_lista : siguiente, type: 'number', extra: 'inputmode="numeric" min="1" step="1"' })}
         ${campo({ id: 'cedula', label: 'Cédula o cédula escolar', value: e?.cedula, extra: 'autocomplete="off"' })}
         ${campo({ id: 'fecha_nacimiento', label: 'Fecha de nacimiento', value: e?.fecha_nacimiento, type: 'date' })}
         ${campo({ id: 'representante_nombre', label: 'Nombre del representante', value: e?.representante_nombre, extra: 'autocomplete="off"' })}
@@ -216,7 +216,7 @@ export async function estudianteForm(ctx, id) {
           if (otro) { mostrarError(root, 'e-est', `El N° ${n} ya es de ${otro.nombre_completo}. Elige otro número.`); $('#numero_lista', root).focus(); return; }
         }
         if (nuevo) await addEstudiante(seccion.id, d);
-        else await update('estudiantes', e.id, d);
+        else await update('estudiantes', e.id, { ...d, nombre_completo: nombrePropio(d.nombre_completo), representante_nombre: nombrePropio(d.representante_nombre) });
         toast(nuevo ? 'Estudiante agregado' : 'Cambios guardados');
         ctx.go('#/estudiantes');
       });
@@ -348,7 +348,7 @@ export async function ajustes(ctx) {
         ${campo({ id: 'inst_nombre', label: 'Nombre de la institución', value: inst.nombre, extra: 'autocomplete="off" placeholder="Por ejemplo: U.E.E. Nombre del colegio"' })}
         ${campo({ id: 'inst_subtitulo', label: 'Ubicación o lema', value: inst.subtitulo, extra: 'autocomplete="off" placeholder="Por ejemplo: El Bambú, estado Miranda"' })}
         ${areaTexto({ id: 'inst_encabezado', label: 'Encabezado de los informes', value: inst.encabezado, rows: 3, hint: 'Una línea por renglón, por ejemplo: República Bolivariana de Venezuela, y debajo: Ministerio del Poder Popular para la Educación.' })}
-        ${campo({ id: 'inst_docente', label: 'Nombre de la docente', value: inst.docente, extra: 'autocomplete="name"', hint: 'Aparece en la firma de los informes.' })}
+        ${campo({ id: 'inst_docente', label: 'Tu nombre', value: inst.docente, extra: 'autocomplete="name"', hint: 'Aparece en la firma de los informes.' })}
         <div class="field">
           <span class="field-t" id="t-logo"><strong>Logo</strong></span>
           <div class="inst-logo" role="group" aria-labelledby="t-logo">
@@ -566,7 +566,7 @@ export async function ajustes(ctx) {
       const cab = paleta(hexValido(estado.color) ? estado.color : COLOR_BASE).claro.cabecera;
       const prev = $('#inst-prev', root);
       prev.style.background = cab;
-      const nombre = $('#inst_nombre', root).value.trim() || 'Nombre de tu institución';
+      const nombre = $('#inst_nombre', root).value.trim() || 'Nombre de la institución';
       const sub = $('#inst_subtitulo', root).value.trim();
       prev.innerHTML = html`${estado.logo ? html`<img src="${estado.logo}" alt="">` : ''}<div><strong>${nombre}</strong>${sub ? html`<span>${sub}</span>` : ''}</div>`.toString();
       const img = $('#inst-logo-img', root);

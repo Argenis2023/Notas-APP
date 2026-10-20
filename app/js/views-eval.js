@@ -10,7 +10,7 @@ import { explicarFallaGroq } from './ia.js';
 import { $, $$, campo, areaTexto, errorBox, mostrarError } from './form.js';
 
 export const TIPOS = ['Prueba', 'Trabajo', 'Exposición', 'Taller', 'Participación', 'Actividad en clase', 'Otra'];
-const SUGERIDAS = ['Lenguaje', 'Matemática', 'Ciencias Naturales', 'Ciencias Sociales', 'Educación Física', 'Educación Artística'];
+const SUGERIDAS = ['Lenguaje', 'Matemática', 'Ciencias naturales', 'Ciencias sociales', 'Educación física', 'Educación artística'];
 
 const sinSeccion = titulo => ({ title: titulo, html: html`<p class="vacio">Primero crea tu sección en <a href="#/">Inicio</a>.</p>` });
 const hoyIso = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
@@ -272,11 +272,11 @@ export async function evaluacion(ctx, id) {
     live: true,
     html: html`
       <p><a class="volver" href="#/evaluar/a/${asig?.id}?l=${lapso?.numero || 1}">${icon('atras', 18)} ${asig?.nombre || 'Asignatura'}</a></p>
-      <p class="hint meta">${[ev.tipo, fechaCorta(ev.fecha), lapso ? `Lapso ${lapso.numero}` : ''].filter(Boolean).join(', ')} · <a href="#/evaluar/e/${ev.id}/editar">Editar datos</a></p>
+      <p class="hint meta">${[ev.tipo, fechaCorta(ev.fecha), lapso ? `lapso ${lapso.numero}` : ''].filter(Boolean).join(', ')} · <a href="#/evaluar/e/${ev.id}/editar">Editar datos</a></p>
 
       <div class="acciones">
         ${puedeCotejar
-          ? html`<a class="btn primary" href="#/evaluar/e/${ev.id}/cotejo">Pasar lista de cotejo</a>`
+          ? html`<a class="btn primary" href="#/evaluar/e/${ev.id}/cotejo">Abrir lista de cotejo</a>`
           : html`<span class="hint">${inds.length === 0 ? 'Agrega al menos un indicador para pasar la lista de cotejo.' : 'Agrega estudiantes para pasar la lista de cotejo.'}</span>`}
       </div>
 
@@ -490,7 +490,7 @@ export async function cotejo(ctx, id, q) {
         $$('.cotejo-fila', root).forEach(li => marcar($('.niv', li), 'logrado'));
         progreso();
         await setNiveles(ev.id, pares, 'logrado');
-        toast('Todos marcados como Logrado. Cambia solo a quien no lo logró.');
+        toast('Todos marcados como logrado. Cambia solo a quien no lo logró.');
       });
 
       const f = $('#f-corregir', root);
@@ -529,9 +529,9 @@ export async function bloqueCalculo() {
     html: html`
       <section class="bloque" aria-labelledby="t-calculo">
         <h2 id="t-calculo">Cómo se calcula la nota</h2>
-        <p>Cada indicador marcado como <strong>Logrado</strong> suma 1 punto y <strong>No logrado</strong> suma 0. La nota va de 1 a 20: es 20 por el porcentaje de puntos obtenidos, redondeada.</p>
+        <p>Cada indicador marcado como <strong>logrado</strong> suma 1 punto y como <strong>no logrado</strong> suma 0. La nota va de 1 a 20: es 20 por el porcentaje de puntos obtenidos, redondeada.</p>
         <form id="f-calculo" class="stack" novalidate>
-          ${campo({ id: 'puntos_en_proceso', label: 'Puntos de "En proceso"', value: cfg.puntos_en_proceso ?? 0.5, type: 'number', hint: 'Entre 0 y 1. Con 0,5 vale la mitad de un Logrado.', extra: 'inputmode="decimal" min="0" max="1" step="0.05"' })}
+          ${campo({ id: 'puntos_en_proceso', label: 'Puntos de "en proceso"', value: cfg.puntos_en_proceso ?? 0.5, type: 'number', hint: 'Entre 0 y 1. Con 0,5 vale la mitad de un logrado.', extra: 'inputmode="decimal" min="0" max="1" step="0.05"' })}
           ${campo({ id: 'minimo_aprobatorio', label: 'Nota mínima aprobatoria', value: cfg.minimo_aprobatorio ?? 10, type: 'number', extra: 'inputmode="numeric" min="1" max="20" step="1"' })}
           ${campo({ id: 'umbral_indicador_debil', label: 'Un indicador se considera débil por debajo de (%)', value: cfg.umbral_indicador_debil ?? 50, type: 'number', hint: 'Se usará en los reportes para señalar en qué falla el curso o un estudiante.', extra: 'inputmode="numeric" min="1" max="100" step="1"' })}
           ${errorBox('e-calculo')}
