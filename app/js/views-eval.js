@@ -6,6 +6,7 @@ import {
 } from './data.js';
 import { NIVELES, calcularEvaluacion, notaVigente, promedio, aprueba } from './calc.js';
 import { html, raw, icon, toast, fechaCorta } from './ui.js';
+import { explicarFallaGroq } from './ia.js';
 import { $, $$, campo, areaTexto, errorBox, mostrarError } from './form.js';
 
 export const TIPOS = ['Prueba', 'Trabajo', 'Exposición', 'Taller', 'Participación', 'Actividad en clase', 'Otra'];
@@ -597,6 +598,7 @@ function mensajeIAAjustes(e) {
   if (c === 'no_desplegada') return 'La función de IA todavía no está instalada en Supabase.';
   if (c === 'sin_sesion') return 'Tu sesión venció. Cierra sesión y vuelve a entrar.';
   if (c === 'cuota') return 'La IA gratuita llegó a su límite por ahora.';
+  if (c === 'ia_no_disponible' && explicarFallaGroq(e.detalle)) return explicarFallaGroq(e.detalle);
   if (c === 'ia_no_disponible') return /_503|_500|_502/.test(e.detalle || '') ? 'La IA de Google está saturada en este momento. Espera un minuto y vuelve a probar.' : /_401|_403|sin_clave/.test(e.detalle || '') ? `La función existe, pero la clave de la IA no sirve o falta en Supabase. ${e.detalle || ''}`.trim() : `La función existe, pero la IA no respondió. ${e.detalle || ''}`.trim();
   if (c === 'offline') return 'No hay conexión con internet.';
   return 'No se pudo conectar con la IA.';

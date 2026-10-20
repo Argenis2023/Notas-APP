@@ -68,6 +68,19 @@ export function datosRecomendacion(s, asignatura, tema, pct, alcance) {
   ].filter(Boolean).join('\n');
 }
 
+// Cuando Gemini falla y el respaldo (Groq) también, hay que decir por qué falló Groq.
+// Devuelve un texto o null si Groq no fue el problema.
+export function explicarFallaGroq(detalle) {
+  const d = String(detalle || '');
+  if (!/groq/.test(d)) return null;
+  const causa = /sin_clave_groq/.test(d) ? 'Supabase no encuentra la clave GROQ_API_KEY. Revisa que el nombre del secreto esté escrito igual, sin espacios, y vuelve a probar.'
+    : /groq_401|groq_403/.test(d) ? 'Groq rechazó la clave. Crea una clave nueva en Groq y reemplaza el secreto GROQ_API_KEY.'
+    : /groq_429/.test(d) ? 'Groq llegó a su límite gratuito por ahora. Espera unos minutos.'
+    : /groq_400|groq_404/.test(d) ? 'Groq no aceptó el modelo. Borra el secreto GROQ_MODEL si lo creaste, o usa llama-3.3-70b-versatile.'
+    : 'Groq no respondió.';
+  return `Gemini no respondió y el respaldo de Groq también falló. ${causa} (${d})`;
+}
+
 export function mensajeIA(e) {
   const c = e && e.codigo ? e.codigo : String(e && e.message ? e.message : e).toLowerCase();
   if (c === 'sin_sesion' || c.includes('401')) return 'Tu sesión venció. Entra de nuevo desde Ajustes.';
@@ -75,6 +88,7 @@ export function mensajeIA(e) {
   if (c === 'datos_personales') return (e.detalle || 'El texto parece incluir un dato personal.') + ' Revisa lo que escribiste.';
   if (c === 'offline') return 'No hay conexión con internet.';
   if (c === 'no_desplegada') return 'La función de IA todavía no está instalada en Supabase.';
+  if (c === 'ia_no_disponible' && explicarFallaGroq(e.detalle)) return explicarFallaGroq(e.detalle);
   if (c === 'ia_no_disponible' && /_503|_500|_502/.test(e.detalle || '')) return 'La IA de Google está saturada en este momento. Espera un minuto e inténtalo otra vez.';
   return 'No se pudo redactar con la IA. Puedes escribir el texto tú, o intentarlo otra vez.';
 }
