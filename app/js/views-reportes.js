@@ -7,7 +7,7 @@ import {
   cargarSnapshot, notaAsignatura, promedioGeneral, logroEstudiante, logroCurso, esDebil, esFuerte, enRiesgo, distribucion,
   buscarRecomendacion, sugerenciaGeneral, borradorDescriptivo, claveIndicador, resumenAsistencia,
 } from './analisis.js';
-import { html, raw, icon, toast, fechaLarga } from './ui.js';
+import { html, raw, icon, toast, fechaLarga, fechaCorta } from './ui.js';
 import { $, $$, campo, areaTexto, errorBox, mostrarError } from './form.js';
 import { promedio } from './calc.js';
 import { lineasEncabezado } from './institucion.js';
@@ -38,21 +38,45 @@ export const barra = (clave, pct, s) => {
   </li>`;
 };
 
-const cabecera = (s, lapso, titulo) => html`
-  <header class="informe-cab">
-    ${s.inst && (s.inst.logo || s.inst.nombre || s.inst.encabezado || s.inst.subtitulo) ? html`
-      <div class="informe-inst">
-        ${s.inst.logo ? html`<img class="informe-logo" src="${s.inst.logo}" alt="">` : ''}
-        <div>
-          ${lineasEncabezado(s.inst).map(l => html`<p>${l}</p>`)}
-          ${s.inst.nombre ? html`<p class="informe-inst-nombre">${s.inst.nombre}</p>` : ''}
-          ${s.inst.subtitulo ? html`<p>${s.inst.subtitulo}</p>` : ''}
-        </div>
-      </div>` : ''}
-    <p class="informe-marca">Informe de rendimiento · Lapso ${lapso?.numero ?? ''}</p>
-    <h2 class="informe-titulo">${titulo}</h2>
-    <p class="informe-datos">${[s.seccion.grado, s.seccion.nombre ? `Sección ${s.seccion.nombre}` : '', s.seccion.anio_escolar ? `Año escolar ${s.seccion.anio_escolar}` : '', lapso?.fecha_inicio && lapso?.fecha_fin ? `${fechaLarga(lapso.fecha_inicio)} al ${fechaLarga(lapso.fecha_fin)}` : ''].filter(Boolean).join(' · ')}</p>
+// Franja superior del informe: logo y datos de la institución a la izquierda, tipo de informe y lapso a la derecha.
+const banda = (s, lapso, tipo = 'Informe de rendimiento') => html`
+  <header class="informe-banda">
+    <div class="informe-inst">
+      ${s.inst && s.inst.logo ? html`<img class="informe-logo" src="${s.inst.logo}" alt="">` : ''}
+      <div>
+        ${s.inst ? lineasEncabezado(s.inst).map(l => html`<p>${l}</p>`) : ''}
+        ${s.inst && s.inst.nombre ? html`<p class="informe-inst-nombre">${s.inst.nombre}</p>` : ''}
+        ${s.inst && s.inst.subtitulo ? html`<p>${s.inst.subtitulo}</p>` : ''}
+        ${!s.inst || !(s.inst.nombre || s.inst.subtitulo || s.inst.encabezado) ? html`<p class="informe-inst-nombre">Cuaderno docente</p>` : ''}
+      </div>
+    </div>
+    <div class="banda-tipo"><span>${tipo}</span><strong>Lapso ${lapso?.numero ?? ''}</strong></div>
   </header>`;
+
+// Ficha de identificación: quién y de qué curso es el informe.
+const identidad = (s, lapso, titulo, campos = []) => {
+  const datos = [
+    ...campos,
+    ['Grado', s.seccion.grado], ['Sección', s.seccion.nombre], ['Año escolar', s.seccion.anio_escolar],
+    ['Período', lapso?.fecha_inicio && lapso?.fecha_fin ? `${fechaCorta(lapso.fecha_inicio)} al ${fechaCorta(lapso.fecha_fin)}` : ''],
+    ['Docente', s.inst && s.inst.docente],
+  ].filter(([, v]) => v);
+  return html`
+    <section class="informe-ident" aria-label="Datos del informe">
+      <h2 class="informe-titulo">${titulo}</h2>
+      <dl class="ident-datos">${datos.map(([k, v]) => html`<div><dt>${k}</dt><dd>${v}</dd></div>`)}</dl>
+    </section>`;
+};
+const kpi = (num, txt, clase = '') => html`<div class="kpi"><span class="kpi-num ${clase}">${num}</span><span class="kpi-txt">${txt}</span></div>`;
+const chipNota = (n, cfg) => (n === null || n === undefined ? html`<span class="chip-nota">–</span>` : html`<span class="chip-nota ${aprueba(n, cfg) ? 'ok' : 'baja'}">${n}</span>`);
+const chipSituacion = (ok, ok1 = 'Aprobada', no = 'Por reforzar') => html`<span class="chip-sit ${ok ? 'ok' : 'baja'}">${ok ? ok1 : no}</span>`;
+const firmas = (s) => html`
+  <section class="informe-firmas" aria-label="Firmas">
+    <div class="firma"><span class="firma-linea"></span><span class="firma-rol">Docente</span><strong>${s.inst && s.inst.docente ? s.inst.docente : ''}</strong></div>
+    <div class="firma"><span class="firma-linea"></span><span class="firma-rol">Representante</span></div>
+    <div class="firma"><span class="firma-linea"></span><span class="firma-rol">Director(a) y sello</span></div>
+  </section>
+  <p class="informe-pie">Generado con Cuaderno docente · ${fechaLarga(new Date().toISOString().slice(0, 10))}</p>`;
 
 // Recomendación visible para un indicador débil: la del banco, o una sugerencia general.
 function bloqueRecomendacion(s, asig, clave, editable, pct = null, alcance = 'estudiante', ia = false) {
@@ -205,18 +229,27 @@ export async function reporteEstudiante(ctx, estId, q) {
       ${asigs.length ? botonImprimir() : ''}
 
       <article class="informe">
-        ${cabecera(s, lapso, `${e.numero_lista ? `${e.numero_lista}. ` : ''}${e.nombre_completo}`)}
+        ${banda(s, lapso)}
+        <div class="informe-cuerpo">
+        ${identidad(s, lapso, e.nombre_completo, [['N.º de lista', e.numero_lista], ['Cédula', e.cedula]])}
         ${asigs.length ? html`
+          <section class="kpis" aria-label="Resumen">
+            ${kpi(textoNota(prom), 'promedio general', claseNota(prom, s))}
+            ${kpi(`${asigs.filter(x => aprueba(x.nota, s.cfg)).length} de ${asigs.length}`, 'asignaturas aprobadas')}
+            ${(() => { const r = resumenAsistencia(s, lapso, e.id); return r.dias && r.marcados ? kpi(`${r.pct}%`, 'asistencia', r.pct < 80 ? 'nota-baja' : '') : ''; })()}
+          </section>
+
+          <h3 class="informe-h">Calificaciones del lapso</h3>
           <table class="tabla informe-notas">
             <thead><tr><th scope="col">Asignatura</th><th scope="col">Nota (1 a 20)</th><th scope="col">Situación</th></tr></thead>
-            <tbody>${asigs.map(({ a, nota }) => html`<tr><th scope="row">${a.nombre}</th><td class="${claseNota(nota, s)}">${nota}</td><td>${aprueba(nota, s.cfg) ? 'Aprobada' : 'Por reforzar'}</td></tr>`)}</tbody>
-            <tfoot><tr><th scope="row">Promedio general</th><td class="${claseNota(prom, s)}">${textoNota(prom)}</td><td>${prom !== null ? (aprueba(prom, s.cfg) ? 'Aprobado' : 'Por reforzar') : ''}</td></tr></tfoot>
+            <tbody>${asigs.map(({ a, nota }) => html`<tr><th scope="row">${a.nombre}</th><td>${chipNota(nota, s.cfg)}</td><td>${chipSituacion(aprueba(nota, s.cfg))}</td></tr>`)}</tbody>
+            <tfoot><tr><th scope="row">Promedio general</th><td>${chipNota(prom, s.cfg)}</td><td>${prom !== null ? chipSituacion(aprueba(prom, s.cfg), 'Aprobado') : ''}</td></tr></tfoot>
           </table>
 
           ${(() => { const r = resumenAsistencia(s, lapso, e.id); return r.dias && r.marcados ? html`<p class="informe-asistencia"><strong>Asistencia:</strong> ${r.faltas === 0 && r.justificadas === 0 ? 'sin inasistencias' : `${plural2(r.faltas, 'inasistencia', 'inasistencias')}${r.justificadas ? `, ${plural2(r.justificadas, 'justificada', 'justificadas')}` : ''}`} en ${r.dias} ${r.dias === 1 ? 'día' : 'días'} con lista (${r.pct}% de asistencia).</p>` : ''; })()}
           ${asigs.map(({ a, logro }) => html`
             <section class="informe-asig">
-              <h3>${a.nombre}</h3>
+              <h3 class="informe-h">${a.nombre}</h3>
               ${logro.length ? html`<ul class="barras">${logro.map(l => barra(l.clave, l.pct, s))}</ul>` : html`<p class="hint">Todavía no hay indicadores marcados.</p>`}
               ${logro.some(l => esDebil(l.pct, s)) ? html`
                 <p class="recom-t">Cómo mejorar</p>
@@ -224,7 +257,7 @@ export async function reporteEstudiante(ctx, estId, q) {
             </section>`)}
 
           <section class="informe-desc">
-            <h3>Descripción del lapso</h3>
+            <h3 class="informe-h">Descripción del lapso</h3>
             <label class="oculto-visual" for="desc">Descripción del lapso</label>
             <textarea id="desc" class="no-print" rows="7">${textoDesc}</textarea>
             <div id="desc-impresa" class="solo-impresion">${textoDesc}</div>
@@ -247,8 +280,9 @@ export async function reporteEstudiante(ctx, estId, q) {
             </div>
             <p class="hint no-print">El borrador se arma con las notas y los indicadores. Edítalo con tus palabras antes de entregarlo.</p>
           </section>
-          <p class="firma solo-impresion">Docente: ${s.inst && s.inst.docente ? s.inst.docente : '______________________________'}</p>`
+          ${firmas(s)}`
           : html`<p class="vacio">Este estudiante todavía no tiene notas en el lapso ${lapso.numero}. Pasa la lista de cotejo de alguna evaluación en <a href="#/evaluar">Evaluar</a>.</p>`}
+        </div>
       </article>`,
     mount(root) {
       const imp = $('#b-imprimir', root);
@@ -333,15 +367,18 @@ export async function reporteCurso(ctx, q) {
       ${tabsLapso(s, lapso, base)}
       ${conNota.length ? botonImprimir() : ''}
       <article class="informe">
-        ${cabecera(s, lapso, `Curso ${[s.seccion.grado, s.seccion.nombre ? `sección ${s.seccion.nombre}` : ''].filter(Boolean).join(' ')}`)}
+        ${banda(s, lapso, 'Informe del curso')}
+        <div class="informe-cuerpo">
+        ${identidad(s, lapso, `Curso ${[s.seccion.grado, s.seccion.nombre ? `sección ${s.seccion.nombre}` : ''].filter(Boolean).join(' ')}`, [['Estudiantes', s.estudiantes.length]])}
         ${conNota.length ? html`
-          <section class="resumen informe-resumen" aria-label="Resumen del curso">
-            <div class="dato"><span class="dato-num ${claseNota(promCurso, s)}">${textoNota(promCurso)}</span><span class="dato-txt">promedio del curso</span></div>
-            <div class="dato"><span class="dato-num">${aprobados} de ${conNota.length}</span><span class="dato-txt">aprobados (${s.cfg.minimo_aprobatorio} o más)</span></div>
+          <section class="kpis" aria-label="Resumen del curso">
+            ${kpi(textoNota(promCurso), 'promedio del curso', claseNota(promCurso, s))}
+            ${kpi(`${aprobados} de ${conNota.length}`, `aprobados (${s.cfg.minimo_aprobatorio} o más)`)}
+            ${kpi(String(riesgo.length), 'necesitan apoyo', riesgo.length ? 'nota-baja' : '')}
           </section>
 
           <section>
-            <h3>Cómo se reparten las notas</h3>
+            <h3 class="informe-h">Cómo se reparten las notas</h3>
             <ul class="barras distrib">${dist.map(d => html`<li class="barra-fila">
               <span class="barra-clave">${d.texto} puntos</span>
               <span class="barra-pista" role="img" aria-label="${d.cantidad} estudiantes"><span class="barra-relleno ${d.max < s.cfg.minimo_aprobatorio ? 'debil' : 'fuerte'}" style="width:${d.cantidad ? Math.max(3, (d.cantidad / maxDist) * 100) : 0}%"></span></span>
@@ -351,7 +388,7 @@ export async function reporteCurso(ctx, q) {
           </section>
 
           <section>
-            <h3>Por asignatura</h3>
+            <h3 class="informe-h">Por asignatura</h3>
             <table class="tabla informe-notas">
               <thead><tr><th scope="col">Asignatura</th><th scope="col">Promedio</th><th scope="col">Aprobados</th></tr></thead>
               <tbody>${asigs.map(({ a, prom, n, aprobados: ap }) => html`<tr><th scope="row">${a.nombre}</th><td class="${claseNota(prom, s)}">${textoNota(prom)}</td><td>${ap} de ${n}</td></tr>`)}</tbody>
@@ -360,7 +397,7 @@ export async function reporteCurso(ctx, q) {
 
           ${asigs.map(({ a, logro }) => html`
             <section class="informe-asig">
-              <h3>${a.nombre}: logro del curso por indicador</h3>
+              <h3 class="informe-h">${a.nombre}: logro del curso por indicador</h3>
               ${logro.length ? html`<ul class="barras">${logro.map(l => barra(l.clave, l.pct, s))}</ul>` : html`<p class="hint">Todavía no hay indicadores marcados.</p>`}
               ${logro.some(l => esDebil(l.pct, s)) ? html`
                 <p class="recom-t">Qué reforzar con todo el curso</p>
@@ -368,12 +405,13 @@ export async function reporteCurso(ctx, q) {
             </section>`)}
 
           <section>
-            <h3>Estudiantes que necesitan apoyo</h3>
+            <h3 class="informe-h">Estudiantes que necesitan apoyo</h3>
             ${riesgo.length ? html`<ul class="riesgo">${riesgo.map(r => html`<li><a href="#/reportes/e/${r.estudiante.id}?l=${lapso.numero}">${r.estudiante.nombre_completo}</a>: promedio ${textoNota(r.promedio)}${r.asignaturas.length ? `, por debajo del mínimo en ${r.asignaturas.map(a => a.nombre).join(', ')}` : ''}</li>`)}</ul>`
               : html`<p>Ningún estudiante está por debajo del mínimo en este lapso.</p>`}
           </section>
-          <p class="firma solo-impresion">Docente: ${s.inst && s.inst.docente ? s.inst.docente : '______________________________'}</p>`
+          ${firmas(s)}`
           : html`<p class="vacio">Todavía no hay notas en el lapso ${lapso.numero}. Pasa la lista de cotejo de alguna evaluación en <a href="#/evaluar">Evaluar</a>.</p>`}
+        </div>
       </article>`,
     mount(root) {
       const imp = $('#b-imprimir', root);

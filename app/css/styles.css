@@ -382,8 +382,8 @@ select:focus { outline: 3px solid var(--acento); outline-offset: 1px; border-col
     --papel: #fff; --hoja: #fff; --tinta: #111; --tinta-suave: #444; --linea: #bbb; --fondo-suave: #eee;
     --rojo: #b3261e; --verde: #1b6b45; --ambar: #f0c24b;
   }
-  :root { --acento: #0b6b5b; --acento-suave: #e3f1ee; }
-  @page { size: A4; margin: 12mm; }
+  :root { --acento: #0b6b5b; --acento-suave: #e3f1ee; --cabecera: #0b4f44; }
+  @page { size: A4; margin: 0; }
   html, body { background: #fff !important; font-size: 10pt; line-height: 1.35; }
   .no-print, .top, .tabs, .banner, .toast, .pager { display: none !important; }
   .solo-impresion { display: block !important; white-space: pre-wrap; }
@@ -525,3 +525,75 @@ select:focus { outline: 3px solid var(--acento); outline-offset: 1px; border-col
 .aviso-ok { font: inherit; font-size: 0.82rem; color: var(--tinta-suave); background: none; border: 1px solid var(--linea); border-radius: 8px; padding: 0.45rem 0.6rem; min-height: 2.75rem; cursor: pointer; }
 .enlace { font: inherit; background: none; border: 0; padding: 0; color: var(--acento); text-decoration: underline; cursor: pointer; }
 .aviso-ico { margin-top: 0.2rem; }
+
+/* ---------- Informe: estilo boletín ---------- */
+.informe { padding: 0; overflow: hidden; }
+.informe-banda { display: flex; justify-content: space-between; align-items: center; gap: 0.6rem 1rem; flex-wrap: wrap; padding: 0.9rem 1rem; background: var(--cabecera); color: #ffffff; }
+.informe-inst { display: flex; align-items: center; gap: 0.8rem; margin: 0; min-width: 0; flex: 1 1 14rem; }
+.informe-logo { width: 3.6rem; height: 3.6rem; padding: 0.2rem; background: #ffffff; border-radius: 8px; object-fit: contain; }
+.informe-inst p { margin: 0; max-width: none; font-size: 0.78rem; line-height: 1.3; color: rgba(255, 255, 255, 0.88); overflow-wrap: anywhere; }
+.informe-inst .informe-inst-nombre { font-family: var(--serif); font-size: 1.02rem; font-weight: 600; color: #ffffff; }
+.banda-tipo { display: grid; text-align: right; gap: 0.05rem; }
+.banda-tipo span { font-size: 0.78rem; color: rgba(255, 255, 255, 0.88); }
+.banda-tipo strong { font-family: var(--serif); font-size: 1.35rem; font-weight: 600; line-height: 1.1; }
+.informe-cuerpo { padding: 1rem; }
+.informe-ident { margin: 0 0 1rem; padding-bottom: 0.9rem; border-bottom: 1px solid var(--linea); }
+.informe-ident .informe-titulo { font-size: 1.75rem; margin: 0 0 0.6rem; }
+.ident-datos { display: grid; grid-template-columns: repeat(auto-fit, minmax(7.2rem, 1fr)); gap: 0.55rem 1rem; margin: 0; }
+.ident-datos dt { font-size: 0.74rem; color: var(--tinta-suave); }
+.ident-datos dd { margin: 0; font-size: 0.95rem; font-weight: 600; overflow-wrap: anywhere; }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr)); gap: 0.6rem; margin: 0 0 0.4rem; }
+.kpi { display: grid; gap: 0.1rem; padding: 0.65rem 0.8rem; background: var(--acento-suave); border-left: 4px solid var(--acento); border-radius: 8px; }
+.kpi-num { font-family: var(--serif); font-size: 1.8rem; font-weight: 600; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.kpi-txt { font-size: 0.8rem; color: var(--tinta-suave); }
+.kpi-num.nota-ok { color: var(--verde); }
+.kpi-num.nota-baja { color: var(--rojo); }
+.informe-h { font-family: var(--sans); font-size: 1rem; font-weight: 700; color: var(--acento); margin: 1.3rem 0 0.5rem; padding-bottom: 0.25rem; border-bottom: 2px solid var(--acento-suave); }
+.informe .tabla { border: 1px solid var(--linea); border-radius: 8px; overflow: hidden; border-collapse: separate; border-spacing: 0; }
+.informe .tabla th, .informe .tabla td { border-bottom: 1px solid var(--linea); }
+.informe .tabla tbody tr:last-child th, .informe .tabla tbody tr:last-child td { border-bottom: 0; }
+.informe .tabla thead th { background: var(--acento-suave); color: var(--tinta); }
+.informe .tabla tfoot th, .informe .tabla tfoot td { background: var(--fondo-suave); border-top: 2px solid var(--linea); border-bottom: 0; }
+.chip-nota { display: inline-block; min-width: 2.3rem; padding: 0.1rem 0.55rem; text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; border-radius: 999px; background: var(--fondo-suave); }
+.chip-nota.ok { background: color-mix(in srgb, var(--verde) 16%, var(--hoja)); color: var(--verde); }
+.chip-nota.baja { background: color-mix(in srgb, var(--rojo) 14%, var(--hoja)); color: var(--rojo); }
+.chip-sit { display: inline-block; padding: 0.1rem 0.6rem; font-size: 0.82rem; font-weight: 600; border-radius: 999px; }
+.chip-sit.ok { background: color-mix(in srgb, var(--verde) 12%, var(--hoja)); color: var(--verde); }
+.chip-sit.baja { background: color-mix(in srgb, var(--ambar) 30%, var(--hoja)); color: var(--tinta); }
+.informe-asig { margin: 0 0 0.4rem; }
+.informe-desc #desc-impresa { padding: 0.7rem 0.9rem; border-left: 4px solid var(--acento); background: var(--acento-suave); border-radius: 0 8px 8px 0; line-height: 1.55; }
+.informe-firmas { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.4rem; margin-top: 2.4rem; }
+.firma { display: grid; gap: 0.1rem; text-align: center; font-size: 0.85rem; }
+.firma-linea { display: block; height: 1.8rem; border-bottom: 1px solid var(--tinta); }
+.firma-rol { color: var(--tinta-suave); font-size: 0.78rem; }
+.firma strong { font-size: 0.85rem; min-height: 1.1rem; }
+.informe-pie { margin: 1.2rem 0 0; text-align: center; font-size: 0.74rem; color: var(--tinta-suave); }
+@media (max-width: 30rem) { .informe-firmas { grid-template-columns: 1fr; gap: 1rem; } }
+@media print {
+  .informe-banda { padding: 9mm 14mm; -webkit-print-color-adjust: exact; print-color-adjust: exact; flex-wrap: nowrap; }
+  .informe-banda .informe-logo { width: 20mm; height: 20mm; }
+  .informe-inst p { font-size: 9pt; }
+  .informe-inst .informe-inst-nombre { font-size: 13pt; }
+  .banda-tipo strong { font-size: 16pt; }
+  .banda-tipo span { font-size: 9pt; }
+  .informe-cuerpo { padding: 8mm 14mm 10mm; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+  .informe-ident .informe-titulo { font-size: 22pt; }
+  .ident-datos dt { font-size: 8pt; }
+  .ident-datos dd { font-size: 10.5pt; }
+  .kpis { grid-template-columns: repeat(3, 1fr); }
+  .kpi { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .kpi-num { font-size: 22pt; }
+  .kpi-txt { font-size: 8.5pt; }
+  .informe-h { font-size: 11.5pt; margin: 6mm 0 2.5mm; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .informe .tabla th, .informe .tabla td { padding: 4pt 8pt; font-size: 10.5pt; }
+  .informe .tabla thead th, .informe .tabla tfoot th, .informe .tabla tfoot td { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .chip-nota, .chip-sit, .informe-desc #desc-impresa { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .barra-fila { font-size: 10pt; }
+  .informe-desc #desc-impresa { font-size: 10.5pt; }
+  .informe-firmas { margin-top: 14mm; break-inside: avoid; }
+  .informe-pie { font-size: 8pt; }
+}
+.informe .tabla tbody th { background: transparent; font-weight: 500; }
+.informe-pie, .informe-firmas { max-width: none; }
+@media print { .informe { border-radius: 0; } }
+@media print { .informe .tabla tbody th { background: transparent !important; } }

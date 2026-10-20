@@ -103,7 +103,7 @@ const reglas = p => `--papel:${p.papel};--hoja:${p.hoja};--linea:${p.linea};--fo
 export function cssTema(hex) {
   if (!hexValido(hex)) return '';
   const { claro, oscuro } = paleta(hex);
-  return `:root{${reglas(claro)}}@media (prefers-color-scheme: dark){:root{${reglas(oscuro)}}}@media print{:root{--acento:${claro.acento};--acento-suave:${claro.acentoSuave};}}`;
+  return `:root{${reglas(claro)}}@media (prefers-color-scheme: dark){:root{${reglas(oscuro)}}}@media print{:root{--acento:${claro.acento};--acento-suave:${claro.acentoSuave};--cabecera:${claro.cabecera};}}`;
 }
 
 // ---------- logo ----------
