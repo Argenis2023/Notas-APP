@@ -395,3 +395,31 @@ select:focus { outline: 3px solid var(--azul); outline-offset: 1px; border-color
   .tabla th, .tabla td { padding: 2pt 6pt; font-size: 9.5pt; }
   .tabla th { background: #e5ebfc !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
+
+/* ---------- inicio en fichas ---------- */
+.saludo { display: flex; flex-direction: column; gap: 0.1rem; margin: 0 0 0.75rem; font-size: 1.3rem; }
+.saludo-fecha { font-size: 0.9rem; font-weight: 400; color: var(--tinta-suave); }
+.saludo-fecha::first-letter { text-transform: uppercase; }
+.fichas { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin: 0 0 1.5rem; }
+.ficha {
+  position: relative; display: flex; flex-direction: column; gap: 0.1rem; min-height: 8.5rem;
+  padding: 0.75rem 0.9rem 0.85rem; color: var(--tinta); text-decoration: none;
+  background-color: var(--hoja);
+  background-image: repeating-linear-gradient(transparent 0, transparent 1.55rem, var(--cuadricula) 1.55rem, var(--cuadricula) calc(1.55rem + 1px));
+  border: 1px solid var(--linea); border-top: 4px solid var(--azul); border-radius: 4px 4px 8px 8px;
+}
+.ficha:active { transform: translateY(1px); }
+.ficha-ancha { grid-column: 1 / -1; min-height: 0; }
+.ficha-ico { position: absolute; top: 0.6rem; right: 0.7rem; color: var(--tinta-suave); }
+.ficha-tit { font-weight: 600; font-size: 0.98rem; align-self: flex-start; background-image: linear-gradient(var(--marcatextos), var(--marcatextos)); background-repeat: no-repeat; background-position: 0 85%; background-size: 100% 0.5em; }
+.ficha-num { font-family: 'Caveat', cursive; font-size: 2.9rem; font-weight: 700; line-height: 1; color: var(--azul); margin: 0.1rem 0 0; }
+.ficha-num.bien { color: var(--verde); }
+.ficha-num.mal { color: var(--rojo); }
+.ficha-sub { font-size: 0.84rem; color: var(--tinta-suave); line-height: 1.35; }
+.ficha-alerta { border-top-color: var(--rojo); }
+.ficha-respaldo.ok { border-top-color: var(--verde); }
+.ficha-respaldo.error, .ficha-respaldo.offline { border-top-color: var(--rojo); }
+.ficha-respaldo.local { border-top-color: var(--tinta-suave); }
+.ficha-ancha { padding-right: 2.8rem; }
+.avance { display: block; height: 0.6rem; margin-top: 0.5rem; background: var(--cuadricula); border: 1px solid var(--linea); border-radius: 4px; overflow: hidden; }
+.avance > span { display: block; height: 100%; background: var(--azul); }

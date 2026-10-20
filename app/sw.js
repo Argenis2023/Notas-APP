@@ -2,10 +2,10 @@
 // - Archivos de la app: se guardan al instalar y se sirven desde el celular, así abre sin internet.
 // - config.json: primero la red (para que un cambio llegue pronto), y si no hay red, la copia guardada.
 // - Una versión nueva espera hasta que la docente toque "Actualizar".
-const VERSION = 'd64894a16f';
+const VERSION = 'a068f7cff4';
 const CACHE = 'cuaderno-app-' + VERSION;
 const CACHE_CONFIG = 'cuaderno-config';
-const FILES = ["./","css/styles.css","fonts/caveat.woff2","fonts/lexend.woff2","icons/icon-192.png","icons/icon-512.png","icons/icon-maskable-512.png","index.html","js/analisis.js","js/calc.js","js/data.js","js/excel.js","js/form.js","js/main.js","js/remote.js","js/schema.js","js/sync.js","js/ui.js","js/views-eval.js","js/views-reportes.js","js/views.js","manifest.webmanifest","vendor/dexie.js","vendor/supabase.js","vendor/xlsx.js","js/version.js","config.json"];
+const FILES = ["./","css/styles.css","fonts/caveat.woff2","fonts/lexend.woff2","icons/icon-192.png","icons/icon-512.png","icons/icon-maskable-512.png","index.html","js/analisis.js","js/calc.js","js/data.js","js/excel.js","js/form.js","js/main.js","js/remote.js","js/schema.js","js/sync.js","js/ui.js","js/views-eval.js","js/views-inicio.js","js/views-reportes.js","js/views.js","manifest.webmanifest","vendor/dexie.js","vendor/supabase.js","vendor/xlsx.js","js/version.js","config.json"];
 
 self.addEventListener('install', event => {
   // cache: 'reload' obliga a pedir cada archivo a la red, sin usar la copia temporal del navegador o de GitHub Pages,

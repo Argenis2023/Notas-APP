@@ -25,8 +25,8 @@ const tabsLapso = (s, lapso, base) => html`
     ${s.lapsos.map(l => html`<a href="${base}?l=${l.numero}" ${l.id === lapso?.id ? raw('aria-current="page"') : ''}>Lapso ${l.numero}</a>`)}
   </nav>`;
 
-const estadoLogro = (pct, s) => (esDebil(pct, s) ? { clase: 'debil', texto: 'Por reforzar' } : esFuerte(pct) ? { clase: 'fuerte', texto: 'Dominado' } : { clase: 'medio', texto: 'En desarrollo' });
-const barra = (clave, pct, s) => {
+export const estadoLogro = (pct, s) => (esDebil(pct, s) ? { clase: 'debil', texto: 'Por reforzar' } : esFuerte(pct) ? { clase: 'fuerte', texto: 'Dominado' } : { clase: 'medio', texto: 'En desarrollo' });
+export const barra = (clave, pct, s) => {
   const e = estadoLogro(pct, s);
   return html`<li class="barra-fila">
     <span class="barra-clave">${clave}</span>

@@ -48,6 +48,11 @@ const P = {
   bajar: '<path d="M12 4v11"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/><path d="M5 19h14"/>',
   check: '<path d="m5 12.5 4.5 4.5L19 7.5"/>',
   atras: '<path d="m14.5 6-6 6 6 6"/>',
+  evaluar: '<path d="M6 3.5h9l3 3v14H6z"/><path d="m9 13 2 2 4-4.5"/><path d="M9 8h4"/>',
+  reportes: '<path d="M4 20h16"/><path d="M7 20v-7"/><path d="M12 20V5"/><path d="M17 20v-10"/>',
+  alerta: '<path d="M12 4 3 19.5h18z"/><path d="M12 10v4.5"/><path d="M12 17.2v.1"/>',
+  nube: '<path d="M7 18a4 4 0 0 1-.6-7.96A5.5 5.5 0 0 1 17 8.5a4.8 4.8 0 0 1 .5 9.5z"/>',
+  libro: '<path d="M5 4.5h9a3 3 0 0 1 3 3V20H8a3 3 0 0 1-3-3z"/><path d="M9 9h5"/>',
 };
 export const icon = (name, size = 22) =>
   raw(`<svg class="ico" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${P[name] || ''}</svg>`);

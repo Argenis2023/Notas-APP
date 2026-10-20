@@ -7,6 +7,7 @@ import { html, raw, icon, toast, fechaCorta, haceCuanto, infoEstado } from './ui
 import { VERSION } from './version.js';
 
 import { bloqueCalculo } from './views-eval.js';
+import { panelInicio } from './views-inicio.js';
 import { $, $$, campo, areaTexto, errorBox, mostrarError } from './form.js';
 
 // =====================================================================
@@ -46,13 +47,14 @@ export async function inicio(ctx) {
 
   const lapsos = await getLapsos(seccion.id);
   const estudiantes = await listEstudiantes(seccion.id);
-  const fechasListas = lapsos.length > 0 && lapsos.every(l => l.fecha_inicio && l.fecha_fin);
+  const fechasListas = lapsos.some(l => l.fecha_inicio && l.fecha_fin);
   const actual = lapsoActual(lapsos);
   const asignaturas = await listAsignaturas(seccion.id);
   let hayEvaluacion = false;
   for (const a of asignaturas) if ((await listEvaluaciones(a.id)).length) { hayEvaluacion = true; break; }
   const completo = fechasListas && estudiantes.length > 0 && asignaturas.length > 0 && hayEvaluacion;
   const sinRespaldo = !ctx.configurado;
+  const panel = await panelInicio(ctx, seccion, completo);
 
   return {
     title: 'Cuaderno docente',
@@ -67,23 +69,14 @@ export async function inicio(ctx) {
         </dl>
       </section>
 
-      ${completo ? html`
-        <section class="resumen" aria-label="Resumen">
-          <div class="dato"><span class="dato-num">${estudiantes.length}</span><span class="dato-txt">${estudiantes.length === 1 ? 'estudiante' : 'estudiantes'}</span></div>
-          <div class="dato">
-            <span class="dato-num">${actual ? `Lapso ${actual.numero}` : ''}</span>
-            <span class="dato-txt">${actual ? `del ${fechaCorta(actual.fecha_inicio)} al ${fechaCorta(actual.fecha_fin)}` : ''}</span>
-          </div>
-        </section>
-        <div class="acciones"><a class="btn primary" href="#/evaluar">Evaluar</a><a class="btn secondary" href="#/estudiantes">Ver estudiantes</a></div>
-      ` : html`
+      ${completo ? '' : html`
         <section aria-labelledby="pasos-t">
           <h2 id="pasos-t">Para dejar el cuaderno listo</h2>
           <ul class="pasos">
             <li class="hecho"><span class="marca">${icon('check', 18)}</span><div><strong>Crear la sección</strong></div></li>
             <li class="${fechasListas ? 'hecho' : ''}">
               <span class="marca">${fechasListas ? icon('check', 18) : ''}</span>
-              <div><strong>Poner las fechas de los 3 lapsos</strong>
+              <div><strong>Poner las fechas del lapso en curso</strong>
                 ${fechasListas ? '' : html`<p><a class="btn secondary chico" href="#/ajustes">Poner fechas</a></p>`}</div>
             </li>
             <li class="${estudiantes.length ? 'hecho' : ''}">
@@ -110,6 +103,8 @@ export async function inicio(ctx) {
             </li>
           </ul>
         </section>`}
+
+      ${panel}
 
       ${sinRespaldo ? html`<aside class="nota" role="note"><strong>Tus datos solo están en este celular.</strong> El respaldo en la nube todavía no está activado. Mientras tanto, descarga una copia desde Ajustes de vez en cuando.</aside>` : ''}
     `,
