@@ -27,6 +27,14 @@ export function createSupabase(url, anonKey) {
     async signOut() {
       await client.auth.signOut();
     },
+    // Vuelve a pedir la clave de la cuenta que ya tiene la sesión abierta (para acciones peligrosas).
+    async verify(password) {
+      const { data } = await client.auth.getSession();
+      const email = data && data.session && data.session.user.email;
+      if (!email) throw new Error('Sin sesión');
+      const { error } = await client.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+    },
   };
 
   const remote = {
@@ -46,6 +54,11 @@ export function createSupabase(url, anonKey) {
     async push(table, rows) {
       if (!rows.length) return;
       const { error } = await client.from(table).upsert(rows, { onConflict: 'id' });
+      if (error) throw new Error(error.message);
+    },
+    // Borra todas las filas de la cuenta en una tabla (la regla de seguridad deja borrar solo las propias).
+    async wipe(table) {
+      const { error } = await client.from(table).delete().neq('id', '00000000-0000-0000-0000-000000000000');
       if (error) throw new Error(error.message);
     },
   };

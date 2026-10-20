@@ -508,3 +508,5 @@ select:focus { outline: 3px solid var(--acento); outline-offset: 1px; border-col
 .pager-dia { gap: 0.4rem; }
 .pager-dia .btn.chico { padding-inline: 0.55rem; gap: 0.2rem; }
 .pager-dia .dia-input { max-width: 9.2rem; }
+.bloque-peligro { border-left: 4px solid var(--rojo); padding-left: 0.9rem; }
+.bloque-peligro h2 { color: var(--rojo); }

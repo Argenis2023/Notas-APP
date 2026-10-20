@@ -432,6 +432,24 @@ export async function ajustes(ctx) {
         : html`<p>No has iniciado sesión. <a href="${location.pathname}" id="a-recargar">Entrar</a></p>`}
     </section>`;
 
+  const conNube = !!(ctx.configurado && ctx.sesion);
+  const borrar = html`
+    <section class="bloque bloque-peligro" aria-labelledby="t-borrar">
+      <h2 id="t-borrar">Borrar todos mis datos</h2>
+      <p>Elimina estudiantes, evaluaciones, notas, asistencia y los datos de tu institución${conNube ? ', tanto en este celular como en la copia de la nube' : ' de este celular'}. <strong>No se puede deshacer.</strong> Antes de borrar, descarga una copia de seguridad en el bloque de Respaldo.</p>
+      <button class="btn borrar" type="button" id="b-borrar-todo">Borrar todo…</button>
+      <form id="f-borrar-todo" class="stack" hidden novalidate autocomplete="off">
+        ${conNube
+          ? html`<div class="field"><label for="borrar_clave">Escribe la clave de tu cuenta (${ctx.sesion.email}) para confirmar</label><input id="borrar_clave" name="clave" type="password" autocomplete="current-password"></div>`
+          : html`<div class="field"><label for="borrar_clave">Escribe BORRAR para confirmar</label><input id="borrar_clave" name="clave" type="text" autocomplete="off" autocapitalize="characters"></div>`}
+        ${errorBox('e-borrar-todo')}
+        <div class="acciones">
+          <button class="btn danger" type="submit" id="b-borrar-todo-si">Borrar todo definitivamente</button>
+          <button class="btn secondary" type="button" id="b-borrar-todo-no">Cancelar</button>
+        </div>
+      </form>
+    </section>`;
+
   const app = html`
     <section class="bloque" aria-labelledby="t-app">
       <h2 id="t-app">La aplicación</h2>
@@ -441,7 +459,7 @@ export async function ajustes(ctx) {
 
   return {
     title: 'Ajustes',
-    html: html`${bloqueInstitucion}${bloqueSeccion}${calculo.html}${asistente.html}${respaldo}${cuenta}${app}`,
+    html: html`${bloqueInstitucion}${bloqueSeccion}${calculo.html}${asistente.html}${respaldo}${cuenta}${borrar}${app}`,
     onStatus(root) { pintarRespaldo(root); },
     mount(root) {
       pintarRespaldo(root);
@@ -515,6 +533,22 @@ export async function ajustes(ctx) {
         $('#b-salir-no', root).addEventListener('click', () => { $('#salir-conf', root).hidden = true; salir.hidden = false; salir.focus(); });
         $('#b-salir-si', root).addEventListener('click', () => ctx.signOut());
       }
+
+      const bBorrar = $('#b-borrar-todo', root), fBorrar = $('#f-borrar-todo', root);
+      bBorrar.addEventListener('click', () => { fBorrar.hidden = false; bBorrar.hidden = true; $('#borrar_clave', root).focus(); });
+      $('#b-borrar-todo-no', root).addEventListener('click', () => { fBorrar.hidden = true; bBorrar.hidden = false; $('#borrar_clave', root).value = ''; mostrarError(root, 'e-borrar-todo', ''); bBorrar.focus(); });
+      fBorrar.addEventListener('submit', async ev => {
+        ev.preventDefault();
+        const v = $('#borrar_clave', root).value;
+        if (conNube ? !v : v.trim().toUpperCase() !== 'BORRAR') { mostrarError(root, 'e-borrar-todo', conNube ? 'Escribe la clave de tu cuenta.' : 'Escribe la palabra BORRAR para confirmar.'); return; }
+        mostrarError(root, 'e-borrar-todo', '');
+        const si = $('#b-borrar-todo-si', root);
+        si.disabled = true; si.textContent = 'Borrando…';
+        try { await ctx.borrarTodo(v); } catch (err) {
+          si.disabled = false; si.textContent = 'Borrar todo definitivamente';
+          mostrarError(root, 'e-borrar-todo', err.message);
+        }
+      });
 
       $('#b-actualizar', root).addEventListener('click', async () => {
         const r = await ctx.checkUpdate();

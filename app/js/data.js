@@ -174,6 +174,12 @@ export async function importEstudiantes(seccionId, items) {
 }
 
 // ---------- copia de seguridad ----------
+// Borra todo lo guardado en este dispositivo (tablas y marcas de sincronización).
+export async function borrarTodoLocal() {
+  await db.transaction('rw', db.tables, async () => { for (const t of db.tables) await t.clear(); });
+  changed([...TABLE_NAMES]);
+}
+
 export const BACKUP_VERSION = 1;
 
 export async function exportAll() {

@@ -84,7 +84,11 @@ export function createSync({ remote, onStatus = () => {} }) {
   }
 
   // Una sola sincronización a la vez; si llegan cambios mientras corre, se repite al terminar.
+  let parado = false;
+  async function detener() { parado = true; clearTimeout(timer); if (running) { try { await running; } catch { /* da igual */ } } }
+  const reanudar = () => { parado = false; };
   function syncNow() {
+    if (parado) return Promise.resolve({ status: 'disabled' });
     if (running) { again = true; return running; }
     running = (async () => {
       try {
@@ -116,5 +120,5 @@ export function createSync({ remote, onStatus = () => {} }) {
     }
   }
 
-  return { init, syncNow, schedule, get state() { return state; }, enabled: !!remote };
+  return { init, syncNow, schedule, detener, reanudar, get state() { return state; }, enabled: !!remote };
 }

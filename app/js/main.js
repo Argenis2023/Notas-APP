@@ -1,5 +1,5 @@
 // Arranque de la app: base de datos, sesión, sincronización, rutas y actualizaciones.
-import { db, bus, getSeccion } from './data.js';
+import { db, bus, getSeccion, borrarTodoLocal, TABLE_NAMES } from './data.js';
 import { createSync } from './sync.js';
 import { html, toast, infoEstado, mensajeError } from './ui.js';
 import * as V from './views.js';
@@ -21,6 +21,7 @@ const ctx = {
   syncState: () => (sync ? sync.state : { status: 'disabled', pending: 0 }),
   signOut,
   checkUpdate,
+  borrarTodo,
 };
 
 let sync = null;
@@ -113,6 +114,21 @@ function pedirLogin(supa) {
 
 async function signOut() {
   try { await ctx.supa.auth.signOut(); } catch { /* sin conexión: se limpia igual al recargar */ }
+  location.reload();
+}
+
+// Borra todo: la nube (si hay cuenta) y este dispositivo. Con cuenta pide su clave de nuevo.
+async function borrarTodo(clave) {
+  const conNube = !!(ctx.configurado && ctx.sesion && ctx.supa);
+  if (conNube) {
+    if (navigator.onLine === false) throw new Error('Necesitas internet para borrar, porque también se borra la copia en la nube.');
+    try { await ctx.supa.auth.verify(clave); } catch (e) { throw new Error(/invalid login/i.test(e && e.message) ? 'La clave no es correcta.' : /failed to fetch|network/i.test(e && e.message) ? 'No hay conexión con internet.' : 'No se pudo comprobar la clave. Inténtalo otra vez.'); }
+    await sync.detener();
+    try { for (const t of TABLE_NAMES) await ctx.supa.remote.wipe(t); }
+    catch (e) { sync.reanudar(); throw new Error('No se pudo borrar la copia en la nube, así que no se borró nada más en este celular. Inténtalo otra vez con internet.'); }
+  }
+  await borrarTodoLocal();
+  location.hash = '#/';
   location.reload();
 }
 
