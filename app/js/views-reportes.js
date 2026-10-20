@@ -47,7 +47,7 @@ const banda = (s, lapso, tipo = 'Informe de rendimiento') => html`
         ${s.inst ? lineasEncabezado(s.inst).map(l => html`<p>${l}</p>`) : ''}
         ${s.inst && s.inst.nombre ? html`<p class="informe-inst-nombre">${s.inst.nombre}</p>` : ''}
         ${s.inst && s.inst.subtitulo ? html`<p>${s.inst.subtitulo}</p>` : ''}
-        ${!s.inst || !(s.inst.nombre || s.inst.subtitulo || s.inst.encabezado) ? html`<p class="informe-inst-nombre">Cuaderno docente</p>` : ''}
+        ${!s.inst || !(s.inst.nombre || s.inst.subtitulo || s.inst.encabezado) ? html`<p class="informe-inst-nombre">CUADERNO DOCENTE</p>` : ''}
       </div>
     </div>
     <div class="banda-tipo"><span>${tipo}</span><strong>Lapso ${lapso?.numero ?? ''}</strong></div>
@@ -245,14 +245,14 @@ export async function reporteEstudiante(ctx, estId, q) {
           </table>
 
           ${(() => { const r = resumenAsistencia(s, lapso, e.id); return r.dias && r.marcados ? html`<p class="informe-asistencia"><strong>Asistencia:</strong> ${r.faltas === 0 && r.justificadas === 0 ? 'sin inasistencias' : `${plural2(r.faltas, 'inasistencia', 'inasistencias')}${r.justificadas ? `, ${plural2(r.justificadas, 'justificada', 'justificadas')}` : ''}`} en ${r.dias} ${r.dias === 1 ? 'día' : 'días'} con lista (${r.pct}% de asistencia).</p>` : ''; })()}
-          ${asigs.map(({ a, logro }) => html`
+          <div class="informe-asigs">${asigs.map(({ a, logro }) => html`
             <section class="informe-asig">
               <h3 class="informe-h">${a.nombre}</h3>
               ${logro.length ? html`<ul class="barras">${logro.map(l => barra(l.clave, l.pct, s))}</ul>` : html`<p class="hint">Todavía no hay indicadores marcados.</p>`}
               ${logro.some(l => esDebil(l.pct, s)) ? html`
                 <p class="recom-t">Cómo mejorar</p>
                 <ul class="recoms">${logro.filter(l => esDebil(l.pct, s)).map(l => bloqueRecomendacion(s, a, l.clave, true, l.pct, 'estudiante', iaOk))}</ul>` : ''}
-            </section>`)}
+            </section>`)}</div>
 
           <section class="informe-desc">
             <h3 class="informe-h">Descripción del lapso</h3>

@@ -73,7 +73,7 @@ export function bloquear() {
     root.innerHTML = html`
       <main class="login">
         <section class="portada" aria-label="Cuaderno docente">
-          <p class="portada-titulo">Cuaderno docente</p>
+          <p class="portada-titulo">CUADERNO DOCENTE</p>
           <p class="portada-sub">Escribe tu PIN para entrar.</p>
         </section>
         <form id="f-pin" class="stack" novalidate autocomplete="off">

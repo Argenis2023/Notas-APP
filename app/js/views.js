@@ -652,7 +652,7 @@ export function pantallaLogin(root, { entrar, puedeOmitir }) {
   root.innerHTML = html`
     <main class="login">
       <section class="portada" aria-label="Cuaderno docente">
-        <p class="portada-titulo">Cuaderno docente</p>
+        <p class="portada-titulo">CUADERNO DOCENTE</p>
         <p class="portada-sub">Entra para respaldar tu cuaderno y verlo en cualquier dispositivo.</p>
       </section>
       <form id="f-login" class="stack" novalidate>

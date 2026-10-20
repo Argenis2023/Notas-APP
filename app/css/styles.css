@@ -383,7 +383,7 @@ select:focus { outline: 3px solid var(--acento); outline-offset: 1px; border-col
     --rojo: #b3261e; --verde: #1b6b45; --ambar: #f0c24b;
   }
   :root { --acento: #0b6b5b; --acento-suave: #e3f1ee; --cabecera: #0b4f44; }
-  @page { size: A4; margin: 0; }
+  @page { size: letter; margin: 0; }
   html, body { background: #fff !important; font-size: 10pt; line-height: 1.35; }
   .no-print, .top, .tabs, .banner, .toast, .pager { display: none !important; }
   .solo-impresion { display: block !important; white-space: pre-wrap; }
@@ -569,29 +569,29 @@ select:focus { outline: 3px solid var(--acento); outline-offset: 1px; border-col
 .firma strong { font-size: 0.85rem; min-height: 1.1rem; }
 .informe-pie { margin: 1.2rem 0 0; text-align: center; font-size: 0.74rem; color: var(--tinta-suave); }
 @media print {
-  .informe-banda { padding: 9mm 14mm; -webkit-print-color-adjust: exact; print-color-adjust: exact; flex-wrap: nowrap; }
-  .informe-banda .informe-logo { width: 20mm; height: 20mm; }
+  .informe-banda { padding: 5mm 12mm; -webkit-print-color-adjust: exact; print-color-adjust: exact; flex-wrap: nowrap; }
+  .informe-banda .informe-logo { width: 14mm; height: 14mm; }
   .informe-inst p { font-size: 9pt; }
-  .informe-inst .informe-inst-nombre { font-size: 13pt; }
-  .banda-tipo strong { font-size: 16pt; }
-  .banda-tipo span { font-size: 9pt; }
-  .informe-cuerpo { padding: 8mm 14mm 10mm; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
-  .informe-ident .informe-titulo { font-size: 22pt; }
+  .informe-inst .informe-inst-nombre { font-size: 12pt; }
+  .banda-tipo strong { font-size: 13pt; }
+  .banda-tipo span { font-size: 8.5pt; }
+  .informe-cuerpo { padding: 5mm 12mm 6mm; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+  .informe-ident .informe-titulo { font-size: 17pt; }
   .ident-datos dt { font-size: 8pt; }
-  .ident-datos dd { font-size: 10.5pt; }
+  .ident-datos dd { font-size: 9.5pt; }
   .kpis { grid-template-columns: repeat(3, 1fr); }
   .kpi { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .kpi-num { font-size: 22pt; }
-  .kpi-txt { font-size: 8.5pt; }
-  .informe-h { font-size: 11.5pt; margin: 6mm 0 2.5mm; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .informe .tabla th, .informe .tabla td { padding: 4pt 8pt; font-size: 10.5pt; }
+  .kpi-num { font-size: 15pt; }
+  .kpi-txt { font-size: 8pt; }
+  .informe-h { font-size: 10.5pt; margin: 3.5mm 0 1.5mm; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .informe .tabla th, .informe .tabla td { padding: 2pt 8pt; font-size: 9.5pt; }
   .informe .tabla thead th, .informe .tabla tfoot th, .informe .tabla tfoot td { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .chip-nota, .chip-sit, .informe-desc #desc-impresa { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .barra-fila { font-size: 10pt; }
-  .informe-desc #desc-impresa { font-size: 10.5pt; }
-  .informe-firmas { margin-top: 16mm; break-inside: avoid; }
+  .barra-fila { font-size: 9pt; }
+  .informe-desc #desc-impresa { font-size: 9.5pt; }
+  .informe-firmas { margin-top: 9mm; break-inside: avoid; }
   .firma { width: 62mm; }
-  .informe-pie { font-size: 8pt; }
+  .informe-pie { font-size: 7.5pt; margin-top: 3mm; }
 }
 .informe .tabla tbody th { background: transparent; font-weight: 500; }
 .informe-pie, .informe-firmas { max-width: none; }
@@ -637,3 +637,39 @@ body.bloqueada #shell, body.bloqueada #gate, body.bloqueada #toast { display: no
   .inicio-cols .hoja li:last-child { border-bottom: 0; }
 }
 .ir-a .fila { padding-left: 0.9rem; }
+
+/* Informe en hoja carta: compacto para que quepa en una sola hoja cuando sea posible */
+@media print {
+  .informe-ident { margin: 0 0 3mm; padding-bottom: 2.5mm; }
+  .informe-ident .informe-titulo { margin: 0 0 1.5mm; }
+  .ident-datos { gap: 1.5mm 5mm; }
+  .kpis { gap: 3mm; }
+  .kpi { padding: 1.8mm 3mm; }
+  .informe-desc #desc-impresa { padding: 2.5mm 3.5mm; line-height: 1.4; }
+  .chip-nota { padding: 0 0.5rem; }
+  .chip-sit { font-size: 7.5pt; padding: 0 0.5rem; }
+  .informe-asig { margin: 0; }
+}
+@media print {
+  .informe-asigs { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 8mm; align-items: start; }
+  .informe-asigs .barra-fila { grid-template-columns: 1fr 9mm 17mm; grid-template-areas: 'clave valor estado' 'pista pista pista'; gap: 0.5mm 2mm; font-size: 8.5pt; }
+  .informe-asigs .barra-pista { height: 4pt; }
+  .informe-asigs .barra-estado { font-size: 7pt; }
+  .informe-asigs .barras { gap: 2pt; }
+}
+@media print {
+  .informe-cuerpo { padding-bottom: 3mm; }
+  .informe-asigs .informe-h { margin: 2.5mm 0 1mm; }
+  .informe-asigs .barras { gap: 1.5pt; }
+  .informe-firmas { margin-top: 5mm; }
+  .informe-firmas .firma-linea { height: 9mm; }
+  .informe-pie { margin-top: 2mm; }
+  .kpi-num { font-size: 14pt; }
+}
+@media print {
+  .informe-banda { padding: 4mm 12mm; }
+  .informe-cuerpo { padding-top: 4mm; }
+  .informe-firmas { margin-top: 3mm; }
+  .informe .tabla th, .informe .tabla td { padding: 1.5pt 8pt; }
+  .informe-h { margin: 3mm 0 1.2mm; }
+}
