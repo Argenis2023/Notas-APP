@@ -10,8 +10,8 @@ export const claveIndicador = i => (i.etiqueta && i.etiqueta.trim() ? i.etiqueta
 const norm = s => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
 
 export async function cargarSnapshot(seccion) {
-  const [estudiantes, asignaturas, evaluaciones, indicadores, resultados, notas, lapsos, cfgs, reportes, recomendaciones] = await Promise.all(
-    ['estudiantes', 'asignaturas', 'evaluaciones', 'indicadores', 'resultados', 'notas', 'lapsos', 'configuracion', 'reportes', 'recomendaciones'].map(list),
+  const [estudiantes, asignaturas, evaluaciones, indicadores, resultados, notas, lapsos, cfgs, reportes, recomendaciones, asistenciaTodas] = await Promise.all(
+    ['estudiantes', 'asignaturas', 'evaluaciones', 'indicadores', 'resultados', 'notas', 'lapsos', 'configuracion', 'reportes', 'recomendaciones', 'asistencia'].map(list),
   );
   const est = estudiantes.filter(e => e.seccion_id === seccion.id).sort((a, b) => (a.numero_lista ?? 1e9) - (b.numero_lista ?? 1e9) || (a.nombre_completo || '').localeCompare(b.nombre_completo || '', 'es'));
   const asig = asignaturas.filter(a => a.seccion_id === seccion.id).sort((a, b) => (a.orden ?? 1e9) - (b.orden ?? 1e9));
@@ -38,6 +38,7 @@ export async function cargarSnapshot(seccion) {
     estudiantes: est, asignaturas: asig, evaluaciones: evs, indicadores: inds, niveles, nota, actividad,
     reportes: reportes.filter(r => r.seccion_id === seccion.id),
     recomendaciones,
+    asistencia: asistenciaTodas.filter(a => a.estado && est.some(e => e.id === a.estudiante_id)),
   };
 }
 
@@ -157,4 +158,23 @@ export function borradorDescriptivo(s, estudiante, lapsoId) {
     ? ` En general, ${nombre} alcanza los aprendizajes esperados del lapso con un promedio de ${prom} puntos.`
     : ` En general, ${nombre} aún no alcanza los aprendizajes esperados del lapso (promedio ${prom} puntos) y requiere acompañamiento y apoyo en casa.`;
   return `${partes.join(' ')}${cierre}`;
+}
+
+// ---------- asistencia ----------
+export const ESTADOS_ASIST = [
+  { id: 'presente', letra: 'A', nombre: 'Asistió' },
+  { id: 'ausente', letra: 'I', nombre: 'Faltó' },
+  { id: 'justificado', letra: 'J', nombre: 'Falta justificada' },
+];
+const enLapso = (l, f) => !l || ((!l.fecha_inicio || f >= l.fecha_inicio) && (!l.fecha_fin || f <= l.fecha_fin));
+// Días en que se pasó lista dentro del lapso, y asistencia de cada estudiante.
+export function resumenAsistencia(s, lapso, estId) {
+  const filas = s.asistencia.filter(a => enLapso(lapso, a.fecha));
+  const dias = new Set(filas.map(a => a.fecha)).size;
+  const mias = filas.filter(a => a.estudiante_id === estId);
+  const faltas = mias.filter(a => a.estado === 'ausente').length;
+  const justificadas = mias.filter(a => a.estado === 'justificado').length;
+  const presentes = mias.filter(a => a.estado === 'presente').length;
+  const marcados = presentes + faltas + justificadas;
+  return { dias, presentes, faltas, justificadas, marcados, pct: marcados ? Math.round((100 * presentes) / marcados) : null };
 }

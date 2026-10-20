@@ -5,7 +5,7 @@ import { lapsoActual } from './data.js';
 import { aprueba } from './calc.js';
 import {
   cargarSnapshot, notaAsignatura, promedioGeneral, logroEstudiante, logroCurso, esDebil, esFuerte, enRiesgo, distribucion,
-  buscarRecomendacion, sugerenciaGeneral, borradorDescriptivo, claveIndicador,
+  buscarRecomendacion, sugerenciaGeneral, borradorDescriptivo, claveIndicador, resumenAsistencia,
 } from './analisis.js';
 import { html, raw, icon, toast, fechaLarga } from './ui.js';
 import { $, $$, campo, areaTexto, errorBox, mostrarError } from './form.js';
@@ -170,6 +170,8 @@ export async function reportes(ctx, q) {
 // =====================================================================
 // Informe de un estudiante
 // =====================================================================
+const plural2 = (n, uno, varios) => `${n} ${n === 1 ? uno : varios}`;
+
 export async function reporteEstudiante(ctx, estId, q) {
   const seccion = await getSeccion();
   if (!seccion) return sinSeccion('Informe');
@@ -211,6 +213,7 @@ export async function reporteEstudiante(ctx, estId, q) {
             <tfoot><tr><th scope="row">Promedio general</th><td class="${claseNota(prom, s)}">${textoNota(prom)}</td><td>${prom !== null ? (aprueba(prom, s.cfg) ? 'Aprobado' : 'Por reforzar') : ''}</td></tr></tfoot>
           </table>
 
+          ${(() => { const r = resumenAsistencia(s, lapso, e.id); return r.dias && r.marcados ? html`<p class="informe-asistencia"><strong>Asistencia:</strong> ${r.faltas === 0 && r.justificadas === 0 ? 'sin inasistencias' : `${plural2(r.faltas, 'inasistencia', 'inasistencias')}${r.justificadas ? `, ${plural2(r.justificadas, 'justificada', 'justificadas')}` : ''}`} en ${r.dias} ${r.dias === 1 ? 'día' : 'días'} con lista (${r.pct}% de asistencia).</p>` : ''; })()}
           ${asigs.map(({ a, logro }) => html`
             <section class="informe-asig">
               <h3>${a.nombre}</h3>

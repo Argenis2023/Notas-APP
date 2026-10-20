@@ -492,3 +492,19 @@ select:focus { outline: 3px solid var(--acento); outline-offset: 1px; border-col
 .niveles-cortos .niv[aria-pressed='true']::before { content: none; }
 .ir-a .fila { display: flex; gap: 0; }
 .ir-a .fila-ico { flex: none; align-self: center; }
+
+/* ---------- Asistencia ---------- */
+.dia-input { font: inherit; padding: 0.35rem 0.4rem; border: 1px solid var(--linea); border-radius: 8px; background: var(--hoja); color: var(--tinta); max-width: 9.5rem; }
+.dia-titulo { margin: 0.2rem 0 0.2rem; font-family: var(--serif); font-size: 1.25rem; font-weight: 600; }
+.asi-presente[aria-pressed='true'] { background: var(--verde); border-color: var(--verde); color: #ffffff; }
+.asi-ausente[aria-pressed='true'] { background: var(--rojo); border-color: var(--rojo); color: #ffffff; }
+.asi-justificado[aria-pressed='true'] { background: var(--ambar); border-color: var(--ambar); color: var(--sobre-ambar); }
+.asistencia-hoy { background: var(--hoja); border: 1px solid var(--linea); border-radius: 10px; padding: 0.8rem 1rem; margin: 1.2rem 0; display: grid; gap: 0.5rem; }
+.asistencia-hoy h2 { margin: 0; font-size: 0.95rem; color: var(--tinta-suave); font-family: var(--sans); font-weight: 600; }
+.asistencia-hoy p { margin: 0; }
+.informe-asistencia { margin: 0.8rem 0; }
+.dia-input { max-width: 8.2rem; font-size: 0.88rem; padding: 0.35rem 0.3rem; min-width: 0; }
+.pager .pager-n:has(.dia-input) { min-width: 0; flex: 0 1 auto; }
+.pager-dia { gap: 0.4rem; }
+.pager-dia .btn.chico { padding-inline: 0.55rem; gap: 0.2rem; }
+.pager-dia .dia-input { max-width: 9.2rem; }

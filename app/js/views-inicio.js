@@ -1,7 +1,7 @@
 // Panel del Inicio: fichas de acceso con información al día, pendientes y alertas.
 import { lapsoActual } from './data.js';
 import { aprueba, promedio } from './calc.js';
-import { cargarSnapshot, notaAsignatura, promedioGeneral, enRiesgo, logroCurso, esDebil } from './analisis.js';
+import { cargarSnapshot, notaAsignatura, resumenAsistencia, promedioGeneral, enRiesgo, logroCurso, esDebil } from './analisis.js';
 import { barra } from './views-reportes.js';
 import { html, raw, icon, fechaCorta, infoEstado, haceCuanto } from './ui.js';
 
@@ -60,6 +60,9 @@ export async function panelInicio(ctx, seccion, completo, q = '') {
   }
   debiles.sort((x, y) => x.pct - y.pct);
 
+  const hoyIso = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`;
+  const deHoy = s.asistencia.filter(a => a.fecha === hoyIso);
+  const asisHoy = { n: deHoy.length, faltaron: deHoy.filter(a => a.estado === 'ausente').length, finde: [0, 6].includes(hoy.getDay()) };
   const estado = infoEstado(ctx.syncState(), { configurado: ctx.configurado, sesion: ctx.sesion });
   const g = saludo(hoy);
   const ultimo = ctx.syncState().lastSync;
@@ -77,6 +80,13 @@ export async function panelInicio(ctx, seccion, completo, q = '') {
         <span class="avance" role="img" aria-label="${lapsoInfo.pct}% del lapso transcurrido"><span style="width:${lapsoInfo.pct}%"></span></span>`
         : html`<p class="lapso-linea"><a href="#/ajustes">Pon las fechas del lapso en Ajustes</a> para ver cuánto falta.</p>`) : ''}
     </section>
+
+    ${nEst && !asisHoy.finde ? html`
+      <section class="asistencia-hoy" aria-labelledby="as-t">
+        <h2 id="as-t">Asistencia de hoy</h2>
+        <p>${asisHoy.n ? `${asisHoy.n - asisHoy.faltaron} de ${nEst} asistieron${asisHoy.faltaron ? `, ${plural(asisHoy.faltaron, 'faltó', 'faltaron')}` : ''}${asisHoy.n < nEst ? `, ${nEst - asisHoy.n} sin marcar` : ''}.` : 'Todavía no has pasado lista hoy.'}</p>
+        <a class="btn ${asisHoy.n ? 'secondary' : 'primary'}" href="#/asistencia">${asisHoy.n ? 'Ver o corregir la lista' : 'Pasar lista'}</a>
+      </section>` : ''}
 
     ${quedaste ? html`
       <section class="quedaste" aria-labelledby="qd-t">
@@ -122,6 +132,7 @@ export async function panelInicio(ctx, seccion, completo, q = '') {
       <h2 id="ir-t">Ir a</h2>
       <ul class="hoja ir-a">
         ${fila('#/estudiantes', 'personas', 'Estudiantes', nEst ? plural(nEst, 'estudiante', 'estudiantes') : 'Agrega o importa tu lista')}
+        ${fila('#/asistencia/resumen' + (lapso ? `?l=${lapso.numero}` : ''), 'personas', 'Asistencia', 'Resumen de faltas por lapso')}
         ${fila('#/evaluar', 'evaluar', 'Evaluar', s.asignaturas.length ? `${plural(s.asignaturas.length, 'asignatura', 'asignaturas')}, ${plural(evalsLapso.length, 'evaluación', 'evaluaciones')} en el lapso` : 'Empieza agregando asignaturas')}
         ${fila(`#/reportes${lapso ? `?l=${lapso.numero}` : ''}`, 'reportes', 'Reportes e informes', 'Notas, informe del curso y PDF')}
         ${fila('#/reportes/banco', 'libro', 'Mis recomendaciones', `${plural(s.recomendaciones.length, 'guardada', 'guardadas')}`)}
