@@ -8,9 +8,9 @@
 //
 // Secretos (Edge Functions > Secrets):
 //   GEMINI_API_KEY   obligatorio
-//   GEMINI_MODEL     opcional, por defecto "gemini-flash-latest"
+//   GEMINI_MODEL     opcional: modelo que se prueba primero (por defecto gemini-3.5-flash-lite)
 //   GROQ_API_KEY     opcional (respaldo)
-//   GROQ_MODEL       opcional, por defecto "llama-3.3-70b-versatile"
+//   GROQ_MODEL       opcional: modelo que se prueba primero (por defecto llama-3.3-70b-versatile)
 //   ALLOWED_EMAIL    opcional: si lo pones, solo ese correo puede usar la función
 //   ALLOWED_ORIGIN   opcional: por ejemplo https://argenis2023.github.io
 
@@ -49,6 +49,7 @@ async function consultarGemini(modelo: string, clave: string, sistema: string, d
   // Los modelos Flash recientes "piensan" antes de responder y eso toma varios segundos.
   // Para un párrafo no hace falta: se pide el mínimo y, si el modelo no admite la opción (400), se prueba la siguiente.
   const pensamientos: Array<Record<string, unknown>> = [
+    { thinkingConfig: { thinkingLevel: 'minimal' } },
     { thinkingConfig: { thinkingBudget: 0 } },
     { thinkingConfig: { thinkingLevel: 'low' } },
     {},
@@ -79,8 +80,8 @@ async function consultarGemini(modelo: string, clave: string, sistema: string, d
 async function conGemini(sistema: string, datos: string, max: number): Promise<string> {
   const clave = Deno.env.get('GEMINI_API_KEY');
   if (!clave) throw new Error('sin_clave_gemini');
-  const principal = Deno.env.get('GEMINI_MODEL') || 'gemini-flash-latest';
-  const modelos = [...new Set([principal, 'gemini-2.5-flash', 'gemini-2.5-flash-lite'])];
+  // Los modelos 2.5 ya no se entregan a cuentas nuevas (404). Se prueban primero los 3.x, del más liviano al más potente.
+  const modelos = [...new Set([Deno.env.get('GEMINI_MODEL') || '', 'gemini-3.5-flash-lite', 'gemini-3.1-flash-lite', 'gemini-3.8-flash', 'gemini-3.6-flash', 'gemini-flash-latest'].filter(Boolean))];
   const fallos: string[] = [];
   for (const modelo of modelos) {
     for (let intento = 0; intento < 2; intento++) {
@@ -97,16 +98,14 @@ async function conGemini(sistema: string, datos: string, max: number): Promise<s
   throw new Error(fallos.join(' | '));
 }
 
-async function conGroq(sistema: string, datos: string, max: number): Promise<string> {
-  const clave = Deno.env.get('GROQ_API_KEY');
-  if (!clave) throw new Error('sin_clave_groq');
+async function consultarGroq(modelo: string, clave: string, sistema: string, datos: string, max: number): Promise<string> {
   const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${clave}` },
     body: JSON.stringify({
-      model: Deno.env.get('GROQ_MODEL') || 'llama-3.3-70b-versatile',
+      model: modelo,
       temperature: 0.6,
-      max_tokens: max,
+      max_tokens: modelo.includes('gpt-oss') ? max + 1500 : max,
       messages: [{ role: 'system', content: sistema }, { role: 'user', content: datos }],
     }),
   });
@@ -115,6 +114,24 @@ async function conGroq(sistema: string, datos: string, max: number): Promise<str
   const texto = (j?.choices?.[0]?.message?.content ?? '').trim();
   if (!texto) throw new Error('groq_vacio');
   return texto;
+}
+
+// Si un modelo no existe o no está habilitado (404, 400) se prueba el siguiente. Con clave inválida (401) no tiene sentido seguir.
+async function conGroq(sistema: string, datos: string, max: number): Promise<string> {
+  const clave = Deno.env.get('GROQ_API_KEY');
+  if (!clave) throw new Error('sin_clave_groq');
+  const modelos = [...new Set([Deno.env.get('GROQ_MODEL') || '', 'llama-3.3-70b-versatile', 'openai/gpt-oss-20b', 'llama-3.1-8b-instant'].filter(Boolean))];
+  const fallos: string[] = [];
+  for (const modelo of modelos) {
+    try {
+      return await consultarGroq(modelo, clave, sistema, datos, max);
+    } catch (e) {
+      const m = (e as Error).message;
+      fallos.push(`${modelo}:${m}`);
+      if (m === 'groq_401' || m === 'groq_403') break;
+    }
+  }
+  throw new Error(fallos.join(' | '));
 }
 
 Deno.serve(async (req: Request) => {

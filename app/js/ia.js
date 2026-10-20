@@ -76,7 +76,7 @@ export function explicarFallaGroq(detalle) {
   const causa = /sin_clave_groq/.test(d) ? 'Supabase no encuentra la clave GROQ_API_KEY. Revisa que el nombre del secreto esté escrito igual, sin espacios, y vuelve a probar.'
     : /groq_401|groq_403/.test(d) ? 'Groq rechazó la clave. Crea una clave nueva en Groq y reemplaza el secreto GROQ_API_KEY.'
     : /groq_429/.test(d) ? 'Groq llegó a su límite gratuito por ahora. Espera unos minutos.'
-    : /groq_400|groq_404/.test(d) ? 'Groq no aceptó el modelo. Borra el secreto GROQ_MODEL si lo creaste, o usa llama-3.3-70b-versatile.'
+    : /groq_400|groq_404/.test(d) ? 'Groq no encontró ninguno de los modelos con esa clave. Crea una clave nueva en console.groq.com y reemplaza el secreto GROQ_API_KEY.'
     : 'Groq no respondió.';
   return `Gemini no respondió y el respaldo de Groq también falló. ${causa} (${d})`;
 }
