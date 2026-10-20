@@ -28,7 +28,7 @@ let ficha = 0;
 
 // ---------- rutas ----------
 const RUTAS = [
-  [/^#\/?$/, () => V.inicio(ctx), 'inicio'],
+  [/^#\/?(?:\?(.*))?$/, m => V.inicio(ctx, m[1]), 'inicio'],
   [/^#\/evaluar$/, () => E.evaluar(ctx), 'evaluar'],
   [/^#\/evaluar\/a\/([^/?]+)\/nueva(?:\?(.*))?$/, m => E.evaluacionForm(ctx, { asignaturaId: m[1], lapsoNum: new URLSearchParams(m[2] || '').get('l') }), 'evaluar'],
   [/^#\/evaluar\/a\/([^/?]+)(?:\?(.*))?$/, m => E.asignatura(ctx, m[1], m[2]), 'evaluar'],

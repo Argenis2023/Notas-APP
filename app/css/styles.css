@@ -455,3 +455,40 @@ select:focus { outline: 3px solid var(--acento); outline-offset: 1px; border-col
   .informe-inst p { font-size: 9pt; }
   .informe-inst .informe-inst-nombre { font-size: 11.5pt; }
 }
+
+/* ---------- Capa 3: Inicio y cotejo ---------- */
+.inicio-curso { margin: -0.4rem 0 0.8rem; color: var(--tinta-suave); font-size: 0.95rem; }
+.lapso-linea { margin: 0.5rem 0 0.35rem; color: var(--tinta-suave); font-size: 0.9rem; }
+.quedaste { background: var(--hoja); border: 1px solid var(--linea); border-left: 4px solid var(--acento); border-radius: 10px; padding: 0.9rem 1rem; margin: 1.2rem 0; display: grid; gap: 0.5rem; }
+.quedaste h2 { margin: 0; font-size: 0.95rem; color: var(--tinta-suave); font-family: var(--sans); font-weight: 600; }
+.qd-nombre { margin: 0; font-family: var(--serif); font-size: 1.3rem; font-weight: 600; line-height: 1.2; }
+.qd-sub { margin: 0; color: var(--tinta-suave); font-size: 0.92rem; }
+.todo-al-dia { margin: 1.2rem 0; padding: 0.75rem 1rem; background: var(--acento-suave); border-radius: 10px; color: var(--tinta); }
+.resumen { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin: 0 0 0.6rem; }
+.resumen > div { background: var(--hoja); border: 1px solid var(--linea); border-radius: 10px; padding: 0.6rem 0.7rem; }
+.resumen dt { font-size: 0.78rem; color: var(--tinta-suave); line-height: 1.25; }
+.resumen dd { margin: 0.15rem 0 0; font-size: 1.35rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.resumen dd.bien, .pa-valor.bien { color: var(--verde); }
+.resumen dd.mal, .pa-valor.mal { color: var(--rojo); }
+.prom-asig { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.7rem; }
+.prom-asig li { display: grid; grid-template-columns: 1fr auto; gap: 0.2rem 0.6rem; align-items: baseline; }
+.pa-nombre { font-weight: 500; overflow-wrap: anywhere; }
+.pa-valor { font-weight: 600; font-variant-numeric: tabular-nums; }
+.pa-pista { grid-column: 1 / -1; position: relative; display: block; height: 0.6rem; background: var(--fondo-suave); border-radius: 4px; overflow: visible; }
+.pa-pista > span { display: block; height: 100%; background: var(--acento); border-radius: 4px; }
+.pa-pista > i { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--tinta); }
+.ir-a .fila-ico { color: var(--acento); display: inline-flex; margin-right: 0.7rem; }
+.ir-a .fila { align-items: center; }
+.ir-a .respaldo.ok .fila-ico { color: var(--verde); }
+.ir-a .respaldo.error .fila-ico, .ir-a .respaldo.offline .fila-ico { color: var(--rojo); }
+.leyenda-niv { margin: 0 0 0.5rem; font-size: 0.85rem; color: var(--tinta-suave); }
+.cotejo-denso { gap: 0.35rem; }
+.cotejo-denso .cotejo-fila { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 0.6rem; padding: 0.35rem 0.6rem; }
+.cotejo-denso .cotejo-nombre { margin: 0; font-weight: 500; font-size: 0.95rem; }
+.cotejo-num { display: inline-block; min-width: 1.6rem; color: var(--tinta-suave); font-variant-numeric: tabular-nums; }
+.cotejo-fila.sig { border-color: var(--acento); box-shadow: inset 3px 0 0 var(--acento); }
+.niveles-cortos { grid-template-columns: repeat(3, 2.75rem); gap: 0.3rem; }
+.niveles-cortos .niv { min-height: 2.75rem; padding: 0; font-size: 0.95rem; font-weight: 600; }
+.niveles-cortos .niv[aria-pressed='true']::before { content: none; }
+.ir-a .fila { display: flex; gap: 0; }
+.ir-a .fila-ico { flex: none; align-self: center; }

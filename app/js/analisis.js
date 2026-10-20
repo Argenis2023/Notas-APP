@@ -21,7 +21,13 @@ export async function cargarSnapshot(seccion) {
   const inds = indicadores.filter(i => evIds.has(i.evaluacion_id)).sort((a, b) => (a.orden ?? 1e9) - (b.orden ?? 1e9));
   const indIds = new Set(inds.map(i => i.id));
   const niveles = {};
-  for (const r of resultados) if (indIds.has(r.indicador_id) && r.nivel) niveles[`${r.indicador_id}|${r.estudiante_id}`] = r.nivel;
+  const indEval = new Map(inds.map(i => [i.id, i.evaluacion_id]));
+  const actividad = {}; // última marca por evaluación
+  for (const r of resultados) if (indIds.has(r.indicador_id) && r.nivel) {
+    niveles[`${r.indicador_id}|${r.estudiante_id}`] = r.nivel;
+    const ev = indEval.get(r.indicador_id), t = String(r.updated_at || '');
+    if (t > (actividad[ev] || '')) actividad[ev] = t;
+  }
   const nota = {};
   for (const n of notas) if (evIds.has(n.evaluacion_id)) nota[`${n.evaluacion_id}|${n.estudiante_id}`] = notaVigente(n);
   return {
@@ -29,7 +35,7 @@ export async function cargarSnapshot(seccion) {
     inst: desdeConfig([...cfgs].sort((a, b) => String(a.created_at).localeCompare(String(b.created_at)))[0] || {}),
     cfg: { ...CONFIG_BASE, ...Object.fromEntries(Object.entries(cfgs[0] || {}).filter(([, v]) => v !== null && v !== undefined)) },
     lapsos: lapsos.filter(l => l.seccion_id === seccion.id).sort((a, b) => (a.numero ?? 0) - (b.numero ?? 0)),
-    estudiantes: est, asignaturas: asig, evaluaciones: evs, indicadores: inds, niveles, nota,
+    estudiantes: est, asignaturas: asig, evaluaciones: evs, indicadores: inds, niveles, nota, actividad,
     reportes: reportes.filter(r => r.seccion_id === seccion.id),
     recomendaciones,
   };

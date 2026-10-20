@@ -365,9 +365,10 @@ export async function indicadorForm(ctx, evaluacionId, id) {
 // =====================================================================
 // Lista de cotejo: se marca por indicador o por estudiante
 // =====================================================================
-const botonesNivel = (actual, ind, est) => html`
-  <div class="niveles" role="group" aria-label="Nivel de logro">${NIVELES.map(n => html`
-    <button type="button" class="niv niv-${n.id}" data-ind="${ind}" data-est="${est}" data-nivel="${n.id}" aria-pressed="${actual === n.id ? 'true' : 'false'}">${n.nombre}</button>`)}
+const LETRA = { logrado: 'L', proceso: 'P', no_logrado: 'N' };
+const botonesNivel = (actual, ind, est, corto = false) => html`
+  <div class="niveles ${corto ? 'niveles-cortos' : ''}" role="group" aria-label="Nivel de logro">${NIVELES.map(n => html`
+    <button type="button" class="niv niv-${n.id}" data-ind="${ind}" data-est="${est}" data-nivel="${n.id}" aria-pressed="${actual === n.id ? 'true' : 'false'}" ${corto ? raw(`aria-label="${n.nombre}" title="${n.nombre}"`) : ''}>${corto ? (LETRA[n.id] || n.nombre[0]) : n.nombre}</button>`)}
   </div>`;
 
 export async function cotejo(ctx, id, q) {
@@ -405,10 +406,11 @@ export async function cotejo(ctx, id, q) {
       <div class="acciones">
         <button type="button" class="btn secondary chico" id="b-todos">Marcar a todos como Logrado</button>
       </div>
-      <ol class="cotejo-lista">${estudiantes.map(e => html`
-        <li class="cotejo-fila" data-fila="${e.id}">
-          <p class="cotejo-nombre">${e.numero_lista ? `${e.numero_lista}. ` : ''}${e.nombre_completo}</p>
-          ${botonesNivel((niveles[e.id] || {})[ind.id], ind.id, e.id)}
+      <p class="leyenda-niv">L Logrado · P En proceso · N No logrado</p>
+      <ol class="cotejo-lista cotejo-denso">${estudiantes.map(e => html`
+        <li class="cotejo-fila ${e.id === (estudiantes.find(x => !(niveles[x.id] || {})[ind.id]) || {}).id ? 'sig' : ''}" data-fila="${e.id}">
+          <p class="cotejo-nombre">${e.numero_lista ? html`<span class="cotejo-num">${e.numero_lista}</span>` : ''}${e.nombre_completo}</p>
+          ${botonesNivel((niveles[e.id] || {})[ind.id], ind.id, e.id, true)}
         </li>`)}</ol>`;
   } else {
     const e = estudiantes[iEst];

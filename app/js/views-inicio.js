@@ -1,9 +1,9 @@
 // Panel del Inicio: fichas de acceso con información al día, pendientes y alertas.
 import { lapsoActual } from './data.js';
 import { aprueba, promedio } from './calc.js';
-import { cargarSnapshot, promedioGeneral, enRiesgo, logroCurso, esDebil } from './analisis.js';
+import { cargarSnapshot, notaAsignatura, promedioGeneral, enRiesgo, logroCurso, esDebil } from './analisis.js';
 import { barra } from './views-reportes.js';
-import { html, icon, fechaCorta, infoEstado, haceCuanto } from './ui.js';
+import { html, raw, icon, fechaCorta, infoEstado, haceCuanto } from './ui.js';
 
 const DIA = 86400000;
 const utc = iso => Date.parse(iso + 'T00:00:00Z');
@@ -16,114 +16,116 @@ function saludo(d = new Date()) {
   return { t, f };
 }
 
-export async function panelInicio(ctx, seccion, completo) {
+export async function panelInicio(ctx, seccion, completo, q = '') {
   const s = await cargarSnapshot(seccion);
-  const lapso = lapsoActual(s.lapsos);
+  const pedido = parseInt(new URLSearchParams(q || '').get('l'), 10);
+  const lapso = s.lapsos.find(l => l.numero === pedido) || lapsoActual(s.lapsos);
   const hoy = new Date();
   const hoyUtc = Date.UTC(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
   const nEst = s.estudiantes.length;
+  const minimo = s.cfg.minimo_aprobatorio ?? 10;
 
-  // Lapso en curso
   let lapsoInfo = null;
   if (lapso && lapso.fecha_inicio && lapso.fecha_fin) {
     const ini = utc(lapso.fecha_inicio), fin = utc(lapso.fecha_fin);
-    const total = Math.max(1, fin - ini);
-    const pct = Math.max(0, Math.min(100, Math.round(((hoyUtc - ini) / total) * 100)));
+    const pct = Math.max(0, Math.min(100, Math.round(((hoyUtc - ini) / Math.max(1, fin - ini)) * 100)));
     const dias = Math.ceil((fin - hoyUtc) / DIA);
     lapsoInfo = { pct, texto: hoyUtc < ini ? `Empieza el ${fechaCorta(lapso.fecha_inicio)}` : dias < 0 ? 'Lapso terminado' : dias === 0 ? 'Termina hoy' : `Quedan ${plural(dias, 'día', 'días')}` };
   }
 
-  // Evaluaciones del lapso y cuáles falta pasar a la lista de cotejo
   const evalsLapso = lapso ? s.evaluaciones.filter(e => e.lapso_id === lapso.id) : [];
   const pendientes = [];
   for (const ev of evalsLapso) {
     const asig = s.asignaturas.find(a => a.id === ev.asignatura_id);
     const nInd = s.indicadores.filter(i => i.evaluacion_id === ev.id).length;
     const hechos = s.estudiantes.filter(e => typeof s.nota[`${ev.id}|${e.id}`] === 'number').length;
-    if (!nInd) pendientes.push({ ev, asig, texto: 'Falta escribir los indicadores', href: `#/evaluar/e/${ev.id}`, marca: '!' });
-    else if (nEst && hechos < nEst) pendientes.push({ ev, asig, texto: `${hechos} de ${nEst} estudiantes evaluados`, href: `#/evaluar/e/${ev.id}/cotejo`, marca: `${hechos}/${nEst}` });
+    const marcados = s.estudiantes.filter(e => s.indicadores.some(i => i.evaluacion_id === ev.id && s.niveles[`${i.id}|${e.id}`])).length;
+    if (!nInd) pendientes.push({ ev, asig, texto: 'Falta escribir los indicadores', href: `#/evaluar/e/${ev.id}`, marca: '!', act: '' });
+    else if (nEst && hechos < nEst) pendientes.push({ ev, asig, texto: `${hechos} de ${nEst} estudiantes evaluados`, href: `#/evaluar/e/${ev.id}/cotejo`, marca: `${hechos}/${nEst}`, act: s.actividad?.[ev.id] || '', marcados, hechos });
   }
+  const quedaste = [...pendientes].filter(p => p.act).sort((a, b) => b.act.localeCompare(a.act))[0] || null;
+  const resto = pendientes.filter(p => p !== quedaste);
 
-  // Notas y apoyo
   const proms = lapso ? s.estudiantes.map(e => promedioGeneral(s, lapso.id, e.id)).filter(n => n !== null) : [];
   const promCurso = promedio(proms);
   const aprobados = proms.filter(n => aprueba(n, s.cfg)).length;
   const riesgo = lapso ? enRiesgo(s, lapso.id) : [];
 
-  // Lo más débil del curso
   const debiles = [];
-  if (lapso) for (const a of s.asignaturas) for (const l of logroCurso(s, a.id, lapso.id)) if (esDebil(l.pct, s)) debiles.push({ ...l, asig: a.nombre });
+  const porAsig = [];
+  if (lapso) for (const a of s.asignaturas) {
+    for (const l of logroCurso(s, a.id, lapso.id)) if (esDebil(l.pct, s)) debiles.push({ ...l, asig: a.nombre });
+    const ns = s.estudiantes.map(e => notaAsignatura(s, a.id, lapso.id, e.id)).filter(n => n !== null && n !== undefined);
+    if (ns.length) porAsig.push({ nombre: a.nombre, prom: promedio(ns), n: ns.length });
+  }
   debiles.sort((x, y) => x.pct - y.pct);
 
   const estado = infoEstado(ctx.syncState(), { configurado: ctx.configurado, sesion: ctx.sesion });
   const g = saludo(hoy);
   const ultimo = ctx.syncState().lastSync;
+  const sub = [seccion.grado, seccion.nombre && `Sección ${seccion.nombre}`, seccion.anio_escolar].filter(Boolean).join(' · ');
+  const fila = (href, ico, tit, sub2, extra = '') => html`<li><a class="fila ${extra}" href="${href}"><span class="fila-ico">${icon(ico, 20)}</span><span class="fila-texto"><span class="fila-nombre">${tit}</span><span class="fila-sub">${sub2}</span></span></a></li>`;
 
   return html`
     <section aria-labelledby="menu-t">
       <h2 id="menu-t" class="saludo">${g.t}<span class="saludo-fecha">${g.f}</span></h2>
-      <div class="fichas">
-        ${lapso ? html`
-        <a class="ficha ficha-ancha" href="#/ajustes">
-          <span class="ficha-tit">Lapso ${lapso.numero}</span>
-          ${lapsoInfo ? html`
-            <span class="ficha-sub">${fechaCorta(lapso.fecha_inicio)} al ${fechaCorta(lapso.fecha_fin)} · ${lapsoInfo.texto}</span>
-            <span class="avance" role="img" aria-label="${lapsoInfo.pct}% del lapso transcurrido"><span style="width:${lapsoInfo.pct}%"></span></span>`
-            : html`<span class="ficha-sub">Pon las fechas del lapso en Ajustes para ver cuánto falta.</span>`}
-        </a>` : ''}
-
-        <a class="ficha" href="#/estudiantes">
-          <span class="ficha-ico">${icon('personas', 22)}</span>
-          <span class="ficha-tit">Estudiantes</span>
-          <span class="ficha-num">${nEst}</span>
-          <span class="ficha-sub">${nEst ? 'Lista, fichas e importar de Excel' : 'Agrega o importa tu lista'}</span>
-        </a>
-        <a class="ficha" href="#/evaluar">
-          <span class="ficha-ico">${icon('evaluar', 22)}</span>
-          <span class="ficha-tit">Evaluar</span>
-          <span class="ficha-num">${evalsLapso.length}</span>
-          <span class="ficha-sub">${s.asignaturas.length ? `${plural(evalsLapso.length, 'evaluación', 'evaluaciones')} en el lapso, ${plural(s.asignaturas.length, 'asignatura', 'asignaturas')}` : 'Empieza agregando asignaturas'}</span>
-        </a>
-        <a class="ficha" href="#/reportes${lapso ? `?l=${lapso.numero}` : ''}">
-          <span class="ficha-ico">${icon('reportes', 22)}</span>
-          <span class="ficha-tit">Reportes</span>
-          <span class="ficha-num ${promCurso === null ? '' : aprueba(promCurso, s.cfg) ? 'bien' : 'mal'}">${promCurso ?? '–'}</span>
-          <span class="ficha-sub">${proms.length ? `Promedio del curso, ${aprobados} de ${proms.length} aprueban` : 'Aparecen cuando haya notas'}</span>
-        </a>
-        <a class="ficha ${riesgo.length ? 'ficha-alerta' : ''}" href="${riesgo.length && lapso ? `#/reportes/curso?l=${lapso.numero}` : '#/reportes'}">
-          <span class="ficha-ico">${icon('alerta', 22)}</span>
-          <span class="ficha-tit">Apoyo</span>
-          <span class="ficha-num ${riesgo.length ? 'mal' : ''}">${riesgo.length}</span>
-          <span class="ficha-sub">${riesgo.length ? 'Necesitan apoyo: ' + riesgo.slice(0, 2).map(r => r.estudiante.nombre_completo.split(/\s+/)[0]).join(', ') + (riesgo.length > 2 ? ` y ${riesgo.length - 2} más` : '') : proms.length ? 'Nadie bajo el mínimo' : 'Sin notas todavía'}</span>
-        </a>
-        <a class="ficha ficha-ancha" href="#/reportes/banco">
-          <span class="ficha-ico">${icon('libro', 22)}</span>
-          <span class="ficha-tit">Mis recomendaciones</span>
-          <span class="ficha-sub"><strong>${plural(s.recomendaciones.length, 'guardada', 'guardadas')}</strong> · qué recomendar cuando un tema sale débil</span>
-        </a>
-        <a class="ficha ficha-ancha ficha-respaldo ${estado.clase}" href="#/ajustes">
-          <span class="ficha-ico">${icon('nube', 22)}</span>
-          <span class="ficha-tit">Respaldo</span>
-          <span class="ficha-sub"><strong>${estado.texto}</strong>${ultimo && ctx.configurado ? ` · último respaldo ${haceCuanto(ultimo)}` : ''}</span>
-        </a>
-      </div>
+      ${sub ? html`<p class="inicio-curso">${sub}</p>` : ''}
+      ${s.lapsos.length > 1 ? html`<nav class="lapso-tabs" aria-label="Lapso">${s.lapsos.map(l => html`
+        <a href="#/?l=${l.numero}" ${l.id === lapso?.id ? raw('aria-current="page"') : ''}>Lapso ${l.numero}</a>`)}</nav>` : ''}
+      ${lapso ? (lapsoInfo ? html`
+        <p class="lapso-linea">${fechaCorta(lapso.fecha_inicio)} al ${fechaCorta(lapso.fecha_fin)} · ${lapsoInfo.texto}</p>
+        <span class="avance" role="img" aria-label="${lapsoInfo.pct}% del lapso transcurrido"><span style="width:${lapsoInfo.pct}%"></span></span>`
+        : html`<p class="lapso-linea"><a href="#/ajustes">Pon las fechas del lapso en Ajustes</a> para ver cuánto falta.</p>`) : ''}
     </section>
 
-    ${pendientes.length ? html`
+    ${quedaste ? html`
+      <section class="quedaste" aria-labelledby="qd-t">
+        <h2 id="qd-t">Quedaste en</h2>
+        <p class="qd-nombre">${quedaste.ev.nombre}</p>
+        <p class="qd-sub">${[quedaste.asig?.nombre, `${quedaste.marcados} de ${nEst} estudiantes marcados`].filter(Boolean).join(', ')}</p>
+        <span class="avance" role="img" aria-label="${Math.round(100 * quedaste.marcados / nEst)}% evaluado"><span style="width:${Math.round(100 * quedaste.marcados / nEst)}%"></span></span>
+        <a class="btn primary" href="${quedaste.href}">Continuar la lista de cotejo</a>
+      </section>` : (pendientes.length ? '' : (evalsLapso.length && nEst ? html`<p class="todo-al-dia">Todo al día: todas las evaluaciones de este lapso tienen nota.</p>` : ''))}
+
+    ${resto.length ? html`
       <section aria-labelledby="pend-t">
-        <h2 id="pend-t">Para continuar</h2>
-        <ol class="hoja">${pendientes.slice(0, 4).map(p => html`
+        <h2 id="pend-t">Pendiente</h2>
+        <ol class="hoja">${resto.slice(0, 4).map(p => html`
           <li><a class="fila" href="${p.href}">
             <span class="margen">${p.marca}</span>
             <span class="fila-texto"><span class="fila-nombre">${p.ev.nombre}</span><span class="fila-sub">${[p.asig?.nombre, p.texto].filter(Boolean).join(', ')}</span></span>
           </a></li>`)}</ol>
-        ${pendientes.length > 4 ? html`<p class="hint">Y ${pendientes.length - 4} más en <a href="#/evaluar">Evaluar</a>.</p>` : ''}
+        ${resto.length > 4 ? html`<p class="hint">Y ${resto.length - 4} más en <a href="#/evaluar">Evaluar</a>.</p>` : ''}
       </section>` : ''}
 
-    ${debiles.length ? html`
-      <section aria-labelledby="deb-t">
-        <h2 id="deb-t">Lo más débil del curso</h2>
-        <ul class="barras">${debiles.slice(0, 3).map(d => barra(`${d.clave} (${d.asig})`, d.pct, s))}</ul>
-        <p><a href="#/reportes/curso?l=${lapso.numero}">Ver el informe del curso</a></p>
-      </section>` : ''}`;
+    ${proms.length ? html`
+      <section aria-labelledby="cur-t">
+        <h2 id="cur-t">El curso en este lapso</h2>
+        <dl class="resumen">
+          <div><dt>Promedio general</dt><dd class="${aprueba(promCurso, s.cfg) ? 'bien' : 'mal'}">${promCurso}</dd></div>
+          <div><dt>Aprueban</dt><dd>${aprobados} de ${proms.length}</dd></div>
+          <div><dt>En riesgo</dt><dd class="${riesgo.length ? 'mal' : ''}">${riesgo.length}</dd></div>
+        </dl>
+        ${riesgo.length ? html`<p class="hint">Necesitan apoyo: ${riesgo.slice(0, 3).map(r => r.estudiante.nombre_completo.split(/\s+/)[0]).join(', ')}${riesgo.length > 3 ? ` y ${riesgo.length - 3} más` : ''}. <a href="#/reportes/curso?l=${lapso.numero}">Ver informe del curso</a></p>` : ''}
+        ${debiles.length ? html`<p class="hint">Lo más débil: <strong>${debiles[0].clave}</strong> (${debiles[0].asig}), ${debiles[0].pct}% de logro.</p>` : ''}
+      </section>` : ''}
+
+    ${porAsig.length ? html`
+      <section aria-labelledby="pa-t">
+        <h2 id="pa-t">Promedio por asignatura</h2>
+        <ul class="prom-asig">${porAsig.map(a => html`
+          <li><span class="pa-nombre">${a.nombre}</span><span class="pa-valor ${a.prom >= minimo ? 'bien' : 'mal'}">${a.prom}</span>
+            <span class="pa-pista" role="img" aria-label="Promedio ${a.prom} de 20, mínimo ${minimo}"><span style="width:${Math.round(a.prom * 5)}%"></span><i style="left:${minimo * 5}%"></i></span></li>`)}</ul>
+      </section>` : ''}
+
+    <section aria-labelledby="ir-t">
+      <h2 id="ir-t">Ir a</h2>
+      <ul class="hoja ir-a">
+        ${fila('#/estudiantes', 'personas', 'Estudiantes', nEst ? plural(nEst, 'estudiante', 'estudiantes') : 'Agrega o importa tu lista')}
+        ${fila('#/evaluar', 'evaluar', 'Evaluar', s.asignaturas.length ? `${plural(s.asignaturas.length, 'asignatura', 'asignaturas')}, ${plural(evalsLapso.length, 'evaluación', 'evaluaciones')} en el lapso` : 'Empieza agregando asignaturas')}
+        ${fila(`#/reportes${lapso ? `?l=${lapso.numero}` : ''}`, 'reportes', 'Reportes e informes', 'Notas, informe del curso y PDF')}
+        ${fila('#/reportes/banco', 'libro', 'Mis recomendaciones', `${plural(s.recomendaciones.length, 'guardada', 'guardadas')}`)}
+        ${fila('#/ajustes', 'nube', 'Respaldo', html`<strong>${estado.texto}</strong>${ultimo && ctx.configurado ? ` · último respaldo ${haceCuanto(ultimo)}` : ''}`, 'respaldo ' + estado.clase)}
+      </ul>
+    </section>`;
 }

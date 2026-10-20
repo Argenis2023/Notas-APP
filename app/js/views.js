@@ -14,7 +14,7 @@ import { leerInstitucion, guardarInstitucion, procesarLogo, coloresDelLogo, pale
 // =====================================================================
 // Inicio
 // =====================================================================
-export async function inicio(ctx) {
+export async function inicio(ctx, q = '') {
   const seccion = await getSeccion();
 
   if (!seccion) {
@@ -55,21 +55,12 @@ export async function inicio(ctx) {
   for (const a of asignaturas) if ((await listEvaluaciones(a.id)).length) { hayEvaluacion = true; break; }
   const completo = fechasListas && estudiantes.length > 0 && asignaturas.length > 0 && hayEvaluacion;
   const sinRespaldo = !ctx.configurado;
-  const panel = await panelInicio(ctx, seccion, completo);
+  const panel = await panelInicio(ctx, seccion, completo, q);
 
   return {
     title: 'Cuaderno docente',
     live: true,
     html: html`
-      <section class="portada" aria-label="Portada del cuaderno">
-        <p class="portada-titulo">Cuaderno de evaluación</p>
-        <dl class="portada-lineas">
-          <div><dt>Sección</dt><dd>${seccion.nombre || ''}</dd></div>
-          <div><dt>Grado</dt><dd>${seccion.grado || ''}</dd></div>
-          <div><dt>Año escolar</dt><dd>${seccion.anio_escolar || ''}</dd></div>
-        </dl>
-      </section>
-
       ${completo ? '' : html`
         <section aria-labelledby="pasos-t">
           <h2 id="pasos-t">Para dejar el cuaderno listo</h2>
