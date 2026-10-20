@@ -821,3 +821,24 @@ body.bloqueada #shell, body.bloqueada #gate, body.bloqueada #toast { display: no
   .toast { animation: toast-entra 0.25s ease-out; }
   @media (min-width: 48rem) { .chat:not([hidden]) { animation: aparece 0.25s ease-out; } .fila:hover { background: var(--fondo-suave); } }
 }
+
+/* ---------- diccionario y pausas ---------- */
+.dic-res { margin-top: 1rem; }
+.dic-res:empty { display: none; }
+.dic-res:focus { outline: none; }
+.dic-palabra { margin: 0 0 0.5rem; font-size: 1.6rem; }
+.dic-partes { margin: 0 0 0.75rem; display: grid; gap: 0.6rem; }
+.dic-partes > div { padding: 0.6rem 0.8rem; background: var(--hoja); border: 1px solid var(--linea); border-radius: 0.75rem; }
+.dic-partes dt { font-size: 0.85rem; font-weight: 600; color: var(--tinta-suave); }
+.dic-partes dd { margin: 0.15rem 0 0; font-size: 1.1rem; line-height: 1.45; }
+.chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.chip-b { font: inherit; padding: 0.45rem 0.85rem; min-height: 2.5rem; color: var(--acento); background: var(--hoja); border: 1px solid var(--linea); border-radius: 999px; cursor: pointer; }
+.pausa { padding: 1rem; margin-top: 1rem; background: var(--hoja); border: 1px solid var(--linea); border-radius: 0.9rem; }
+.pausa h3 { margin: 0; font-size: 1.35rem; }
+.pausa-pasos { margin: 0.6rem 0; padding-left: 1.3rem; font-size: 1.1rem; line-height: 1.5; }
+.pausa-pasos li + li { margin-top: 0.35rem; }
+.pausa-reloj { text-align: center; }
+.pa-tiempo { display: inline-block; font-size: 3rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.pa-tiempo.fin { color: var(--acento); }
+.fila-btn { width: 100%; font: inherit; text-align: left; cursor: pointer; background: transparent; border: 0; }
+@media print { .pausa, .dic-res { break-inside: avoid; } }

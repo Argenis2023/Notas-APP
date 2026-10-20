@@ -89,6 +89,14 @@ export async function panelInicio(ctx, seccion, completo, q = '') {
         : html`<p class="lapso-linea"><a href="#/ajustes">Pon las fechas del lapso en Ajustes</a> para ver cuánto falta.</p>`) : ''}
     </section>
 
+    <section aria-labelledby="aula-t">
+      <h2 id="aula-t">Para el aula</h2>
+      <div class="acciones">
+        <a class="btn secondary" href="#/aula/diccionario">${icon('diccionario', 20)} Diccionario</a>
+        <a class="btn secondary" href="#/aula/pausas">${icon('pausa', 20)} Pausa activa</a>
+      </div>
+    </section>
+
     <div class="inicio-cols">
     <div class="col">
     ${avInicio.length ? html`
