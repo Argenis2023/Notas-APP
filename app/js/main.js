@@ -4,6 +4,7 @@ import { createSync } from './sync.js';
 import { html, toast, infoEstado, mensajeError } from './ui.js';
 import * as V from './views.js';
 import * as E from './views-eval.js';
+import * as R from './views-reportes.js';
 
 const $ = (s, r = document) => r.querySelector(s);
 
@@ -33,6 +34,10 @@ const RUTAS = [
   [/^#\/evaluar\/e\/([^/?]+)\/indicador\/([^/?]+)$/, m => E.indicadorForm(ctx, m[1], m[2]), 'evaluar'],
   [/^#\/evaluar\/e\/([^/?]+)\/cotejo(?:\?(.*))?$/, m => E.cotejo(ctx, m[1], m[2]), 'evaluar'],
   [/^#\/evaluar\/e\/([^/?]+)$/, m => E.evaluacion(ctx, m[1]), 'evaluar'],
+  [/^#\/reportes(?:\?(.*))?$/, m => R.reportes(ctx, m[1]), 'reportes'],
+  [/^#\/reportes\/curso(?:\?(.*))?$/, m => R.reporteCurso(ctx, m[1]), 'reportes'],
+  [/^#\/reportes\/banco$/, () => R.banco(ctx), 'reportes'],
+  [/^#\/reportes\/e\/([^/?]+)(?:\?(.*))?$/, m => R.reporteEstudiante(ctx, m[1], m[2]), 'reportes'],
   [/^#\/estudiantes\/importar$/, () => V.importar(ctx), 'estudiantes'],
   [/^#\/estudiantes\/nuevo$/, () => V.estudianteForm(ctx, 'nuevo'), 'estudiantes'],
   [/^#\/estudiantes\/([^/]+)$/, m => V.estudianteForm(ctx, m[1]), 'estudiantes'],
