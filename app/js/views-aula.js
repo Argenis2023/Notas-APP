@@ -103,15 +103,43 @@ export async function diccionario(ctx) {
 // ---------- Pausas activas ----------
 const mmss = s => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 let reloj = null;
-const detenerReloj = () => { if (reloj) { clearInterval(reloj); reloj = null; } };
+let candado = null;
+const detenerReloj = () => {
+  if (reloj) { clearInterval(reloj); reloj = null; }
+  if (candado) { try { candado.release(); } catch { /* ya liberado */ } candado = null; }
+};
 
-function fichaPausa(p) {
+// Sonido con Web Audio (sin archivos). El contexto se crea al tocar "Empezar", que es cuando el navegador permite sonar.
+let audio = null;
+function prepararAudio() {
+  try {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    if (!audio) audio = new AC();
+    if (audio.state === 'suspended') audio.resume();
+  } catch { audio = null; }
+}
+function tono(frec, inicio, dur) {
+  const o = audio.createOscillator(), g = audio.createGain();
+  o.type = 'sine'; o.frequency.value = frec;
+  const t0 = audio.currentTime + inicio;
+  g.gain.setValueAtTime(0.0001, t0);
+  g.gain.exponentialRampToValueAtTime(0.35, t0 + 0.03);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  o.connect(g); g.connect(audio.destination);
+  o.start(t0); o.stop(t0 + dur + 0.05);
+}
+export function sonarFin() { if (!audio) return; try { [660, 880, 1175].forEach((f, i) => tono(f, i * 0.28, 0.5)); tono(1175, 0.9, 0.9); } catch { /* sin sonido */ } }
+function sonarInicio() { if (!audio) return; try { tono(880, 0, 0.25); } catch { /* sin sonido */ } }
+
+function fichaPausa(p, sonido = true) {
   return html`
     <article class="pausa" aria-labelledby="pa-t">
       <h3 id="pa-t">${p.titulo}</h3>
       <p class="hint">${TIPOS.find(t => t.id === p.tipo).texto} · unos ${p.min} minutos</p>
       <ol class="pausa-pasos">${p.pasos.map(x => html`<li>${x}</li>`)}</ol>
       <div class="pausa-reloj" role="timer" aria-live="off"><span id="pa-tiempo" class="pa-tiempo">${mmss(p.min * 60)}</span></div>
+      <label class="pa-sonido"><input type="checkbox" id="pa-sonido" ${sonido ? 'checked' : ''}> Avisar con sonido al terminar</label>
       <div class="acciones">
         <button type="button" class="btn primary" id="pa-inicio">Empezar</button>
         <button type="button" class="btn secondary" id="pa-reiniciar">Reiniciar</button>
@@ -123,6 +151,7 @@ export async function pausas(ctx, query) {
   const q = new URLSearchParams(query || '');
   const tipo = TIPOS.some(t => t.id === q.get('t')) ? q.get('t') : 'todas';
   const inicial = pausaPorId(q.get('p')) || null;
+  let conSonido = (await getMeta('pausa-sonido', true)) !== false;
   return {
     title: 'Pausa activa',
     html: html`
@@ -132,7 +161,7 @@ export async function pausas(ctx, query) {
         <p>Actividades cortas para despertar o calmar al curso. Funcionan sin internet.</p>
         <nav class="lapso-tabs" aria-label="Tipo de pausa">${TIPOS.map(t => html`<a href="#/aula/pausas?t=${t.id}" ${t.id === tipo ? html`aria-current="page"` : ''}>${t.texto}</a>`)}</nav>
         <div class="acciones"><button type="button" class="btn primary" id="pa-azar">${icon('pausa', 20)} Sorpréndeme</button></div>
-        <div id="pa-ficha" aria-live="polite">${inicial ? fichaPausa(inicial) : ''}</div>
+        <div id="pa-ficha" aria-live="polite">${inicial ? fichaPausa(inicial, conSonido) : ''}</div>
       </section>
       <section aria-labelledby="pa-l">
         <h2 id="pa-l">Todas las actividades</h2>
@@ -149,7 +178,8 @@ export async function pausas(ctx, query) {
       const poner = p => {
         detenerReloj();
         actual = p;
-        ficha.innerHTML = fichaPausa(p).toString();
+        ficha.innerHTML = fichaPausa(p, conSonido).toString();
+        $('#pa-sonido', ficha).addEventListener('change', async ev => { conSonido = ev.target.checked; await setMeta('pausa-sonido', conSonido); if (conSonido) { prepararAudio(); sonarInicio(); } });
         ficha.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
         const tiempo = $('#pa-tiempo', ficha), inicio = $('#pa-inicio', ficha);
         let resto = p.min * 60, corriendo = false;
@@ -158,11 +188,14 @@ export async function pausas(ctx, query) {
           if (corriendo) { parar(); inicio.textContent = 'Seguir'; return; }
           if (resto === 0) { resto = p.min * 60; tiempo.textContent = mmss(resto); tiempo.classList.remove('fin'); }
           corriendo = true; inicio.textContent = 'Pausar';
+          if (conSonido) { prepararAudio(); sonarInicio(); }
+          try { if (navigator.wakeLock && !candado) navigator.wakeLock.request('screen').then(w => { candado = w; }).catch(() => {}); } catch { /* sin bloqueo de pantalla */ }
           reloj = setInterval(() => {
             if (!document.body.contains(tiempo)) { detenerReloj(); return; }
             resto -= 1; tiempo.textContent = mmss(resto);
             if (resto <= 0) {
               parar(); tiempo.classList.add('fin'); tiempo.textContent = '¡Listo!';
+              if (conSonido) sonarFin();
               try { navigator.vibrate && navigator.vibrate([200, 100, 200]); } catch { /* sin vibración */ }
               toast('Terminó la pausa activa');
             }
