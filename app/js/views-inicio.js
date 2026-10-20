@@ -4,6 +4,7 @@ import { aprueba, promedio } from './calc.js';
 import { cargarSnapshot, notaAsignatura, resumenAsistencia, promedioGeneral, enRiesgo, logroCurso, esDebil } from './analisis.js';
 import { barra } from './views-reportes.js';
 import { avisosPendientes, tarjetaAviso } from './views-avisos.js';
+import { semanaAsistencia, notasDelCurso, evolucionPromedio, seguirYDestacados } from './graficos.js';
 import { html, raw, icon, fechaCorta } from './ui.js';
 
 const DIA = 86400000;
@@ -75,7 +76,6 @@ export async function panelInicio(ctx, seccion, completo, q = '') {
   const avInicio = av.visibles.filter(a => !a.id.startsWith('lista:'));
   const g = saludo(hoy);
   const sub = [seccion.grado, seccion.nombre && `Sección ${seccion.nombre}`, seccion.anio_escolar].filter(Boolean).join(' · ');
-  const fila = (href, ico, tit, sub2, extra = '') => html`<li><a class="fila ${extra}" href="${href}"><span class="fila-ico">${icon(ico, 20)}</span><span class="fila-texto"><span class="fila-nombre">${tit}</span><span class="fila-sub">${sub2}</span></span></a></li>`;
 
   return html`
     <section aria-labelledby="menu-t">
@@ -125,19 +125,25 @@ export async function panelInicio(ctx, seccion, completo, q = '') {
         ${resto.length > 4 ? html`<p class="hint">Y ${resto.length - 4} más en <a href="#/evaluar">Evaluar</a>.</p>` : ''}
       </section>` : ''}
 
+    ${seguirYDestacados(s, lapso)}
+
     </div>
     <div class="col">
     ${proms.length ? html`
       <section aria-labelledby="cur-t">
         <h2 id="cur-t">El curso en este lapso</h2>
         <dl class="resumen">
-          <div><dt>Promedio general</dt><dd class="${aprueba(promCurso, s.cfg) ? 'bien' : 'mal'}">${promCurso}</dd></div>
-          <div><dt>Aprueban</dt><dd>${aprobados} de ${proms.length}</dd></div>
-          <div><dt>En riesgo</dt><dd class="${riesgo.length ? 'mal' : ''}">${riesgo.length}</dd></div>
+          <div><dt>Promedio general</dt><dd class="${aprueba(promCurso, s.cfg) ? 'bien' : 'mal'}"><span data-cuenta="${promCurso}">${promCurso}</span></dd></div>
+          <div><dt>Aprueban</dt><dd><span data-cuenta="${aprobados}">${aprobados}</span> de ${proms.length}</dd></div>
+          <div><dt>En riesgo</dt><dd class="${riesgo.length ? 'mal' : ''}"><span data-cuenta="${riesgo.length}">${riesgo.length}</span></dd></div>
         </dl>
         ${riesgo.length ? html`<p class="hint">Necesitan apoyo: ${riesgo.slice(0, 3).map(r => r.estudiante.nombre_completo.split(/\s+/)[0]).join(', ')}${riesgo.length > 3 ? ` y ${riesgo.length - 3} más` : ''}. <a href="#/reportes/curso?l=${lapso.numero}">Ver informe del curso</a></p>` : ''}
         ${debiles.length ? html`<p class="hint">Lo más débil: <strong>${debiles[0].clave}</strong> (${debiles[0].asig}), ${debiles[0].pct}% de logro.</p>` : ''}
       </section>` : ''}
+
+    ${nEst ? semanaAsistencia(s, hoy) : ''}
+    ${notasDelCurso(proms, minimo)}
+    ${evolucionPromedio(s, lapso, minimo)}
 
     ${porAsig.length ? html`
       <section aria-labelledby="pa-t">
@@ -147,17 +153,6 @@ export async function panelInicio(ctx, seccion, completo, q = '') {
             <span class="pa-pista" role="img" aria-label="Promedio ${a.prom} de 20, mínimo ${minimo}"><span style="width:${Math.round(a.prom * 5)}%"></span><i style="left:${minimo * 5}%"></i></span></li>`)}</ul>
       </section>` : ''}
 
-    <section aria-labelledby="ir-t">
-      <h2 id="ir-t">Ir a</h2>
-      <ul class="hoja ir-a">
-        ${fila('#/estudiantes', 'personas', 'Estudiantes', nEst ? plural(nEst, 'estudiante', 'estudiantes') : 'Agrega o importa tu lista')}
-        ${fila('#/avisos', 'alerta', 'Avisos', avInicio.length ? plural(avInicio.length, 'aviso nuevo', 'avisos nuevos') : 'Nada pendiente por ahora')}
-        ${fila('#/asistencia', 'calendario', 'Asistencia', 'Calendario, lista del día y resumen de faltas')}
-        ${fila('#/evaluar', 'evaluar', 'Evaluar', s.asignaturas.length ? `${plural(s.asignaturas.length, 'asignatura', 'asignaturas')}, ${plural(evalsLapso.length, 'evaluación', 'evaluaciones')} en el lapso` : 'Empieza agregando asignaturas')}
-        ${fila(`#/reportes${lapso ? `?l=${lapso.numero}` : ''}`, 'reportes', 'Reportes e informes', 'Notas, informe del curso y PDF')}
-        ${fila('#/reportes/banco', 'libro', 'Mis recomendaciones', `${plural(s.recomendaciones.length, 'guardada', 'guardadas')}`)}
-      </ul>
-    </section>
     </div>
     </div>`;
 }

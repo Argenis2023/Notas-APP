@@ -744,3 +744,80 @@ body.bloqueada #shell, body.bloqueada #gate, body.bloqueada #toast { display: no
 
 @supports (height: 100dvh) { .chat { height: min(80dvh, 40rem); } }
 .cal-leyenda + .hint + .acciones { margin-top: 1rem; }
+
+/* ---------- gráficos del inicio ---------- */
+.sem { display: block; color: inherit; text-decoration: none; margin: 0 0 0.4rem; padding: 0.7rem 0.8rem 0.5rem; background: var(--hoja); border: 1px solid var(--linea); border-radius: 10px; }
+.sem-dias { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.5rem; }
+.sem-dia { display: flex; flex-direction: column; align-items: center; gap: 0.15rem; }
+.sem-barra { display: flex; align-items: flex-end; width: 100%; max-width: 2.6rem; height: 4.6rem; background: var(--fondo-suave); border-radius: 6px; overflow: hidden; }
+.sem-rel { display: block; width: 100%; border-radius: 6px 6px 0 0; transform-origin: bottom; }
+.sem-rel.bien { background: var(--verde); }
+.sem-rel.mal { background: var(--rojo); }
+.sem-rel.ambar { background: var(--ambar); }
+.sem-num { font-size: 0.85rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.sem-let { font-size: 0.78rem; color: var(--tinta-suave); }
+.sem-dia.hoy .sem-let { color: var(--acento); font-weight: 700; }
+.sem-dia.hoy .sem-barra { box-shadow: 0 0 0 2px var(--acento); }
+.dist { list-style: none; margin: 0 0 0.4rem; padding: 0.7rem 0.8rem; background: var(--hoja); border: 1px solid var(--linea); border-radius: 10px; display: grid; gap: 0.45rem; }
+.dist li { display: grid; grid-template-columns: 4.3rem 1fr 1.6rem; align-items: center; gap: 0.6rem; font-size: 0.9rem; }
+.dist-r { color: var(--tinta-suave); }
+.dist-pista { display: block; height: 0.8rem; background: var(--fondo-suave); border-radius: 4px; overflow: hidden; }
+.dist-rel { display: block; height: 100%; border-radius: 4px; transform-origin: left; }
+.dist-rel.bien { background: var(--verde); }
+.dist-rel.mal { background: var(--rojo); }
+.dist-n { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
+.evo { display: block; width: 100%; height: auto; margin: 0 0 0.4rem; padding: 0.4rem 0.5rem; background: var(--hoja); border: 1px solid var(--linea); border-radius: 10px; }
+.evo-eje { stroke: var(--linea); stroke-width: 1; }
+.evo-min { stroke: var(--rojo); stroke-width: 1; stroke-dasharray: 3 3; opacity: 0.7; }
+.evo-linea { fill: none; stroke: var(--acento); stroke-width: 2.2; stroke-linejoin: round; stroke-linecap: round; }
+.evo-pto { fill: var(--hoja); stroke: var(--acento); stroke-width: 2; }
+.evo-txt { font-size: 8px; fill: var(--tinta-suave); }
+.evo-val { font-size: 10px; font-weight: 700; fill: var(--tinta); }
+@media print { .sem, .dist, .evo { display: none; } }
+
+/* ---------- campana de avisos ---------- */
+.campana { position: relative; flex: none; display: inline-flex; align-items: center; justify-content: center; width: 2.6rem; height: 2.6rem; color: #ffffff; border-radius: 50%; text-decoration: none; transition: background-color 0.15s; }
+.campana[hidden] { display: none; }
+.campana:hover { background: rgba(255, 255, 255, 0.14); }
+.campana .ico { transform-origin: 50% 8%; }
+.campana-n { position: absolute; top: 0.05rem; right: 0.05rem; min-width: 1.1rem; height: 1.1rem; padding: 0 0.25rem; font-size: 0.7rem; font-weight: 700; line-height: 1.1rem; text-align: center; color: var(--sobre-ambar); background: var(--ambar); border-radius: 999px; box-shadow: 0 0 0 2px var(--cabecera); }
+.top { gap: 0.5rem; }
+@media print { .campana { display: none !important; } }
+
+/* ---------- movimiento sutil (se apaga con "reducir movimiento") ---------- */
+@keyframes entra { from { opacity: 0; transform: translateY(10px); } }
+@keyframes crece-x { from { transform: scaleX(0); } }
+@keyframes crece-y { from { transform: scaleY(0); } }
+@keyframes pop { 0% { transform: scale(0.6); opacity: 0; } 60% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); } }
+@keyframes aparece { from { opacity: 0; transform: translateY(10px) scale(0.98); } }
+@keyframes sube { from { transform: translateY(100%); } }
+@keyframes traza { from { stroke-dashoffset: 1; } }
+@keyframes toast-entra { from { opacity: 0; transform: translate(-50%, 10px); } }
+@keyframes campana { 0%, 14%, 100% { transform: rotate(0); } 2% { transform: rotate(15deg); } 4% { transform: rotate(-13deg); } 6% { transform: rotate(10deg); } 8% { transform: rotate(-7deg); } 10% { transform: rotate(4deg); } 12% { transform: rotate(-2deg); } }
+@media (prefers-reduced-motion: no-preference) {
+  #view.anima > *:not(.inicio-cols), #view.anima .col > * { animation: entra 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+  #view.anima > *:nth-child(2), #view.anima .col > *:nth-child(2) { animation-delay: 0.05s; }
+  #view.anima > *:nth-child(3), #view.anima .col > *:nth-child(3) { animation-delay: 0.1s; }
+  #view.anima > *:nth-child(4), #view.anima .col > *:nth-child(4) { animation-delay: 0.15s; }
+  #view.anima > *:nth-child(5), #view.anima .col > *:nth-child(5) { animation-delay: 0.2s; }
+  #view.anima > *:nth-child(6), #view.anima .col > *:nth-child(6) { animation-delay: 0.25s; }
+  #view.anima > *:nth-child(n+7), #view.anima .col > *:nth-child(n+7) { animation-delay: 0.3s; }
+  #view.anima .avance > span, #view.anima .barra-relleno, #view.anima .pa-pista > span, #view.anima .dist-rel { transform-origin: left; animation: crece-x 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) 0.2s both; }
+  #view.anima .sem-rel { animation: crece-y 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) 0.2s both; }
+  #view.anima .evo-linea { stroke-dasharray: 1; animation: traza 1.1s ease-out 0.2s both; }
+  #view.anima .evo-pto { animation: pop 0.4s ease-out 0.9s both; transform-box: fill-box; transform-origin: center; }
+  #view.anima .cal-c:not(.cal-nada) { animation: pop 0.4s ease-out 0.1s both; }
+  .niv.pulsa { animation: pop 0.3s ease-out; }
+  .btn, .chat-q, .chat-fab, .niv { transition: transform 0.12s ease, background-color 0.15s, box-shadow 0.15s; }
+  .btn:active, .chat-q:active, .chat-fab:active, .niv:active { transform: scale(0.96); }
+  .tabs a svg { transition: transform 0.12s ease, background-color 0.18s ease-out; }
+  .tabs a:active svg { transform: scale(0.88); }
+  .fila { transition: background-color 0.15s; }
+  .campana:not([hidden]) .ico { animation: campana 6s ease-in-out 1.2s infinite; }
+  .campana:not([hidden]) .campana-n { animation: pop 0.45s ease-out; }
+  .chat:not([hidden]) { animation: sube 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); }
+  .chat-fab:not([hidden]) { animation: aparece 0.25s ease-out; }
+  .chat-b { animation: aparece 0.25s ease-out; }
+  .toast { animation: toast-entra 0.25s ease-out; }
+  @media (min-width: 48rem) { .chat:not([hidden]) { animation: aparece 0.25s ease-out; } .fila:hover { background: var(--fondo-suave); } }
+}

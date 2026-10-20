@@ -11,6 +11,7 @@ import { VERSION } from './version.js';
 import { leerInstitucion, aplicarInstitucion } from './institucion.js';
 import { iniciarBloqueo } from './bloqueo.js';
 import { montarChat } from './views-chat.js';
+import { cargarSnapshot } from './analisis.js';
 
 const $ = (s, r = document) => r.querySelector(s);
 
@@ -70,9 +71,66 @@ async function render({ suave = false } = {}) {
   const main = $('#view');
   main.innerHTML = vista.html.toString();
   $$('.tabs a').forEach(a => { if (a.dataset.ruta !== ruta[2]) a.removeAttribute('aria-current'); else a.setAttribute('aria-current', 'page'); });
-  if (!suave) { window.scrollTo(0, 0); main.focus({ preventScroll: true }); }
+  if (!suave) { window.scrollTo(0, 0); main.focus({ preventScroll: true }); entrada(main); }
   if (vista.mount) vista.mount(main);
+  pintarCampana();
 }
+
+// ---------- movimiento sutil ----------
+const sinMovimiento = () => !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+let tAnima;
+// Al abrir una pantalla: las tarjetas entran y las barras crecen (lo define el CSS con la clase "anima").
+function entrada(main) {
+  if (sinMovimiento()) return;
+  main.classList.remove('anima');
+  void main.offsetWidth;
+  main.classList.add('anima');
+  clearTimeout(tAnima);
+  tAnima = setTimeout(() => main.classList.remove('anima'), 1400);
+  if (!window.CMS_TEST_HOOKS) contarNumeros(main);
+}
+// Los números grandes suben hasta su valor.
+function contarNumeros(raiz) {
+  for (const el of raiz.querySelectorAll('[data-cuenta]')) {
+    const meta = Number(el.dataset.cuenta);
+    if (!Number.isFinite(meta) || meta === 0) continue;
+    const dec = String(el.dataset.cuenta).includes('.') ? 1 : 0;
+    const t0 = performance.now(), dur = 700;
+    const paso = t => {
+      const k = Math.min(1, (t - t0) / dur);
+      const v = meta * (1 - Math.pow(1 - k, 3));
+      el.textContent = k >= 1 ? String(meta) : v.toFixed(dec);
+      if (k < 1) requestAnimationFrame(paso);
+    };
+    el.textContent = dec ? '0.0' : '0';
+    requestAnimationFrame(paso);
+  }
+}
+
+// ---------- campana de avisos ----------
+async function pintarCampana() {
+  const el = $('#campana');
+  if (!el) return;
+  try {
+    const seccion = await getSeccion();
+    if (!seccion) { el.hidden = true; return; }
+    const s = await cargarSnapshot(seccion);
+    const { visibles } = await AV.avisosPendientes(s, ctx);
+    const n = visibles.length;
+    el.hidden = n === 0;
+    $('#campana-n').textContent = n > 9 ? '9+' : String(n);
+    el.setAttribute('aria-label', n === 1 ? '1 aviso nuevo' : `${n} avisos nuevos`);
+  } catch { el.hidden = true; }
+}
+document.addEventListener('avisos:cambio', () => pintarCampana());
+// Pequeño rebote en los botones de nivel (L, P, N y A, I, J) al tocarlos.
+document.addEventListener('click', ev => {
+  const b = ev.target.closest && ev.target.closest('.niv');
+  if (!b) return;
+  b.classList.remove('pulsa');
+  void b.offsetWidth;
+  b.classList.add('pulsa');
+});
 function $$(s, r = document) { return Array.from(r.querySelectorAll(s)); }
 
 // Las pantallas "vivas" se redibujan cuando cambian los datos, salvo que se esté escribiendo.

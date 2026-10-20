@@ -97,9 +97,12 @@ export function calcularAvisos(s, { hoy = new Date(), ultimoRespaldo = null, con
 export async function descartados() {
   return new Set((await list('avisos')).filter(a => String(a.tipo || '').startsWith(PREFIJO) && a.enviado).map(a => a.tipo.slice(PREFIJO.length)));
 }
+const avisarCambio = () => { try { document.dispatchEvent(new CustomEvent('avisos:cambio')); } catch { /* sin documento */ } };
 export async function descartarAviso(id) {
   await guardarConId('avisos', idPar('aviso', id), { tipo: PREFIJO + id, fecha_programada: new Date().toISOString(), enviado: true });
+  avisarCambio();
 }
 export async function restaurarAvisos() {
   for (const a of await list('avisos')) if (String(a.tipo || '').startsWith(PREFIJO)) await remove('avisos', a.id);
+  avisarCambio();
 }
