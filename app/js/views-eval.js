@@ -161,7 +161,7 @@ export async function asignatura(ctx, id, q) {
       <details class="mas">
         <summary>Cambiar nombre o eliminar esta asignatura</summary>
         <form id="f-renombrar" class="stack" novalidate>
-          ${campo({ id: 'nombre', label: 'Nombre de la asignatura', value: asig.nombre, extra: 'autocomplete="off"' })}
+          ${campo({ id: 'nombre', label: 'Nombre de la asignatura', value: asig.nombre, placeholder: 'Por ejemplo: Matemática', extra: 'autocomplete="off"' })}
           ${errorBox('e-ren')}
           <button class="btn secondary" type="submit">Guardar nombre</button>
         </form>
@@ -208,7 +208,7 @@ export async function evaluacionForm(ctx, { asignaturaId, evaluacionId, lapsoNum
         ${selectCampo({ id: 'tipo', label: 'Tipo', value: ev?.tipo || 'Prueba', opciones: TIPOS.map(t => [t, t]) })}
         ${campo({ id: 'fecha', label: 'Fecha', value: ev?.fecha || hoyIso(), type: 'date' })}
         ${selectCampo({ id: 'lapso_id', label: 'Lapso', value: lapsoInicial, opciones: lapsos.map(l => [l.id, `Lapso ${l.numero}`]) })}
-        ${nuevo ? areaTexto({ id: 'indicadores', label: 'Indicadores de evaluación', rows: 6, hint: 'Escribe uno por línea. Después puedes agregar, cambiar o quitar indicadores.' }) : ''}
+        ${nuevo ? areaTexto({ id: 'indicadores', label: 'Indicadores de evaluación', rows: 6, placeholder: 'Resuelve sumas con llevadas\nIdentifica fracciones sencillas\nPlantea y resuelve problemas', hint: 'Escribe uno por línea. Después puedes agregar, cambiar o quitar indicadores.' }) : ''}
         ${errorBox('e-ev')}
         <div class="acciones">
           <button class="btn primary" type="submit">${nuevo ? 'Crear evaluación' : 'Guardar cambios'}</button>
@@ -292,7 +292,7 @@ export async function evaluacion(ctx, id) {
           <li><a href="#/evaluar/e/${ev.id}/indicador/${i.id}"><span>${i.texto}</span>${i.etiqueta ? html`<small>${i.etiqueta}</small>` : ''}</a></li>`)}</ol>`
         : html`<p class="vacio">Todavía no hay indicadores.</p>`}
       <form id="f-inds" class="stack" novalidate>
-        ${areaTexto({ id: 'nuevos', label: 'Agregar indicadores', rows: 3, hint: 'Uno por línea.' })}
+        ${areaTexto({ id: 'nuevos', label: 'Agregar indicadores', rows: 3, placeholder: 'Un indicador por línea. Por ejemplo: Compara fracciones con igual denominador', hint: 'Uno por línea.' })}
         ${errorBox('e-inds')}
         <button class="btn secondary" type="submit">Agregar indicadores</button>
       </form>
@@ -332,8 +332,8 @@ export async function indicadorForm(ctx, evaluacionId, id) {
     html: html`
       <p><a class="volver" href="${volver}">${icon('atras', 18)} Evaluación</a></p>
       <form id="f-ind" class="stack" novalidate>
-        ${areaTexto({ id: 'texto', label: 'Indicador', value: ind.texto, rows: 3 })}
-        ${campo({ id: 'etiqueta', label: 'Tema o contenido', value: ind.etiqueta, hint: 'Opcional. Agrupa indicadores parecidos (por ejemplo: "Fracciones"). Sirve para ver en qué temas el curso va más débil.', extra: 'autocomplete="off"' })}
+        ${areaTexto({ id: 'texto', label: 'Indicador', value: ind.texto, rows: 3, placeholder: 'Lo que el estudiante debe lograr. Por ejemplo: Resuelve sumas con llevadas' })}
+        ${campo({ id: 'etiqueta', label: 'Tema o contenido', value: ind.etiqueta, placeholder: 'Por ejemplo: Fracciones', hint: 'Opcional. Agrupa indicadores parecidos (por ejemplo: "Fracciones"). Sirve para ver en qué temas el curso va más débil.', extra: 'autocomplete="off"' })}
         ${campo({ id: 'peso', label: 'Peso', value: ind.peso ?? 1, type: 'number', hint: 'Normalmente 1. Un indicador con peso 2 cuenta el doble en la nota.', extra: 'inputmode="decimal" min="1" max="10" step="1"' })}
         ${errorBox('e-ind')}
         <div class="acciones">
@@ -426,7 +426,7 @@ export async function cotejo(ctx, id, q) {
       <form id="f-corregir" class="stack corregir" novalidate>
         <h2>Corregir la nota</h2>
         <p class="hint">Si quieres poner otra nota distinta a la calculada, escríbela aquí. La nota calculada no se pierde.</p>
-        ${campo({ id: 'nota_final', label: 'Nota (1 a 20)', value: notas[e.id]?.nota_final ?? '', type: 'number', extra: 'inputmode="numeric" min="1" max="20" step="1"' })}
+        ${campo({ id: 'nota_final', label: 'Nota (1 a 20)', value: notas[e.id]?.nota_final ?? '', type: 'number', placeholder: '1 a 20', extra: 'inputmode="numeric" min="1" max="20" step="1"' })}
         ${errorBox('e-corr')}
         <div class="acciones">
           <button class="btn secondary" type="submit">Guardar nota corregida</button>

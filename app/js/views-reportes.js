@@ -84,7 +84,7 @@ function bloqueRecomendacion(s, asig, clave, editable, pct = null, alcance = 'es
     ${editable ? html`<details class="no-print recom-editar">
       <summary>${r ? 'Cambiar esta recomendación' : 'Escribir mi recomendación'}</summary>
       <div class="stack">
-        <textarea rows="3" aria-label="Recomendación para ${clave}">${r ? r.recomendacion : ''}</textarea>
+        <textarea rows="3" placeholder="Qué actividades sugieres para reforzar este tema" aria-label="Recomendación para ${clave}">${r ? r.recomendacion : ''}</textarea>
         <p class="hint">Se guarda en tu banco y se usa para todos los estudiantes con este tema débil en ${asig.nombre}.</p>
         ${ia && pct !== null ? html`<div class="acciones"><button type="button" class="btn secondary chico sugerir-ia">Sugerir con IA</button></div>
           <p class="hint">La IA recibe solo la asignatura, el tema y el porcentaje, sin ningún dato de estudiantes. Revisa lo que escriba antes de guardarlo.</p>` : ''}
@@ -257,7 +257,7 @@ export async function reporteEstudiante(ctx, estId, q) {
           <section class="informe-desc">
             <h3 class="informe-h">Descripción del lapso</h3>
             <label class="oculto-visual" for="desc">Descripción del lapso</label>
-            <textarea id="desc" class="no-print" rows="7">${textoDesc}</textarea>
+            <textarea id="desc" class="no-print" rows="7" placeholder="Describe el rendimiento del estudiante en el lapso: logros, aspectos por reforzar y qué puede hacer en casa. Puedes escribirlo tú o pedir un borrador a la IA.">${textoDesc}</textarea>
             <div id="desc-impresa" class="solo-impresion">${textoDesc}</div>
             <p class="aviso-ia no-print" id="ia-aviso" hidden>Borrador escrito con IA. Léelo y corrígelo con tus palabras antes de guardarlo.</p>
             ${iaOk ? html`
@@ -446,7 +446,7 @@ export async function banco(ctx) {
             <input id="r-tema" type="text" list="temas" autocomplete="off" placeholder="Por ejemplo: Fracciones">
             <datalist id="temas">${temas.map(t => html`<option value="${t}"></option>`)}</datalist>
             <p class="hint">Escribe el mismo nombre del tema o del indicador que usaste al evaluar.</p></div>
-          ${areaTexto({ id: 'r-texto', label: 'Recomendación', rows: 3 })}
+          ${areaTexto({ id: 'r-texto', label: 'Recomendación', rows: 3, placeholder: 'Qué actividades se sugieren para reforzar este tema, en el aula y en casa.' })}
           ${errorBox('e-recom')}
           <button class="btn primary" type="submit">Guardar recomendación</button>
         </form>` : html`<p class="vacio">Primero agrega asignaturas en <a href="#/evaluar">Evaluar</a>.</p>`}
@@ -457,7 +457,7 @@ export async function banco(ctx) {
           <ul class="banco-lista">${g.items.map(r => html`
             <li class="banco-item" data-id="${r.id}">
               <p class="banco-tema">${r.indicador_etiqueta}</p>
-              <textarea rows="3" aria-label="Recomendación para ${r.indicador_etiqueta}">${r.recomendacion}</textarea>
+              <textarea rows="3" placeholder="Qué actividades sugieres para reforzar este tema" aria-label="Recomendación para ${r.indicador_etiqueta}">${r.recomendacion}</textarea>
               <div class="acciones">
                 <button type="button" class="btn secondary chico b-guardar">Guardar cambios</button>
                 <button type="button" class="btn borrar chico b-borrar-r">Eliminar</button>

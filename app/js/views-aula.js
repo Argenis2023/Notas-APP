@@ -36,7 +36,7 @@ export async function diccionario(ctx) {
         <h2 id="dic-t">Diccionario para el aula</h2>
         <p>Escribe una palabra y la IA te la explica con frases simples, un ejemplo y un sinónimo.${seccion && seccion.grado ? ` Se adapta a ${seccion.grado}.` : ''}</p>
         <form id="f-dic" class="stack" novalidate autocomplete="off">
-          ${campo({ id: 'dic_palabra', label: 'Palabra', extra: 'maxlength="40" autocapitalize="none" autocorrect="off" spellcheck="false"' })}
+          ${campo({ id: 'dic_palabra', label: 'Palabra', placeholder: 'Por ejemplo: curioso', extra: 'maxlength="40" autocapitalize="none" autocorrect="off" spellcheck="false"' })}
           ${errorBox('e-dic')}
           <button class="btn primary" type="submit" id="b-dic">Buscar y explicar</button>
         </form>

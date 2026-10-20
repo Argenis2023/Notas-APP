@@ -77,7 +77,7 @@ export function bloquear() {
           <p class="portada-sub">Escribe tu PIN para entrar.</p>
         </section>
         <form id="f-pin" class="stack" novalidate autocomplete="off">
-          ${campo({ id: 'lock_pin', label: 'PIN', type: 'password', extra: 'inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="off"' })}
+          ${campo({ id: 'lock_pin', label: 'PIN', type: 'password', placeholder: '4 a 6 números', extra: 'inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="off"' })}
           ${errorBox('e-pin')}
           <button class="btn primary" type="submit" id="b-pin">Entrar</button>
           <button class="btn secondary" type="button" id="b-olvide">Olvidé mi PIN</button>
@@ -136,7 +136,7 @@ export async function iniciarBloqueo(supa) {
 
 // ---------- bloque de Ajustes ----------
 export function bloqueAjustes(activo) {
-  const pin = (id, label, auto = 'new-password') => campo({ id, label, type: 'password', extra: `inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="${auto}"` });
+  const pin = (id, label, auto = 'new-password') => campo({ id, label, type: 'password', placeholder: '4 a 6 números', extra: `inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="${auto}"` });
   return html`
     <section class="bloque" aria-labelledby="t-pin">
       <h2 id="t-pin">Bloqueo con PIN</h2>

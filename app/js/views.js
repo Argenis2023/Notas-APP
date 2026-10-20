@@ -30,7 +30,7 @@ export async function inicio(ctx, q = '') {
         <form id="f-seccion" class="stack" novalidate>
           ${campo({ id: 'nombre', label: 'Sección', required: true, extra: 'placeholder="Por ejemplo: A" autocomplete="off"' })}
           ${campo({ id: 'grado', label: 'Grado', extra: 'placeholder="Por ejemplo: 4° grado" autocomplete="off"' })}
-          ${campo({ id: 'anio_escolar', label: 'Año escolar', value: anioEscolarActual(), extra: 'autocomplete="off"' })}
+          ${campo({ id: 'anio_escolar', label: 'Año escolar', value: anioEscolarActual(), placeholder: 'Por ejemplo: 2026-2027', extra: 'autocomplete="off"' })}
           ${errorBox('e-seccion')}
           <button class="btn primary" type="submit">Crear mi cuaderno</button>
         </form>`,
@@ -144,7 +144,7 @@ export async function estudiantes(ctx) {
       ${todos.length > 6 ? html`
         <div class="field buscar">
           <label for="q">Buscar por nombre o cédula</label>
-          <input id="q" type="search" autocomplete="off" inputmode="search">
+          <input id="q" type="search" autocomplete="off" inputmode="search" placeholder="Escribe un nombre para buscar">
         </div>` : ''}
       <p class="contador" id="contador" aria-live="polite">${todos.length} ${todos.length === 1 ? 'estudiante' : 'estudiantes'}</p>
       <div id="lista">${lista(todos, '')}</div>`,
@@ -179,14 +179,14 @@ export async function estudianteForm(ctx, id) {
     html: html`
       <p><a class="volver" href="#/estudiantes">${icon('atras', 18)} Estudiantes</a>${e ? html` · <a href="#/asistencia/calendario?e=${e.id}">Ver su asistencia en calendario</a>` : ''}</p>
       <form id="f-est" class="stack" novalidate>
-        ${campo({ id: 'nombre_completo', label: 'Nombre completo', value: e?.nombre_completo, required: true, extra: 'autocomplete="off"' })}
-        ${campo({ id: 'numero_lista', label: 'N.º de lista', value: e ? e.numero_lista : siguiente, type: 'number', extra: 'inputmode="numeric" min="1" step="1"' })}
-        ${campo({ id: 'cedula', label: 'Cédula o cédula escolar', value: e?.cedula, extra: 'autocomplete="off"' })}
+        ${campo({ id: 'nombre_completo', label: 'Nombre completo', value: e?.nombre_completo, required: true, placeholder: 'Por ejemplo: María Pérez', extra: 'autocomplete="off"' })}
+        ${campo({ id: 'numero_lista', label: 'N.º de lista', value: e ? e.numero_lista : siguiente, type: 'number', placeholder: 'Por ejemplo: 7', extra: 'inputmode="numeric" min="1" step="1"' })}
+        ${campo({ id: 'cedula', label: 'Cédula o cédula escolar', value: e?.cedula, placeholder: 'Por ejemplo: V-31234567 o cédula escolar', extra: 'autocomplete="off"' })}
         ${campo({ id: 'fecha_nacimiento', label: 'Fecha de nacimiento', value: e?.fecha_nacimiento, type: 'date' })}
-        ${campo({ id: 'representante_nombre', label: 'Nombre del representante', value: e?.representante_nombre, extra: 'autocomplete="off"' })}
-        ${campo({ id: 'representante_contacto', label: 'Contacto del representante', value: e?.representante_contacto, type: 'tel', extra: 'autocomplete="off"' })}
-        ${areaTexto({ id: 'necesidades_educativas', label: 'Necesidades educativas', value: e?.necesidades_educativas })}
-        ${areaTexto({ id: 'observaciones_conducta', label: 'Observaciones de conducta', value: e?.observaciones_conducta })}
+        ${campo({ id: 'representante_nombre', label: 'Nombre del representante', value: e?.representante_nombre, placeholder: 'Por ejemplo: Carmen Gil', extra: 'autocomplete="off"' })}
+        ${campo({ id: 'representante_contacto', label: 'Contacto del representante', value: e?.representante_contacto, type: 'tel', placeholder: 'Teléfono, por ejemplo: 0412 123 4567', extra: 'autocomplete="off"' })}
+        ${areaTexto({ id: 'necesidades_educativas', label: 'Necesidades educativas', value: e?.necesidades_educativas, placeholder: 'Opcional. Por ejemplo: necesita sentarse cerca del pizarrón; apoyo en lectura.' })}
+        ${areaTexto({ id: 'observaciones_conducta', label: 'Observaciones de conducta', value: e?.observaciones_conducta, placeholder: 'Opcional. Por ejemplo: colabora con sus compañeros; conversa durante las explicaciones.' })}
         ${e ? html`<p class="hint codigo">Código para la IA: <strong>${e.codigo_ia}</strong>. Cuando se use IA, verá este código y nunca el nombre.</p>` : ''}
         ${errorBox('e-est')}
         <div class="acciones">
@@ -348,8 +348,8 @@ export async function ajustes(ctx) {
         <div id="inst-prev" class="inst-prev" aria-label="Vista previa de la cabecera"></div>
         ${campo({ id: 'inst_nombre', label: 'Nombre de la institución', value: inst.nombre, extra: 'autocomplete="off" placeholder="Por ejemplo: U.E.E. Nombre del colegio"' })}
         ${campo({ id: 'inst_subtitulo', label: 'Ubicación o lema', value: inst.subtitulo, extra: 'autocomplete="off" placeholder="Por ejemplo: El Bambú, estado Miranda"' })}
-        ${areaTexto({ id: 'inst_encabezado', label: 'Encabezado de los informes', value: inst.encabezado, rows: 3, hint: 'Una línea por renglón, por ejemplo: República Bolivariana de Venezuela, y debajo: Ministerio del Poder Popular para la Educación.' })}
-        ${campo({ id: 'inst_docente', label: 'Tu nombre', value: inst.docente, extra: 'autocomplete="name"', hint: 'Aparece en el saludo de Inicio y en la firma de los informes.' })}
+        ${areaTexto({ id: 'inst_encabezado', label: 'Encabezado de los informes', value: inst.encabezado, rows: 3, placeholder: 'República Bolivariana de Venezuela\nMinisterio del Poder Popular para la Educación', hint: 'Una línea por renglón, por ejemplo: República Bolivariana de Venezuela, y debajo: Ministerio del Poder Popular para la Educación.' })}
+        ${campo({ id: 'inst_docente', label: 'Tu nombre', value: inst.docente, placeholder: 'Por ejemplo: Prof. Laura Rodríguez', extra: 'autocomplete="name"', hint: 'Aparece en el saludo de Inicio y en la firma de los informes.' })}
         <div class="field">
           <span class="field-t" id="t-logo"><strong>Logo</strong></span>
           <div class="inst-logo" role="group" aria-labelledby="t-logo">
@@ -382,9 +382,9 @@ export async function ajustes(ctx) {
     <section class="bloque" aria-labelledby="t-seccion">
       <h2 id="t-seccion">Sección y lapsos</h2>
       <form id="f-ajustes-seccion" class="stack" novalidate>
-        ${campo({ id: 'nombre', label: 'Sección', value: seccion.nombre, required: true, extra: 'autocomplete="off"' })}
-        ${campo({ id: 'grado', label: 'Grado', value: seccion.grado, extra: 'autocomplete="off"' })}
-        ${campo({ id: 'anio_escolar', label: 'Año escolar', value: seccion.anio_escolar, extra: 'autocomplete="off"' })}
+        ${campo({ id: 'nombre', label: 'Sección', value: seccion.nombre, required: true, placeholder: 'Por ejemplo: A', extra: 'autocomplete="off"' })}
+        ${campo({ id: 'grado', label: 'Grado', value: seccion.grado, placeholder: 'Por ejemplo: 4° grado', extra: 'autocomplete="off"' })}
+        ${campo({ id: 'anio_escolar', label: 'Año escolar', value: seccion.anio_escolar, placeholder: 'Por ejemplo: 2026-2027', extra: 'autocomplete="off"' })}
         <fieldset class="lapsos">
           <legend>Fechas de los lapsos</legend>
           ${lapsos.map(l => html`
@@ -656,7 +656,7 @@ export function pantallaLogin(root, { entrar, puedeOmitir }) {
         <p class="portada-sub">Entra para respaldar tu cuaderno y verlo en cualquier dispositivo.</p>
       </section>
       <form id="f-login" class="stack" novalidate>
-        ${campo({ id: 'email', label: 'Correo', type: 'email', extra: 'autocomplete="username" inputmode="email" autocapitalize="off"' })}
+        ${campo({ id: 'email', label: 'Correo', type: 'email', placeholder: 'tucorreo@ejemplo.com', extra: 'autocomplete="username" inputmode="email" autocapitalize="off"' })}
         ${campo({ id: 'password', label: 'Contraseña', type: 'password', extra: 'autocomplete="current-password"' })}
         ${errorBox('e-login')}
         <button class="btn primary" type="submit" id="b-entrar">Entrar</button>

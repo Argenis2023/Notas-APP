@@ -4,17 +4,17 @@ import { html, raw } from './ui.js';
 export const $ = (sel, root = document) => root.querySelector(sel);
 export const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
-export function campo({ id, label, value = '', type = 'text', hint = '', required = false, extra = '' }) {
+export function campo({ id, label, value = '', type = 'text', hint = '', required = false, extra = '', placeholder = '' }) {
   return html`<div class="field">
     <label for="${id}">${label}${required ? html` <span class="oblig">obligatorio</span>` : ''}</label>
-    <input id="${id}" name="${id}" type="${type}" value="${value ?? ''}" ${raw(extra)}>
+    <input id="${id}" name="${id}" type="${type}" value="${value ?? ''}" ${placeholder ? html`placeholder="${placeholder}"` : ''} ${raw(extra)}>
     ${hint ? html`<p class="hint">${hint}</p>` : ''}
   </div>`;
 }
-export function areaTexto({ id, label, value = '', hint = '', rows = 3 }) {
+export function areaTexto({ id, label, value = '', hint = '', rows = 3, placeholder = '' }) {
   return html`<div class="field">
     <label for="${id}">${label}</label>
-    <textarea id="${id}" name="${id}" rows="${rows}">${value ?? ''}</textarea>
+    <textarea id="${id}" name="${id}" rows="${rows}" ${placeholder ? html`placeholder="${placeholder}"` : ''}>${value ?? ''}</textarea>
     ${hint ? html`<p class="hint">${hint}</p>` : ''}
   </div>`;
 }
