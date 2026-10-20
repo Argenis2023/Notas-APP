@@ -55,7 +55,10 @@ export async function asistenciaDia(ctx, q) {
           <p class="cotejo-nombre">${e.numero_lista ? html`<span class="cotejo-num">${e.numero_lista}</span>` : ''}${e.nombre_completo}</p>
           ${botones(estado[e.id], e.id)}
         </li>`)}</ol>
-      <p><a href="#/asistencia/resumen${lapso ? `?l=${lapso.numero}` : ''}">Ver el resumen del lapso</a> · <a href="#/asistencia/calendario">Ver el calendario de un estudiante</a></p>`,
+      <div class="acciones">
+        <a class="btn secondary" href="#/asistencia/resumen${lapso ? `?l=${lapso.numero}` : ''}">Resumen del lapso</a>
+        <a class="btn secondary" href="#/asistencia/calendario">Calendario de un estudiante</a>
+      </div>`,
     mount(root) {
       const resumen = () => {
         const c = { presente: 0, ausente: 0, justificado: 0 };
@@ -239,6 +242,9 @@ async function asistenciaCurso(ctx, q, estudiantes) {
         <li><span class="cal-pto cal-justificado"></span>Solo justificadas</li>
       </ul>
       <p class="hint">${conLista ? `${conLista === 1 ? '1 día con lista' : `${conLista} días con lista`} en ${MESES[m - 1]}. El número pequeño es la cantidad de faltas del día.` : `Todavía no hay listas en ${MESES[m - 1]}.`} Toca un día para pasar lista o revisar la de ese día.</p>
-      <p><a href="#/asistencia/resumen">Ver el resumen del lapso</a> · <a href="#/asistencia/calendario">Ver el calendario de un estudiante</a></p>`,
+      <div class="acciones">
+        <a class="btn secondary" href="#/asistencia/resumen">Resumen del lapso</a>
+        <a class="btn secondary" href="#/asistencia/calendario">Calendario de un estudiante</a>
+      </div>`,
   };
 }

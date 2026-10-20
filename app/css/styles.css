@@ -743,3 +743,4 @@ body.bloqueada #shell, body.bloqueada #gate, body.bloqueada #toast { display: no
 @media print { .chat-fab, .chat { display: none !important; } }
 
 @supports (height: 100dvh) { .chat { height: min(80dvh, 40rem); } }
+.cal-leyenda + .hint + .acciones { margin-top: 1rem; }
