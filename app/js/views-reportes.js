@@ -10,6 +10,7 @@ import {
 import { html, raw, icon, toast, fechaLarga } from './ui.js';
 import { $, $$, campo, areaTexto, errorBox, mostrarError } from './form.js';
 import { promedio } from './calc.js';
+import { lineasEncabezado } from './institucion.js';
 import { datosDescripcion, datosRecomendacion, mensajeIA } from './ia.js';
 
 const sinSeccion = titulo => ({ title: titulo, html: html`<p class="vacio">Primero crea tu sección en <a href="#/">Inicio</a>.</p>` });
@@ -39,6 +40,15 @@ export const barra = (clave, pct, s) => {
 
 const cabecera = (s, lapso, titulo) => html`
   <header class="informe-cab">
+    ${s.inst && (s.inst.logo || s.inst.nombre || s.inst.encabezado || s.inst.subtitulo) ? html`
+      <div class="informe-inst">
+        ${s.inst.logo ? html`<img class="informe-logo" src="${s.inst.logo}" alt="">` : ''}
+        <div>
+          ${lineasEncabezado(s.inst).map(l => html`<p>${l}</p>`)}
+          ${s.inst.nombre ? html`<p class="informe-inst-nombre">${s.inst.nombre}</p>` : ''}
+          ${s.inst.subtitulo ? html`<p>${s.inst.subtitulo}</p>` : ''}
+        </div>
+      </div>` : ''}
     <p class="informe-marca">Informe de rendimiento · Lapso ${lapso?.numero ?? ''}</p>
     <h2 class="informe-titulo">${titulo}</h2>
     <p class="informe-datos">${[s.seccion.grado, s.seccion.nombre ? `Sección ${s.seccion.nombre}` : '', s.seccion.anio_escolar ? `Año escolar ${s.seccion.anio_escolar}` : '', lapso?.fecha_inicio && lapso?.fecha_fin ? `${fechaLarga(lapso.fecha_inicio)} al ${fechaLarga(lapso.fecha_fin)}` : ''].filter(Boolean).join(' · ')}</p>
@@ -234,7 +244,7 @@ export async function reporteEstudiante(ctx, estId, q) {
             </div>
             <p class="hint no-print">El borrador se arma con las notas y los indicadores. Edítalo con tus palabras antes de entregarlo.</p>
           </section>
-          <p class="firma solo-impresion">Docente: ______________________________</p>`
+          <p class="firma solo-impresion">Docente: ${s.inst && s.inst.docente ? s.inst.docente : '______________________________'}</p>`
           : html`<p class="vacio">Este estudiante todavía no tiene notas en el lapso ${lapso.numero}. Pasa la lista de cotejo de alguna evaluación en <a href="#/evaluar">Evaluar</a>.</p>`}
       </article>`,
     mount(root) {
@@ -359,7 +369,7 @@ export async function reporteCurso(ctx, q) {
             ${riesgo.length ? html`<ul class="riesgo">${riesgo.map(r => html`<li><a href="#/reportes/e/${r.estudiante.id}?l=${lapso.numero}">${r.estudiante.nombre_completo}</a>: promedio ${textoNota(r.promedio)}${r.asignaturas.length ? `, por debajo del mínimo en ${r.asignaturas.map(a => a.nombre).join(', ')}` : ''}</li>`)}</ul>`
               : html`<p>Ningún estudiante está por debajo del mínimo en este lapso.</p>`}
           </section>
-          <p class="firma solo-impresion">Docente: ______________________________</p>`
+          <p class="firma solo-impresion">Docente: ${s.inst && s.inst.docente ? s.inst.docente : '______________________________'}</p>`
           : html`<p class="vacio">Todavía no hay notas en el lapso ${lapso.numero}. Pasa la lista de cotejo de alguna evaluación en <a href="#/evaluar">Evaluar</a>.</p>`}
       </article>`,
     mount(root) {

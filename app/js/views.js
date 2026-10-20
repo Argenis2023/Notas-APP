@@ -9,6 +9,7 @@ import { VERSION } from './version.js';
 import { bloqueCalculo, bloqueIA } from './views-eval.js';
 import { panelInicio } from './views-inicio.js';
 import { $, $$, campo, areaTexto, errorBox, mostrarError } from './form.js';
+import { leerInstitucion, guardarInstitucion, procesarLogo, coloresDelLogo, paleta, hexValido, COLOR_BASE } from './institucion.js';
 
 // =====================================================================
 // Inicio
@@ -343,6 +344,45 @@ export async function ajustes(ctx) {
   const calculo = await bloqueCalculo();
   const asistente = bloqueIA(ctx);
   const lapsos = seccion ? await getLapsos(seccion.id) : [];
+  const inst = await leerInstitucion();
+
+  const bloqueInstitucion = html`
+    <section class="bloque" aria-labelledby="t-inst">
+      <h2 id="t-inst">Mi institución</h2>
+      <p class="hint">Estos datos aparecen en la parte de arriba de la app y en el encabezado de tus informes. Puedes cambiarlos cuando quieras.</p>
+      <form id="f-inst" class="stack" novalidate>
+        <div id="inst-prev" class="inst-prev" aria-label="Vista previa de la cabecera"></div>
+        ${campo({ id: 'inst_nombre', label: 'Nombre de la institución', value: inst.nombre, extra: 'autocomplete="off" placeholder="Por ejemplo: U.E.E. Nombre del colegio"' })}
+        ${campo({ id: 'inst_subtitulo', label: 'Ubicación o lema', value: inst.subtitulo, extra: 'autocomplete="off" placeholder="Por ejemplo: El Bambú, estado Miranda"' })}
+        ${areaTexto({ id: 'inst_encabezado', label: 'Encabezado de los informes', value: inst.encabezado, rows: 3, hint: 'Una línea por renglón, por ejemplo: República Bolivariana de Venezuela, y debajo: Ministerio del Poder Popular para la Educación.' })}
+        ${campo({ id: 'inst_docente', label: 'Nombre de la docente', value: inst.docente, extra: 'autocomplete="name"', hint: 'Aparece en la firma de los informes.' })}
+        <div class="field">
+          <span class="field-t" id="t-logo"><strong>Logo</strong></span>
+          <div class="inst-logo" role="group" aria-labelledby="t-logo">
+            <img id="inst-logo-img" class="inst-logo-img" alt="Logo actual" hidden>
+            <span id="inst-logo-vacio" class="inst-logo-vacio">Sin logo</span>
+            <label class="btn secondary chico" for="inst_logo">${icon('subir', 18)} Elegir imagen</label>
+            <input id="inst_logo" class="oculto-visual" type="file" accept="image/png,image/jpeg,image/webp">
+            <button class="btn borrar chico" type="button" id="b-logo-quitar" hidden>Quitar logo</button>
+          </div>
+          <p class="hint">Se reduce automáticamente para que el respaldo sea liviano.</p>
+        </div>
+        <div class="field">
+          <label for="inst_color">Color principal</label>
+          <div class="inst-color">
+            <input id="inst_color" type="color" value="${inst.color || COLOR_BASE}">
+            <button class="btn secondary chico" type="button" id="b-color-base">Usar el color base</button>
+          </div>
+          <div id="inst-swatches" class="inst-swatches" hidden>
+            <span class="hint">Colores de tu logo, toca uno para usarlo:</span>
+            <div id="inst-swatches-lista" class="inst-swatches-lista"></div>
+          </div>
+          <p class="hint">La app ajusta los tonos para que el texto siempre se lea bien, también en modo oscuro.</p>
+        </div>
+        ${errorBox('e-inst')}
+        <button class="btn primary" type="submit">Guardar mi institución</button>
+      </form>
+    </section>`;
 
   const bloqueSeccion = seccion ? html`
     <section class="bloque" aria-labelledby="t-seccion">
@@ -410,12 +450,14 @@ export async function ajustes(ctx) {
 
   return {
     title: 'Ajustes',
-    html: html`${bloqueSeccion}${calculo.html}${asistente.html}${respaldo}${cuenta}${app}`,
+    html: html`${bloqueInstitucion}${bloqueSeccion}${calculo.html}${asistente.html}${respaldo}${cuenta}${app}`,
     onStatus(root) { pintarRespaldo(root); },
     mount(root) {
       pintarRespaldo(root);
       calculo.mount(root, seccion);
       asistente.mount(root);
+
+      montarInstitucion(root, inst);
 
       const f = $('#f-ajustes-seccion', root);
       if (f) {
@@ -489,6 +531,57 @@ export async function ajustes(ctx) {
       });
     },
   };
+
+  function montarInstitucion(root, inicial) {
+    const estado = { logo: inicial.logo, color: inicial.color, sugeridos: [] };
+    const f = $('#f-inst', root);
+    const pintar = () => {
+      const cab = paleta(hexValido(estado.color) ? estado.color : COLOR_BASE).claro.cabecera;
+      const prev = $('#inst-prev', root);
+      prev.style.background = cab;
+      const nombre = $('#inst_nombre', root).value.trim() || 'Nombre de tu institución';
+      const sub = $('#inst_subtitulo', root).value.trim();
+      prev.innerHTML = html`${estado.logo ? html`<img src="${estado.logo}" alt="">` : ''}<div><strong>${nombre}</strong>${sub ? html`<span>${sub}</span>` : ''}</div>`.toString();
+      const img = $('#inst-logo-img', root);
+      img.hidden = !estado.logo; if (estado.logo) img.src = estado.logo;
+      $('#inst-logo-vacio', root).hidden = !!estado.logo;
+      $('#b-logo-quitar', root).hidden = !estado.logo;
+      $('#inst-swatches', root).hidden = !estado.logo || !estado.sugeridos.length;
+      $('#inst-swatches-lista', root).innerHTML = estado.sugeridos.map(c => `<button type="button" class="swatch" data-color="${c}" style="background:${c}" aria-label="Usar el color ${c}"></button>`).join('');
+    };
+    const sugerir = async () => { estado.sugeridos = estado.logo ? await coloresDelLogo(estado.logo).catch(() => []) : []; pintar(); };
+    pintar();
+    sugerir();
+    f.addEventListener('input', pintar);
+    $('#inst-swatches-lista', root).addEventListener('click', e => {
+      const b = e.target.closest('.swatch');
+      if (!b) return;
+      estado.color = b.dataset.color; $('#inst_color', root).value = b.dataset.color; pintar();
+    });
+    $('#inst_color', root).addEventListener('input', e => { estado.color = e.target.value; pintar(); });
+    $('#inst_logo', root).addEventListener('change', async e => {
+      const file = e.target.files && e.target.files[0];
+      mostrarError(root, 'e-inst', '');
+      if (!file) return;
+      try {
+        estado.logo = await procesarLogo(file);
+        await sugerir();
+      } catch (err) { mostrarError(root, 'e-inst', err.message); }
+      e.target.value = '';
+    });
+    $('#b-logo-quitar', root).addEventListener('click', () => { estado.logo = ''; estado.sugeridos = []; pintar(); });
+    $('#b-color-base', root).addEventListener('click', () => { estado.color = ''; $('#inst_color', root).value = COLOR_BASE; pintar(); });
+    f.addEventListener('submit', async ev => {
+      ev.preventDefault();
+      mostrarError(root, 'e-inst', '');
+      await guardarInstitucion({
+        nombre: $('#inst_nombre', root).value, subtitulo: $('#inst_subtitulo', root).value, encabezado: $('#inst_encabezado', root).value,
+        docente: $('#inst_docente', root).value, logo: estado.logo, color: estado.color,
+      });
+      ctx.refresh();
+      toast('Datos de la institución guardados');
+    });
+  }
 
   function pintarRespaldo(root) {
     const st = ctx.syncState();

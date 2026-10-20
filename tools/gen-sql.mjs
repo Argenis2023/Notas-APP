@@ -8,7 +8,7 @@ const SQL_TYPES = { text: 'text', int: 'integer', num: 'numeric', bool: 'boolean
 let out = `-- Cuaderno docente: esquema de Supabase (generado por tools/gen-sql.mjs, no editar a mano)
 --
 -- Cómo usarlo: en Supabase abre SQL Editor, pega todo este archivo y presiona Run.
--- Es seguro ejecutarlo más de una vez: no borra datos.
+-- Es seguro ejecutarlo más de una vez: no borra datos y agrega las columnas nuevas que falten.
 --
 -- Seguridad: cada fila pertenece al usuario que la creó (user_id) y las reglas de acceso (RLS)
 -- impiden que cualquier otra cuenta la lea o la cambie.
@@ -46,6 +46,7 @@ for (const [name, t] of Object.entries(TABLES)) {
 create table if not exists public.${name} (
 ${cols.join(',\n')}
 );
+${Object.entries(t.cols).map(([c, type]) => `alter table public.${name} add column if not exists ${c} ${SQL_TYPES[type]};`).join('\n')}
 create index if not exists ${name}_sync on public.${name} (user_id, server_updated_at);
 alter table public.${name} enable row level security;
 grant select, insert, update, delete on public.${name} to authenticated;

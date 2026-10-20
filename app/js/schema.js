@@ -60,6 +60,8 @@ export const TABLES = {
       umbral_indicador_debil: 'num', minimo_aprobatorio: 'int', puntos_logrado: 'num',
       puntos_en_proceso: 'num', puntos_no_logrado: 'num', tabla_conversion: 'json',
       hora_aviso: 'text', dias_aviso: 'int',
+      institucion_nombre: 'text', institucion_subtitulo: 'text', institucion_encabezado: 'text',
+      institucion_color: 'text', institucion_logo: 'text', docente_nombre: 'text',
     },
     idx: '',
   },

@@ -88,7 +88,7 @@ export async function getSeccion() {
 }
 
 export async function getConfig() {
-  const all = await list('configuracion');
+  const all = (await list('configuracion')).sort((a, b) => String(a.created_at).localeCompare(String(b.created_at)));
   if (all.length) return all[0];
   return create('configuracion', {});
 }

@@ -6,6 +6,7 @@ import * as V from './views.js';
 import * as E from './views-eval.js';
 import * as R from './views-reportes.js';
 import { VERSION } from './version.js';
+import { leerInstitucion, aplicarInstitucion } from './institucion.js';
 
 const $ = (s, r = document) => r.querySelector(s);
 
@@ -53,6 +54,7 @@ async function render({ suave = false } = {}) {
   const token = ++ficha;
   const vista = await ruta[1](hash.match(ruta[0]));
   if (token !== ficha) return;
+  try { aplicarInstitucion(await leerInstitucion()); } catch { /* sin datos de la institución: se ve el tema base */ }
   actual = vista;
   $('#titulo').textContent = vista.title;
   document.title = vista.title === 'Cuaderno docente' ? 'Cuaderno docente' : `${vista.title} | Cuaderno docente`;

@@ -2,6 +2,7 @@
 // para poder probarlas sin base de datos. `cargarSnapshot` arma la foto desde IndexedDB.
 import { list } from './data.js';
 import { puntosDe, promedio, notaVigente, aprueba, CONFIG_BASE } from './calc.js';
+import { desdeConfig } from './institucion.js';
 
 export const UMBRAL_FUERTE = 80; // % desde el cual un indicador se considera dominado
 
@@ -25,6 +26,7 @@ export async function cargarSnapshot(seccion) {
   for (const n of notas) if (evIds.has(n.evaluacion_id)) nota[`${n.evaluacion_id}|${n.estudiante_id}`] = notaVigente(n);
   return {
     seccion,
+    inst: desdeConfig([...cfgs].sort((a, b) => String(a.created_at).localeCompare(String(b.created_at)))[0] || {}),
     cfg: { ...CONFIG_BASE, ...Object.fromEntries(Object.entries(cfgs[0] || {}).filter(([, v]) => v !== null && v !== undefined)) },
     lapsos: lapsos.filter(l => l.seccion_id === seccion.id).sort((a, b) => (a.numero ?? 0) - (b.numero ?? 0)),
     estudiantes: est, asignaturas: asig, evaluaciones: evs, indicadores: inds, niveles, nota,

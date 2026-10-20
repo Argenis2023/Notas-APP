@@ -1,7 +1,7 @@
 -- Cuaderno docente: esquema de Supabase (generado por tools/gen-sql.mjs, no editar a mano)
 --
 -- Cómo usarlo: en Supabase abre SQL Editor, pega todo este archivo y presiona Run.
--- Es seguro ejecutarlo más de una vez: no borra datos.
+-- Es seguro ejecutarlo más de una vez: no borra datos y agrega las columnas nuevas que falten.
 --
 -- Seguridad: cada fila pertenece al usuario que la creó (user_id) y las reglas de acceso (RLS)
 -- impiden que cualquier otra cuenta la lea o la cambie.
@@ -26,6 +26,10 @@ create table if not exists public.secciones (
   anio_escolar text,
   siguiente_codigo integer default 1
 );
+alter table public.secciones add column if not exists nombre text;
+alter table public.secciones add column if not exists grado text;
+alter table public.secciones add column if not exists anio_escolar text;
+alter table public.secciones add column if not exists siguiente_codigo integer;
 create index if not exists secciones_sync on public.secciones (user_id, server_updated_at);
 alter table public.secciones enable row level security;
 grant select, insert, update, delete on public.secciones to authenticated;
@@ -51,6 +55,11 @@ create table if not exists public.lapsos (
   fecha_fin date,
   cerrado boolean
 );
+alter table public.lapsos add column if not exists seccion_id uuid;
+alter table public.lapsos add column if not exists numero integer;
+alter table public.lapsos add column if not exists fecha_inicio date;
+alter table public.lapsos add column if not exists fecha_fin date;
+alter table public.lapsos add column if not exists cerrado boolean;
 create index if not exists lapsos_sync on public.lapsos (user_id, server_updated_at);
 alter table public.lapsos enable row level security;
 grant select, insert, update, delete on public.lapsos to authenticated;
@@ -81,6 +90,16 @@ create table if not exists public.estudiantes (
   observaciones_conducta text,
   codigo_ia text
 );
+alter table public.estudiantes add column if not exists seccion_id uuid;
+alter table public.estudiantes add column if not exists numero_lista integer;
+alter table public.estudiantes add column if not exists nombre_completo text;
+alter table public.estudiantes add column if not exists cedula text;
+alter table public.estudiantes add column if not exists fecha_nacimiento date;
+alter table public.estudiantes add column if not exists representante_nombre text;
+alter table public.estudiantes add column if not exists representante_contacto text;
+alter table public.estudiantes add column if not exists necesidades_educativas text;
+alter table public.estudiantes add column if not exists observaciones_conducta text;
+alter table public.estudiantes add column if not exists codigo_ia text;
 create index if not exists estudiantes_sync on public.estudiantes (user_id, server_updated_at);
 alter table public.estudiantes enable row level security;
 grant select, insert, update, delete on public.estudiantes to authenticated;
@@ -104,6 +123,9 @@ create table if not exists public.asignaturas (
   nombre text,
   orden integer
 );
+alter table public.asignaturas add column if not exists seccion_id uuid;
+alter table public.asignaturas add column if not exists nombre text;
+alter table public.asignaturas add column if not exists orden integer;
 create index if not exists asignaturas_sync on public.asignaturas (user_id, server_updated_at);
 alter table public.asignaturas enable row level security;
 grant select, insert, update, delete on public.asignaturas to authenticated;
@@ -129,6 +151,11 @@ create table if not exists public.evaluaciones (
   tipo text,
   fecha date
 );
+alter table public.evaluaciones add column if not exists asignatura_id uuid;
+alter table public.evaluaciones add column if not exists lapso_id uuid;
+alter table public.evaluaciones add column if not exists nombre text;
+alter table public.evaluaciones add column if not exists tipo text;
+alter table public.evaluaciones add column if not exists fecha date;
 create index if not exists evaluaciones_sync on public.evaluaciones (user_id, server_updated_at);
 alter table public.evaluaciones enable row level security;
 grant select, insert, update, delete on public.evaluaciones to authenticated;
@@ -154,6 +181,11 @@ create table if not exists public.indicadores (
   orden integer,
   peso numeric
 );
+alter table public.indicadores add column if not exists evaluacion_id uuid;
+alter table public.indicadores add column if not exists texto text;
+alter table public.indicadores add column if not exists etiqueta text;
+alter table public.indicadores add column if not exists orden integer;
+alter table public.indicadores add column if not exists peso numeric;
 create index if not exists indicadores_sync on public.indicadores (user_id, server_updated_at);
 alter table public.indicadores enable row level security;
 grant select, insert, update, delete on public.indicadores to authenticated;
@@ -178,6 +210,10 @@ create table if not exists public.resultados (
   nivel text,
   observacion text
 );
+alter table public.resultados add column if not exists indicador_id uuid;
+alter table public.resultados add column if not exists estudiante_id uuid;
+alter table public.resultados add column if not exists nivel text;
+alter table public.resultados add column if not exists observacion text;
 create index if not exists resultados_sync on public.resultados (user_id, server_updated_at);
 alter table public.resultados enable row level security;
 grant select, insert, update, delete on public.resultados to authenticated;
@@ -203,6 +239,11 @@ create table if not exists public.notas (
   nota_final integer,
   observacion text
 );
+alter table public.notas add column if not exists evaluacion_id uuid;
+alter table public.notas add column if not exists estudiante_id uuid;
+alter table public.notas add column if not exists nota_calculada integer;
+alter table public.notas add column if not exists nota_final integer;
+alter table public.notas add column if not exists observacion text;
 create index if not exists notas_sync on public.notas (user_id, server_updated_at);
 alter table public.notas enable row level security;
 grant select, insert, update, delete on public.notas to authenticated;
@@ -226,6 +267,9 @@ create table if not exists public.asistencia (
   fecha date,
   estado text
 );
+alter table public.asistencia add column if not exists estudiante_id uuid;
+alter table public.asistencia add column if not exists fecha date;
+alter table public.asistencia add column if not exists estado text;
 create index if not exists asistencia_sync on public.asistencia (user_id, server_updated_at);
 alter table public.asistencia enable row level security;
 grant select, insert, update, delete on public.asistencia to authenticated;
@@ -251,6 +295,11 @@ create table if not exists public.recomendaciones (
   recomendacion text,
   origen text
 );
+alter table public.recomendaciones add column if not exists asignatura_id uuid;
+alter table public.recomendaciones add column if not exists indicador_etiqueta text;
+alter table public.recomendaciones add column if not exists deficiencia text;
+alter table public.recomendaciones add column if not exists recomendacion text;
+alter table public.recomendaciones add column if not exists origen text;
 create index if not exists recomendaciones_sync on public.recomendaciones (user_id, server_updated_at);
 alter table public.recomendaciones enable row level security;
 grant select, insert, update, delete on public.recomendaciones to authenticated;
@@ -278,6 +327,13 @@ create table if not exists public.reportes (
   generado_con_ia boolean,
   revisado_en timestamptz
 );
+alter table public.reportes add column if not exists tipo text;
+alter table public.reportes add column if not exists estudiante_id uuid;
+alter table public.reportes add column if not exists seccion_id uuid;
+alter table public.reportes add column if not exists lapso_id uuid;
+alter table public.reportes add column if not exists texto text;
+alter table public.reportes add column if not exists generado_con_ia boolean;
+alter table public.reportes add column if not exists revisado_en timestamptz;
 create index if not exists reportes_sync on public.reportes (user_id, server_updated_at);
 alter table public.reportes enable row level security;
 grant select, insert, update, delete on public.reportes to authenticated;
@@ -304,8 +360,28 @@ create table if not exists public.configuracion (
   puntos_no_logrado numeric default 0,
   tabla_conversion jsonb,
   hora_aviso text default '16:30',
-  dias_aviso integer default 3
+  dias_aviso integer default 3,
+  institucion_nombre text,
+  institucion_subtitulo text,
+  institucion_encabezado text,
+  institucion_color text,
+  institucion_logo text,
+  docente_nombre text
 );
+alter table public.configuracion add column if not exists umbral_indicador_debil numeric;
+alter table public.configuracion add column if not exists minimo_aprobatorio integer;
+alter table public.configuracion add column if not exists puntos_logrado numeric;
+alter table public.configuracion add column if not exists puntos_en_proceso numeric;
+alter table public.configuracion add column if not exists puntos_no_logrado numeric;
+alter table public.configuracion add column if not exists tabla_conversion jsonb;
+alter table public.configuracion add column if not exists hora_aviso text;
+alter table public.configuracion add column if not exists dias_aviso integer;
+alter table public.configuracion add column if not exists institucion_nombre text;
+alter table public.configuracion add column if not exists institucion_subtitulo text;
+alter table public.configuracion add column if not exists institucion_encabezado text;
+alter table public.configuracion add column if not exists institucion_color text;
+alter table public.configuracion add column if not exists institucion_logo text;
+alter table public.configuracion add column if not exists docente_nombre text;
 create index if not exists configuracion_sync on public.configuracion (user_id, server_updated_at);
 alter table public.configuracion enable row level security;
 grant select, insert, update, delete on public.configuracion to authenticated;
@@ -330,6 +406,10 @@ create table if not exists public.avisos (
   referencia_id uuid,
   enviado boolean
 );
+alter table public.avisos add column if not exists tipo text;
+alter table public.avisos add column if not exists fecha_programada timestamptz;
+alter table public.avisos add column if not exists referencia_id uuid;
+alter table public.avisos add column if not exists enviado boolean;
 create index if not exists avisos_sync on public.avisos (user_id, server_updated_at);
 alter table public.avisos enable row level security;
 grant select, insert, update, delete on public.avisos to authenticated;
@@ -352,6 +432,8 @@ create table if not exists public.suscripciones_push (
   endpoint text,
   claves jsonb
 );
+alter table public.suscripciones_push add column if not exists endpoint text;
+alter table public.suscripciones_push add column if not exists claves jsonb;
 create index if not exists suscripciones_push_sync on public.suscripciones_push (user_id, server_updated_at);
 alter table public.suscripciones_push enable row level security;
 grant select, insert, update, delete on public.suscripciones_push to authenticated;
