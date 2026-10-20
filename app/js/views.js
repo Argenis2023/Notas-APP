@@ -349,7 +349,7 @@ export async function ajustes(ctx) {
         ${campo({ id: 'inst_nombre', label: 'Nombre de la institución', value: inst.nombre, extra: 'autocomplete="off" placeholder="Por ejemplo: U.E.E. Nombre del colegio"' })}
         ${campo({ id: 'inst_subtitulo', label: 'Ubicación o lema', value: inst.subtitulo, extra: 'autocomplete="off" placeholder="Por ejemplo: El Bambú, estado Miranda"' })}
         ${areaTexto({ id: 'inst_encabezado', label: 'Encabezado de los informes', value: inst.encabezado, rows: 3, hint: 'Una línea por renglón, por ejemplo: República Bolivariana de Venezuela, y debajo: Ministerio del Poder Popular para la Educación.' })}
-        ${campo({ id: 'inst_docente', label: 'Tu nombre', value: inst.docente, extra: 'autocomplete="name"', hint: 'Aparece en la firma de los informes.' })}
+        ${campo({ id: 'inst_docente', label: 'Tu nombre', value: inst.docente, extra: 'autocomplete="name"', hint: 'Aparece en el saludo de Inicio y en la firma de los informes.' })}
         <div class="field">
           <span class="field-t" id="t-logo"><strong>Logo</strong></span>
           <div class="inst-logo" role="group" aria-labelledby="t-logo">

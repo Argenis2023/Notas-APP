@@ -49,9 +49,9 @@ const RUTAS = [
   [/^#\/estudiantes\/nuevo$/, () => V.estudianteForm(ctx, 'nuevo'), 'estudiantes'],
   [/^#\/estudiantes\/([^/]+)$/, m => V.estudianteForm(ctx, m[1]), 'estudiantes'],
   [/^#\/estudiantes$/, () => V.estudiantes(ctx), 'estudiantes'],
-  [/^#\/asistencia\/calendario(?:\?(.*))?$/, m => A.asistenciaCalendario(ctx, m[1]), 'inicio'],
-  [/^#\/asistencia\/resumen(?:\?(.*))?$/, m => A.asistenciaResumen(ctx, m[1]), 'inicio'],
-  [/^#\/asistencia(?:\?(.*))?$/, m => A.asistenciaDia(ctx, m[1]), 'inicio'],
+  [/^#\/asistencia\/calendario(?:\?(.*))?$/, m => A.asistenciaCalendario(ctx, m[1]), 'asistencia'],
+  [/^#\/asistencia\/resumen(?:\?(.*))?$/, m => A.asistenciaResumen(ctx, m[1]), 'asistencia'],
+  [/^#\/asistencia(?:\?(.*))?$/, m => A.asistenciaDia(ctx, m[1]), 'asistencia'],
   [/^#\/avisos$/, () => AV.avisos(ctx), 'inicio'],
   [/^#\/ajustes$/, () => V.ajustes(ctx), 'ajustes'],
 ];

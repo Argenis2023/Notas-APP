@@ -57,7 +57,7 @@ export function calcularAvisos(s, { hoy = new Date(), ultimoRespaldo = null, con
 
     // ----- recordatorios -----
     const diaHabil = ![0, 6].includes(hoy.getDay());
-    if (diaHabil && rangoOk(hoyIso) && !s.asistencia.some(a => a.fecha === hoyIso)) add({ id: `lista:${hoyIso}`, tipo: 'recordatorio', titulo: 'Todavía no has pasado lista hoy', texto: '', href: '#/asistencia' });
+    if (diaHabil && rangoOk(hoyIso) && !s.asistencia.some(a => a.fecha === hoyIso)) add({ id: `lista:${hoyIso}`, tipo: 'recordatorio', titulo: 'Todavía no has pasado lista hoy', texto: '', href: `#/asistencia?f=${hoyIso}` });
     for (const ev of s.evaluaciones.filter(x => x.lapso_id === lapso.id && x.fecha && utc(x.fecha) <= hoyUtc - 7 * DIA)) {
       const nInd = s.indicadores.filter(i => i.evaluacion_id === ev.id).length;
       if (!nInd) continue;

@@ -105,7 +105,7 @@ main:focus { outline: none; }
 
 .tabs {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
-  display: grid; grid-template-columns: repeat(5, 1fr);
+  display: grid; grid-template-columns: repeat(6, 1fr);
   min-height: var(--nav-alto);
   padding-bottom: env(safe-area-inset-bottom);
   background: var(--hoja); border-top: 1px solid var(--linea);

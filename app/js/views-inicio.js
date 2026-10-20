@@ -1,5 +1,5 @@
 // Panel del Inicio: fichas de acceso con información al día, pendientes y alertas.
-import { lapsoActual } from './data.js';
+import { lapsoActual, nombrePropio } from './data.js';
 import { aprueba, promedio } from './calc.js';
 import { cargarSnapshot, notaAsignatura, resumenAsistencia, promedioGeneral, enRiesgo, logroCurso, esDebil } from './analisis.js';
 import { barra } from './views-reportes.js';
@@ -10,6 +10,13 @@ const DIA = 86400000;
 const utc = iso => Date.parse(iso + 'T00:00:00Z');
 const plural = (n, uno, varios) => `${n} ${n === 1 ? uno : varios}`;
 
+const HONORIFICOS = /^(prof|profa|profesor|profesora|lic|licda|licenciado|licenciada|sr|sra|srta|mtro|mtra|maestro|maestra|docente)\.?$/i;
+// Primer nombre de la docente o del docente, sin títulos (Prof., Lic., etc.). Vacío si no lo ha escrito en Ajustes.
+export function primerNombreDocente(nombre) {
+  const partes = String(nombre || '').trim().split(/\s+/).filter(Boolean);
+  while (partes.length && HONORIFICOS.test(partes[0])) partes.shift();
+  return partes[0] ? nombrePropio(partes[0]) : '';
+}
 function saludo(d = new Date()) {
   const h = d.getHours();
   const t = h < 12 ? 'Buenos días' : h < 19 ? 'Buenas tardes' : 'Buenas noches';
@@ -72,7 +79,7 @@ export async function panelInicio(ctx, seccion, completo, q = '') {
 
   return html`
     <section aria-labelledby="menu-t">
-      <h2 id="menu-t" class="saludo">${g.t}<span class="saludo-fecha">${g.f}</span></h2>
+      <h2 id="menu-t" class="saludo">${g.t}${primerNombreDocente(s.inst && s.inst.docente) ? `, ${primerNombreDocente(s.inst.docente)}` : ''}<span class="saludo-fecha">${g.f}</span></h2>
       ${sub ? html`<p class="inicio-curso">${sub}</p>` : ''}
       ${s.lapsos.length > 1 ? html`<nav class="lapso-tabs" aria-label="Lapso">${s.lapsos.map(l => html`
         <a href="#/?l=${l.numero}" ${l.id === lapso?.id ? raw('aria-current="page"') : ''}>Lapso ${l.numero}</a>`)}</nav>` : ''}
@@ -95,7 +102,7 @@ export async function panelInicio(ctx, seccion, completo, q = '') {
       <section class="asistencia-hoy" aria-labelledby="as-t">
         <h2 id="as-t">Asistencia de hoy</h2>
         <p>${asisHoy.n ? `${asisHoy.n - asisHoy.faltaron} de ${nEst} asistieron${asisHoy.faltaron ? `, ${plural(asisHoy.faltaron, 'faltó', 'faltaron')}` : ''}${asisHoy.n < nEst ? `, ${nEst - asisHoy.n} sin marcar` : ''}.` : 'Todavía no has pasado lista hoy.'}</p>
-        <a class="btn ${asisHoy.n ? 'secondary' : 'primary'}" href="#/asistencia">${asisHoy.n ? 'Ver o corregir la lista' : 'Pasar lista'}</a>
+        <a class="btn ${asisHoy.n ? 'secondary' : 'primary'}" href="#/asistencia?f=${hoyIso}">${asisHoy.n ? 'Ver o corregir la lista' : 'Pasar lista'}</a>
       </section>` : ''}
 
     ${quedaste ? html`
@@ -145,7 +152,7 @@ export async function panelInicio(ctx, seccion, completo, q = '') {
       <ul class="hoja ir-a">
         ${fila('#/estudiantes', 'personas', 'Estudiantes', nEst ? plural(nEst, 'estudiante', 'estudiantes') : 'Agrega o importa tu lista')}
         ${fila('#/avisos', 'alerta', 'Avisos', avInicio.length ? plural(avInicio.length, 'aviso nuevo', 'avisos nuevos') : 'Nada pendiente por ahora')}
-        ${fila('#/asistencia/resumen' + (lapso ? `?l=${lapso.numero}` : ''), 'personas', 'Asistencia', 'Resumen de faltas por lapso')}
+        ${fila('#/asistencia', 'calendario', 'Asistencia', 'Calendario, lista del día y resumen de faltas')}
         ${fila('#/evaluar', 'evaluar', 'Evaluar', s.asignaturas.length ? `${plural(s.asignaturas.length, 'asignatura', 'asignaturas')}, ${plural(evalsLapso.length, 'evaluación', 'evaluaciones')} en el lapso` : 'Empieza agregando asignaturas')}
         ${fila(`#/reportes${lapso ? `?l=${lapso.numero}` : ''}`, 'reportes', 'Reportes e informes', 'Notas, informe del curso y PDF')}
         ${fila('#/reportes/banco', 'libro', 'Mis recomendaciones', `${plural(s.recomendaciones.length, 'guardada', 'guardadas')}`)}

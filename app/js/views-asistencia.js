@@ -27,7 +27,8 @@ export async function asistenciaDia(ctx, q) {
   const estudiantes = await listEstudiantes(seccion.id);
   if (!estudiantes.length) return { title: 'Asistencia', html: html`<p class="vacio">Primero agrega a tus estudiantes en <a href="#/estudiantes">Estudiantes</a>.</p>` };
   const pedido = new URLSearchParams(q || '').get('f');
-  const fecha = fechaValida(pedido) ? pedido : hoyIso();
+  if (!fechaValida(pedido)) return asistenciaCurso(ctx, q, estudiantes);
+  const fecha = pedido;
   const ids = new Set(estudiantes.map(e => e.id));
   const estado = {};
   for (const a of await list('asistencia')) if (a.fecha === fecha && ids.has(a.estudiante_id) && a.estado) estado[a.estudiante_id] = a.estado;
@@ -38,6 +39,7 @@ export async function asistenciaDia(ctx, q) {
   return {
     title: 'Asistencia',
     html: html`
+      <p><a class="volver" href="#/asistencia?m=${fecha.slice(0, 7)}">${icon('atras', 18)} Calendario</a></p>
       <nav class="pager pager-dia" aria-label="Día">
         <a class="btn secondary chico" href="${base}?f=${diaHabil(fecha, -1)}">${icon('atras', 18)} Anterior</a>
         <span class="pager-n"><label class="oculto-visual" for="f-dia">Fecha</label><input id="f-dia" class="dia-input" type="date" value="${fecha}"></span>
@@ -182,5 +184,61 @@ export async function asistenciaCalendario(ctx, q) {
     mount(root) {
       $('#cal-est', root).addEventListener('change', ev => { location.hash = `#/asistencia/calendario?e=${ev.target.value}&m=${ym}`; });
     },
+  };
+}
+
+// ---------- calendario del curso: elegir el día para pasar lista ----------
+async function asistenciaCurso(ctx, q, estudiantes) {
+  const p = new URLSearchParams(q || '');
+  const hoy = hoyIso();
+  const ym = /^\d{4}-(0[1-9]|1[0-2])$/.test(p.get('m') || '') ? p.get('m') : hoy.slice(0, 7);
+  const [y, m] = ym.split('-').map(Number);
+  const ids = new Set(estudiantes.map(e => e.id));
+  const porDia = {};
+  for (const a of await list('asistencia')) {
+    if (!ids.has(a.estudiante_id) || !a.estado || !String(a.fecha).startsWith(ym)) continue;
+    const d = (porDia[a.fecha] ||= { presente: 0, ausente: 0, justificado: 0 });
+    if (d[a.estado] !== undefined) d[a.estado]++;
+  }
+  const diasMes = new Date(Date.UTC(y, m, 0)).getUTCDate();
+  const vacios = (new Date(Date.UTC(y, m - 1, 1)).getUTCDay() + 6) % 7;
+  const celdas = [];
+  for (let i = 0; i < vacios; i++) celdas.push(html`<li class="cal-vacio" aria-hidden="true"></li>`);
+  let conLista = 0;
+  for (let d = 1; d <= diasMes; d++) {
+    const iso = `${ym}-${pad(d)}`;
+    const r = porDia[iso];
+    const finde = esFinDeSemana(iso);
+    if (r) conLista++;
+    const clase = !r ? 'cal-nada' : r.ausente ? 'cal-ausente' : r.justificado ? 'cal-justificado' : 'cal-presente';
+    const n = r ? (r.ausente || r.justificado) : 0;
+    const etiqueta = `${d} de ${MESES[m - 1]}${r ? `: lista tomada, ${r.ausente === 1 ? '1 falta' : `${r.ausente} faltas`}, ${r.justificado === 1 ? '1 justificada' : `${r.justificado} justificadas`}` : finde ? ', fin de semana' : ', sin lista'}`;
+    const marca = html`<span class="cal-c ${clase}"><b>${d}</b>${n ? html`<i aria-hidden="true">${n}</i>` : ''}</span>`;
+    celdas.push(finde
+      ? html`<li class="cal-dia cal-finde ${iso === hoy ? 'cal-hoy' : ''}" aria-label="${etiqueta}">${marca}</li>`
+      : html`<li class="cal-dia ${iso === hoy ? 'cal-hoy' : ''}"><a href="#/asistencia?f=${iso}" aria-label="${etiqueta}">${marca}</a></li>`);
+  }
+  const base = '#/asistencia';
+  const marcadoHoy = !!porDia[hoy];
+  return {
+    title: 'Asistencia',
+    html: html`
+      ${esFinDeSemana(hoy) ? '' : html`<div class="acciones"><a class="btn ${marcadoHoy ? 'secondary' : 'primary'}" href="#/asistencia?f=${hoy}">${marcadoHoy ? 'Ver o corregir la lista de hoy' : 'Pasar lista de hoy'}</a></div>`}
+      <nav class="pager pager-dia" aria-label="Mes">
+        <a class="btn secondary chico" href="${base}?m=${mesAnterior(y, m)}">${icon('atras', 18)} Anterior</a>
+        <span class="pager-n cal-mes">${MESES[m - 1]} ${y}</span>
+        <a class="btn secondary chico" href="${base}?m=${mesSiguiente(y, m)}">Siguiente <span class="gira">${icon('atras', 18)}</span></a>
+      </nav>
+      <div class="cal" role="group" aria-label="Calendario de ${MESES[m - 1]} de ${y}">
+        <ol class="cal-semana" aria-hidden="true">${DIAS_CORTOS.map(d => html`<li>${d}</li>`)}</ol>
+        <ol class="cal-grid">${celdas}</ol>
+      </div>
+      <ul class="cal-leyenda" aria-label="Leyenda">
+        <li><span class="cal-pto cal-presente"></span>Asistieron todos</li>
+        <li><span class="cal-pto cal-ausente"></span>Hubo faltas</li>
+        <li><span class="cal-pto cal-justificado"></span>Solo justificadas</li>
+      </ul>
+      <p class="hint">${conLista ? `${conLista === 1 ? '1 día con lista' : `${conLista} días con lista`} en ${MESES[m - 1]}. El número pequeño es la cantidad de faltas del día.` : `Todavía no hay listas en ${MESES[m - 1]}.`} Toca un día para pasar lista o revisar la de ese día.</p>
+      <p><a href="#/asistencia/resumen">Ver el resumen del lapso</a> · <a href="#/asistencia/calendario">Ver el calendario de un estudiante</a></p>`,
   };
 }
