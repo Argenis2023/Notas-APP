@@ -600,3 +600,8 @@ select:focus { outline: 3px solid var(--acento); outline-offset: 1px; border-col
 /* La firma y el pie son solo para el informe impreso o en PDF */
 .informe-firmas, .informe-pie { display: none; }
 @media print { .informe-firmas { display: flex; } .informe-pie { display: block; } }
+
+/* ---------- bloqueo con PIN ---------- */
+.lock { position: fixed; inset: 0; z-index: 100; background: var(--papel); overflow-y: auto; }
+body.bloqueada #shell, body.bloqueada #gate, body.bloqueada #toast { display: none !important; }
+#lock_pin { letter-spacing: 0.3em; font-size: 1.3rem; }

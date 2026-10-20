@@ -9,6 +9,7 @@ import * as A from './views-asistencia.js';
 import * as AV from './views-avisos.js';
 import { VERSION } from './version.js';
 import { leerInstitucion, aplicarInstitucion } from './institucion.js';
+import { iniciarBloqueo } from './bloqueo.js';
 
 const $ = (s, r = document) => r.querySelector(s);
 
@@ -237,6 +238,7 @@ async function boot() {
   ctx.supa = supa;
   ctx.iaDisponible = () => !!(ctx.configurado && ctx.sesion && ctx.supa && ctx.supa.ia);
   ctx.ia = (tipo, datos) => ctx.supa.ia(tipo, datos);
+  await iniciarBloqueo(supa);
   if (supa) {
     ctx.sesion = await supa.auth.session().catch(() => null);
     if (!ctx.sesion) ctx.sesion = await pedirLogin(supa);

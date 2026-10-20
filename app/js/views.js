@@ -10,6 +10,7 @@ import { bloqueCalculo, bloqueIA } from './views-eval.js';
 import { panelInicio } from './views-inicio.js';
 import { montarAvisos } from './views-avisos.js';
 import { $, $$, campo, areaTexto, errorBox, mostrarError } from './form.js';
+import { bloqueAjustes, montarBloqueoAjustes, hayPin } from './bloqueo.js';
 import { leerInstitucion, guardarInstitucion, procesarLogo, coloresDelLogo, paleta, hexValido, COLOR_BASE } from './institucion.js';
 
 // =====================================================================
@@ -434,6 +435,7 @@ export async function ajustes(ctx) {
         : html`<p>No has iniciado sesión. <a href="${location.pathname}" id="a-recargar">Entrar</a></p>`}
     </section>`;
 
+  const pinActivo = await hayPin();
   const conNube = !!(ctx.configurado && ctx.sesion);
   const borrar = html`
     <section class="bloque bloque-peligro" aria-labelledby="t-borrar">
@@ -461,7 +463,7 @@ export async function ajustes(ctx) {
 
   return {
     title: 'Ajustes',
-    html: html`${bloqueInstitucion}${bloqueSeccion}${calculo.html}${asistente.html}${respaldo}${cuenta}${borrar}${app}`,
+    html: html`${bloqueInstitucion}${bloqueSeccion}${calculo.html}${asistente.html}${respaldo}${cuenta}${bloqueAjustes(pinActivo)}${borrar}${app}`,
     onStatus(root) { pintarRespaldo(root); },
     mount(root) {
       pintarRespaldo(root);
@@ -528,6 +530,8 @@ export async function ajustes(ctx) {
           mostrarError(root, 'e-restaurar', err instanceof SyntaxError ? 'El archivo no se puede leer. ¿Es una copia de seguridad del Cuaderno docente?' : err.message);
         }
       });
+
+      montarBloqueoAjustes(root, { activo: pinActivo, alCambiar: m => { toast(m === 'quitar' ? 'PIN quitado' : m === 'activar' ? 'PIN activado' : 'PIN cambiado'); ctx.refresh(); } });
 
       const salir = $('#b-salir', root);
       if (salir) {
