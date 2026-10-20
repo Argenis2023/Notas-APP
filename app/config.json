@@ -1,4 +1,4 @@
 {
-  "supabaseUrl": "",
-  "supabaseAnonKey": ""
+  "supabaseUrl": "https://fdcqylowhqyqxebiqmnn.supabase.co",
+  "supabaseAnonKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZkY3F5bG93aHF5cXhlYmlxbW5uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI0NjMxNzMsImV4cCI6MjEwODAzOTE3M30.FnSprIgcSfTrANhpueXwRbUoGBzY0zahi_rdzURjz0s"
 }
