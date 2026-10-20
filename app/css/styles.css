@@ -100,7 +100,7 @@ code { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 0.9em; 
 .top-texto { flex: 1; min-width: 0; }
 .top h1 { font-size: 1.15rem; font-weight: 600; letter-spacing: 0; overflow-wrap: anywhere; }
 .top-inst { margin: 0; max-width: none; font-size: 0.78rem; line-height: 1.25; color: rgba(255, 255, 255, 0.86); overflow-wrap: anywhere; }
-main { padding: 1.25rem 1rem calc(var(--nav-alto) + 2rem + env(safe-area-inset-bottom)); max-width: 40rem; margin: 0 auto; }
+main { padding: 1.25rem 1rem calc(var(--nav-alto) + 4.5rem + env(safe-area-inset-bottom)); max-width: 40rem; margin: 0 auto; }
 main:focus { outline: none; }
 
 .tabs {
@@ -621,7 +621,7 @@ body.bloqueada #shell, body.bloqueada #gate, body.bloqueada #toast { display: no
   .tabs a svg, .tabs a[aria-current='page'] svg { width: 1.5rem; height: 1.5rem; padding: 0; background: none; }
   .tabs a:hover { background: var(--fondo-suave); }
   .tabs a[aria-current='page'] { background: var(--acento-suave); }
-  main { max-width: 46rem; padding: 1.5rem 2rem 3rem; }
+  main { max-width: 46rem; padding: 1.5rem 2rem 5rem; }
   .toast { bottom: 1.5rem; left: calc(50% + 6.25rem); }
   .informe { max-width: 52rem; margin-left: auto; margin-right: auto; }
 }
@@ -673,3 +673,72 @@ body.bloqueada #shell, body.bloqueada #gate, body.bloqueada #toast { display: no
   .informe .tabla th, .informe .tabla td { padding: 1.5pt 8pt; }
   .informe-h { margin: 3mm 0 1.2mm; }
 }
+
+/* ---------- calendario de asistencia ---------- */
+.cal-est select { width: 100%; }
+.cal-mes { text-transform: capitalize; font-weight: 600; }
+.cal { margin: 0 0 0.9rem; }
+.cal ol { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 0.25rem; }
+.cal-semana li { text-align: center; font-size: 0.78rem; font-weight: 600; color: var(--tinta-suave); padding: 0.2rem 0; }
+.cal-dia, .cal-vacio { display: flex; justify-content: center; }
+.cal-dia a { display: flex; justify-content: center; width: 100%; padding: 0.15rem 0; border-radius: 10px; text-decoration: none; color: inherit; }
+.cal-dia a:hover { background: var(--fondo-suave); }
+.cal-c { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 2.6rem; height: 2.6rem; border-radius: 50%; font-variant-numeric: tabular-nums; }
+.cal-c b { font-weight: 600; font-size: 0.95rem; line-height: 1; }
+.cal-c i { position: absolute; bottom: 0.18rem; font-style: normal; font-size: 0.55rem; font-weight: 700; letter-spacing: 0; opacity: 0.9; }
+.cal-nada { color: var(--tinta); }
+.cal-finde .cal-nada { color: var(--tinta-suave); opacity: 0.6; }
+.cal-presente { background: var(--verde); color: #ffffff; }
+.cal-ausente { background: var(--rojo); color: #ffffff; }
+.cal-justificado { background: var(--ambar); color: var(--sobre-ambar, #2b2100); }
+.cal-hoy .cal-c { box-shadow: 0 0 0 2px var(--hoja), 0 0 0 4px var(--acento); }
+.cal-leyenda { list-style: none; display: flex; flex-wrap: wrap; gap: 0.4rem 1.2rem; margin: 0 0 0.75rem; padding: 0; font-size: 0.92rem; }
+.cal-leyenda li { display: inline-flex; align-items: center; gap: 0.4rem; }
+.cal-pto { width: 0.9rem; height: 0.9rem; border-radius: 50%; display: inline-block; }
+@media (max-width: 24rem) { .cal-c { width: 2.3rem; height: 2.3rem; } }
+@media print { .cal-presente, .cal-ausente, .cal-justificado, .cal-pto { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+.cal-est { margin-bottom: 0.9rem; }
+
+/* ---------- chat de consultas ---------- */
+.chat-fab[hidden], .chat[hidden] { display: none !important; }
+.chat-fab {
+  position: fixed; right: 1rem; bottom: calc(var(--nav-alto) + 1rem + env(safe-area-inset-bottom)); z-index: 30;
+  display: inline-flex; align-items: center; gap: 0.5rem; min-height: 3.2rem; padding: 0 1.1rem 0 0.95rem;
+  font: inherit; font-weight: 600; color: var(--sobre-acento); background: var(--cabecera); border: 0; border-radius: 999px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22); cursor: pointer;
+}
+.chat-fab .ico { flex: none; }
+.chat {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 35; height: min(78vh, 40rem);
+  display: flex; flex-direction: column; background: var(--hoja); color: var(--tinta);
+  border-top: 1px solid var(--linea); border-radius: 16px 16px 0 0; box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.18);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.chat-cab { display: flex; align-items: center; justify-content: space-between; padding: 0.7rem 0.9rem 0.4rem 1.1rem; }
+.chat-cab h2 { margin: 0; font-size: 1.1rem; }
+.chat-x { display: inline-flex; align-items: center; justify-content: center; width: 2.75rem; height: 2.75rem; border: 0; background: none; color: var(--tinta); border-radius: 50%; cursor: pointer; }
+.chat-x:hover { background: var(--fondo-suave); }
+.chat-est { padding: 0 1.1rem 0.6rem; border-bottom: 1px solid var(--linea); }
+.chat-est label { display: block; font-size: 0.82rem; color: var(--tinta-suave); margin-bottom: 0.2rem; }
+.chat-est select { width: 100%; }
+.chat-msgs { flex: 1; min-height: 0; overflow-y: auto; padding: 0.8rem 1.1rem; display: flex; flex-direction: column; gap: 0.6rem; background: var(--papel); }
+.chat-b { max-width: 88%; padding: 0.55rem 0.8rem; border-radius: 14px; font-size: 0.95rem; line-height: 1.4; overflow-wrap: anywhere; }
+.chat-b p { margin: 0; max-width: none; }
+.chat-yo { align-self: flex-end; background: var(--cabecera); color: var(--sobre-acento); border-bottom-right-radius: 4px; }
+.chat-bot { align-self: flex-start; background: var(--hoja); border: 1px solid var(--linea); border-bottom-left-radius: 4px; }
+.chat-nota { align-self: center; max-width: 100%; padding: 0.15rem 0.6rem; background: none; color: var(--tinta-suave); font-size: 0.82rem; text-align: center; }
+.chat-ver { margin-top: 0.5rem; padding: 0; font: inherit; font-size: 0.88rem; font-weight: 600; color: var(--acento); background: none; border: 0; text-decoration: underline; cursor: pointer; min-height: 1.75rem; }
+.chat-fuente { margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid var(--linea); font-size: 0.88rem; color: var(--tinta-suave); }
+.chat-fuente h3 { margin: 0.3rem 0 0.2rem; font-size: 0.88rem; color: var(--tinta); }
+.chat-fuente ul { margin: 0 0 0.4rem; padding-left: 1.1rem; }
+.chat-fuente p { margin: 0; }
+.chat-preguntas { display: flex; flex-wrap: wrap; gap: 0.4rem; max-height: 7.4rem; overflow-y: auto; padding: 0.6rem 1.1rem; border-top: 1px solid var(--linea); }
+.chat-q { flex: none; min-height: 2.5rem; padding: 0 0.9rem; font: inherit; font-size: 0.9rem; font-weight: 500; color: var(--acento); background: var(--hoja); border: 1px solid var(--acento); border-radius: 999px; cursor: pointer; white-space: nowrap; }
+.chat-q:hover { background: var(--acento-suave); }
+.chat-pie { padding: 0 1.1rem 0.6rem; }
+@media screen and (min-width: 48rem) {
+  .chat-fab { right: 1.5rem; bottom: 1.5rem; }
+  .chat { left: auto; right: 1.5rem; bottom: 1.5rem; width: 26rem; height: min(36rem, calc(100vh - 3rem)); border: 1px solid var(--linea); border-radius: 16px; }
+  .chat-preguntas { max-height: none; flex: none; }
+}
+@media print { .chat-fab, .chat { display: none !important; } }
