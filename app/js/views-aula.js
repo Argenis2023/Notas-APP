@@ -119,20 +119,21 @@ function prepararAudio() {
     if (audio.state === 'suspended') audio.resume();
   } catch { audio = null; }
 }
-function tono(frec, inicio, dur) {
+function tono(frec, inicio, dur, vol = 0.35) {
   const o = audio.createOscillator(), g = audio.createGain();
   o.type = 'sine'; o.frequency.value = frec;
   const t0 = audio.currentTime + inicio;
   g.gain.setValueAtTime(0.0001, t0);
-  g.gain.exponentialRampToValueAtTime(0.35, t0 + 0.03);
+  g.gain.exponentialRampToValueAtTime(vol, t0 + 0.01);
   g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
   o.connect(g); g.connect(audio.destination);
   o.start(t0); o.stop(t0 + dur + 0.05);
 }
 export function sonarFin() { if (!audio) return; try { [660, 880, 1175].forEach((f, i) => tono(f, i * 0.28, 0.5)); tono(1175, 0.9, 0.9); } catch { /* sin sonido */ } }
+export function tic(ultimos) { if (!audio) return; try { tono(ultimos ? 1320 : 1000, 0, 0.07, ultimos ? 0.3 : 0.18); } catch { /* sin sonido */ } }
 function sonarInicio() { if (!audio) return; try { tono(880, 0, 0.25); } catch { /* sin sonido */ } }
 
-function fichaPausa(p, sonido = true) {
+function fichaPausa(p, sonido = true, segundos = true) {
   return html`
     <article class="pausa" aria-labelledby="pa-t">
       <h3 id="pa-t">${p.titulo}</h3>
@@ -140,6 +141,7 @@ function fichaPausa(p, sonido = true) {
       <ol class="pausa-pasos">${p.pasos.map(x => html`<li>${x}</li>`)}</ol>
       <div class="pausa-reloj" role="timer" aria-live="off"><span id="pa-tiempo" class="pa-tiempo">${mmss(p.min * 60)}</span></div>
       <label class="pa-sonido"><input type="checkbox" id="pa-sonido" ${sonido ? 'checked' : ''}> Avisar con sonido al terminar</label>
+      <label class="pa-sonido"><input type="checkbox" id="pa-tic" ${segundos ? 'checked' : ''}> Sonar cada segundo</label>
       <div class="acciones">
         <button type="button" class="btn primary" id="pa-inicio">Empezar</button>
         <button type="button" class="btn secondary" id="pa-reiniciar">Reiniciar</button>
@@ -152,6 +154,7 @@ export async function pausas(ctx, query) {
   const tipo = TIPOS.some(t => t.id === q.get('t')) ? q.get('t') : 'todas';
   const inicial = pausaPorId(q.get('p')) || null;
   let conSonido = (await getMeta('pausa-sonido', true)) !== false;
+  let conTic = (await getMeta('pausa-tic', true)) !== false;
   return {
     title: 'Pausa activa',
     html: html`
@@ -161,7 +164,7 @@ export async function pausas(ctx, query) {
         <p>Actividades cortas para despertar o calmar al curso. Funcionan sin internet.</p>
         <nav class="lapso-tabs" aria-label="Tipo de pausa">${TIPOS.map(t => html`<a href="#/aula/pausas?t=${t.id}" ${t.id === tipo ? html`aria-current="page"` : ''}>${t.texto}</a>`)}</nav>
         <div class="acciones"><button type="button" class="btn primary" id="pa-azar">${icon('pausa', 20)} Sorpréndeme</button></div>
-        <div id="pa-ficha" aria-live="polite">${inicial ? fichaPausa(inicial, conSonido) : ''}</div>
+        <div id="pa-ficha" aria-live="polite">${inicial ? fichaPausa(inicial, conSonido, conTic) : ''}</div>
       </section>
       <section aria-labelledby="pa-l">
         <h2 id="pa-l">Todas las actividades</h2>
@@ -178,7 +181,8 @@ export async function pausas(ctx, query) {
       const poner = p => {
         detenerReloj();
         actual = p;
-        ficha.innerHTML = fichaPausa(p, conSonido).toString();
+        ficha.innerHTML = fichaPausa(p, conSonido, conTic).toString();
+        $('#pa-tic', ficha).addEventListener('change', async ev => { conTic = ev.target.checked; await setMeta('pausa-tic', conTic); if (conTic) { prepararAudio(); tic(false); } });
         $('#pa-sonido', ficha).addEventListener('change', async ev => { conSonido = ev.target.checked; await setMeta('pausa-sonido', conSonido); if (conSonido) { prepararAudio(); sonarInicio(); } });
         ficha.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
         const tiempo = $('#pa-tiempo', ficha), inicio = $('#pa-inicio', ficha);
@@ -188,11 +192,13 @@ export async function pausas(ctx, query) {
           if (corriendo) { parar(); inicio.textContent = 'Seguir'; return; }
           if (resto === 0) { resto = p.min * 60; tiempo.textContent = mmss(resto); tiempo.classList.remove('fin'); }
           corriendo = true; inicio.textContent = 'Pausar';
-          if (conSonido) { prepararAudio(); sonarInicio(); }
+          if (conSonido || conTic) prepararAudio();
+          if (conSonido) sonarInicio();
           try { if (navigator.wakeLock && !candado) navigator.wakeLock.request('screen').then(w => { candado = w; }).catch(() => {}); } catch { /* sin bloqueo de pantalla */ }
           reloj = setInterval(() => {
             if (!document.body.contains(tiempo)) { detenerReloj(); return; }
             resto -= 1; tiempo.textContent = mmss(resto);
+            if (conTic && resto > 0) tic(resto <= 3);
             if (resto <= 0) {
               parar(); tiempo.classList.add('fin'); tiempo.textContent = '¡Listo!';
               if (conSonido) sonarFin();
