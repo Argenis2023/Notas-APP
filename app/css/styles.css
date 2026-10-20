@@ -597,3 +597,6 @@ select:focus { outline: 3px solid var(--acento); outline-offset: 1px; border-col
 .informe-pie, .informe-firmas { max-width: none; }
 @media print { .informe { border-radius: 0; } }
 @media print { .informe .tabla tbody th { background: transparent !important; } }
+/* La firma y el pie son solo para el informe impreso o en PDF */
+.informe-firmas, .informe-pie { display: none; }
+@media print { .informe-firmas { display: flex; } .informe-pie { display: block; } }
