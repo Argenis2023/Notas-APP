@@ -42,18 +42,18 @@ const TIPOS: Record<string, { sistema: string; max: number }> = {
 const json = (cuerpo: unknown, status: number, cors: Record<string, string>) =>
   new Response(JSON.stringify(cuerpo), { status, headers: { ...cors, 'Content-Type': 'application/json' } });
 
-async function conGemini(sistema: string, datos: string, max: number): Promise<string> {
-  const clave = Deno.env.get('GEMINI_API_KEY');
-  if (!clave) throw new Error('sin_clave_gemini');
-  const modelo = Deno.env.get('GEMINI_MODEL') || 'gemini-flash-latest';
-  // Los modelos Flash recientes "piensan" antes de responder, y eso toma varios segundos.
-  // Para redactar un párrafo no hace falta: se pide el mínimo y, si el modelo no acepta la opción, se prueba la siguiente.
+const esperar = (ms: number) => new Promise(r => setTimeout(r, ms));
+
+// Una sola consulta a un modelo de Gemini. Devuelve el texto o lanza un error con el código HTTP (gemini_503, etc.).
+async function consultarGemini(modelo: string, clave: string, sistema: string, datos: string, max: number): Promise<string> {
+  // Los modelos Flash recientes "piensan" antes de responder y eso toma varios segundos.
+  // Para un párrafo no hace falta: se pide el mínimo y, si el modelo no admite la opción (400), se prueba la siguiente.
   const pensamientos: Array<Record<string, unknown>> = [
     { thinkingConfig: { thinkingBudget: 0 } },
     { thinkingConfig: { thinkingLevel: 'low' } },
     {},
   ];
-  let ultimo = 'gemini_error';
+  let ultimo = 'gemini_400';
   for (const extra of pensamientos) {
     const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent`, {
       method: 'POST',
@@ -64,7 +64,7 @@ async function conGemini(sistema: string, datos: string, max: number): Promise<s
         generationConfig: { temperature: 0.6, maxOutputTokens: max + (Object.keys(extra).length ? 300 : 1500), ...extra },
       }),
     });
-    if (r.status === 400) { ultimo = 'gemini_400'; continue; } // opción no admitida por este modelo
+    if (r.status === 400) { ultimo = 'gemini_400'; continue; }
     if (!r.ok) throw new Error(`gemini_${r.status}`);
     const j = await r.json();
     const texto = (j?.candidates?.[0]?.content?.parts ?? []).map((p: { text?: string }) => p.text ?? '').join('').trim();
@@ -72,6 +72,29 @@ async function conGemini(sistema: string, datos: string, max: number): Promise<s
     return texto;
   }
   throw new Error(ultimo);
+}
+
+// Gemini gratis a veces responde 503 ("modelo sobrecargado") o 429 (límite). Se reintenta una vez
+// y luego se prueban otros modelos gratuitos antes de pasar a Groq.
+async function conGemini(sistema: string, datos: string, max: number): Promise<string> {
+  const clave = Deno.env.get('GEMINI_API_KEY');
+  if (!clave) throw new Error('sin_clave_gemini');
+  const principal = Deno.env.get('GEMINI_MODEL') || 'gemini-flash-latest';
+  const modelos = [...new Set([principal, 'gemini-2.5-flash', 'gemini-2.5-flash-lite'])];
+  const fallos: string[] = [];
+  for (const modelo of modelos) {
+    for (let intento = 0; intento < 2; intento++) {
+      try {
+        return await consultarGemini(modelo, clave, sistema, datos, max);
+      } catch (e) {
+        const m = (e as Error).message;
+        fallos.push(`${modelo}:${m}`);
+        if (m.endsWith('_503') || m.endsWith('_500') || m.endsWith('_502')) { await esperar(900); continue; } // temporal: reintentar
+        break; // 404, 429, 400...: pasar al siguiente modelo
+      }
+    }
+  }
+  throw new Error(fallos.join(' | '));
 }
 
 async function conGroq(sistema: string, datos: string, max: number): Promise<string> {
@@ -135,6 +158,6 @@ Deno.serve(async (req: Request) => {
     return json({ texto: await conGroq(cfg.sistema, entrada, cfg.max), proveedor: 'groq' }, 200, cors);
   } catch (e) { fallos.push((e as Error).message); }
 
-  const cuota = fallos.some(f => f.endsWith('_429'));
+  const cuota = fallos.some(f => f.includes('_429'));
   return json({ error: cuota ? 'cuota' : 'ia_no_disponible', detalle: fallos.join(', ') }, cuota ? 429 : 502, cors);
 });

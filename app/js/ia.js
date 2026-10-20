@@ -75,5 +75,6 @@ export function mensajeIA(e) {
   if (c === 'datos_personales') return (e.detalle || 'El texto parece incluir un dato personal.') + ' Revisa lo que escribiste.';
   if (c === 'offline') return 'No hay conexión con internet.';
   if (c === 'no_desplegada') return 'La función de IA todavía no está instalada en Supabase.';
+  if (c === 'ia_no_disponible' && /_503|_500|_502/.test(e.detalle || '')) return 'La IA de Google está saturada en este momento. Espera un minuto e inténtalo otra vez.';
   return 'No se pudo redactar con la IA. Puedes escribir el texto tú, o intentarlo otra vez.';
 }
