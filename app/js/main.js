@@ -5,6 +5,7 @@ import { html, toast, infoEstado, mensajeError } from './ui.js';
 import * as V from './views.js';
 import * as E from './views-eval.js';
 import * as R from './views-reportes.js';
+import { VERSION } from './version.js';
 
 const $ = (s, r = document) => r.querySelector(s);
 
@@ -126,6 +127,25 @@ async function cargarConfig() {
 // ---------- actualizaciones ----------
 let reg = null;
 let pideActualizar = false;
+let forzarActualizar = false;
+// Pide a la red el número de versión publicado y lo compara con el que está corriendo.
+// Sirve cuando el service worker no se enteró de que hay versión nueva.
+async function hayVersionNueva() {
+  if (navigator.onLine === false) return false;
+  try {
+    const r = await fetch(`./js/version.js?t=${Date.now()}`, { cache: 'no-store' });
+    if (!r.ok) return false;
+    const m = (await r.text()).match(/VERSION\s*=\s*'([^']+)'/);
+    return !!m && m[1] !== VERSION;
+  } catch { return false; }
+}
+async function limpiarYRecargar() {
+  try {
+    for (const r of await navigator.serviceWorker.getRegistrations()) await r.unregister();
+    for (const k of await caches.keys()) if (k.startsWith('cuaderno-app-')) await caches.delete(k);
+  } catch { /* se recarga igual */ }
+  location.reload();
+}
 function avisarActualizacion() {
   const b = $('#banner');
   b.hidden = false;
@@ -133,6 +153,7 @@ function avisarActualizacion() {
   $('#b-act').addEventListener('click', () => {
     pideActualizar = true;
     if (reg && reg.waiting) reg.waiting.postMessage('skipWaiting');
+    else if (forzarActualizar) limpiarYRecargar();
     else location.reload();
   });
 }
@@ -147,6 +168,11 @@ async function registrarSW() {
     if (reg.waiting && navigator.serviceWorker.controller) avisarActualizacion();
     navigator.serviceWorker.addEventListener('controllerchange', () => { if (pideActualizar) location.reload(); });
     reg.update().catch(() => {});
+    // Si en unos segundos el service worker no avisó pero la red tiene otra versión, se ofrece actualizar igual.
+    setTimeout(async () => {
+      if (!$('#banner').hidden) return;
+      if (await hayVersionNueva()) { forzarActualizar = true; avisarActualizacion(); }
+    }, 6000);
   } catch { /* la app funciona igual, solo sin modo sin conexión */ }
 }
 async function checkUpdate() {
@@ -154,7 +180,9 @@ async function checkUpdate() {
   if (navigator.onLine === false) return 'offline';
   try { await reg.update(); } catch { return 'offline'; }
   await new Promise(r => setTimeout(r, 1200));
-  return reg.installing || reg.waiting ? 'nueva' : 'ok';
+  if (reg.installing || reg.waiting) return 'nueva';
+  if (await hayVersionNueva()) { forzarActualizar = true; avisarActualizacion(); return 'nueva'; }
+  return 'ok';
 }
 
 // ---------- arranque ----------

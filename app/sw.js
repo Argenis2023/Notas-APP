@@ -2,13 +2,19 @@
 // - Archivos de la app: se guardan al instalar y se sirven desde el celular, así abre sin internet.
 // - config.json: primero la red (para que un cambio llegue pronto), y si no hay red, la copia guardada.
 // - Una versión nueva espera hasta que la docente toque "Actualizar".
-const VERSION = 'c0a52287f7';
+const VERSION = 'd64894a16f';
 const CACHE = 'cuaderno-app-' + VERSION;
 const CACHE_CONFIG = 'cuaderno-config';
 const FILES = ["./","css/styles.css","fonts/caveat.woff2","fonts/lexend.woff2","icons/icon-192.png","icons/icon-512.png","icons/icon-maskable-512.png","index.html","js/analisis.js","js/calc.js","js/data.js","js/excel.js","js/form.js","js/main.js","js/remote.js","js/schema.js","js/sync.js","js/ui.js","js/views-eval.js","js/views-reportes.js","js/views.js","manifest.webmanifest","vendor/dexie.js","vendor/supabase.js","vendor/xlsx.js","js/version.js","config.json"];
 
 self.addEventListener('install', event => {
-  event.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)));
+  // cache: 'reload' obliga a pedir cada archivo a la red, sin usar la copia temporal del navegador o de GitHub Pages,
+  // para no guardar archivos viejos bajo la versión nueva.
+  event.waitUntil(caches.open(CACHE).then(c => Promise.all(FILES.map(async f => {
+    const r = await fetch(new Request(f, { cache: 'reload' }));
+    if (!r.ok) throw new Error(`No se pudo guardar ${f}`);
+    await c.put(f, r);
+  }))));
 });
 
 self.addEventListener('activate', event => {
@@ -29,6 +35,7 @@ self.addEventListener('fetch', event => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return; // Supabase y demás: directo a la red
+  if (url.searchParams.has('t')) return; // consulta de versión: siempre a la red
 
   if (url.pathname.endsWith('/config.json')) {
     event.respondWith((async () => {

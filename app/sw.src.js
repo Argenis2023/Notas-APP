@@ -8,7 +8,13 @@ const CACHE_CONFIG = 'cuaderno-config';
 const FILES = __FILES__;
 
 self.addEventListener('install', event => {
-  event.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)));
+  // cache: 'reload' obliga a pedir cada archivo a la red, sin usar la copia temporal del navegador o de GitHub Pages,
+  // para no guardar archivos viejos bajo la versión nueva.
+  event.waitUntil(caches.open(CACHE).then(c => Promise.all(FILES.map(async f => {
+    const r = await fetch(new Request(f, { cache: 'reload' }));
+    if (!r.ok) throw new Error(`No se pudo guardar ${f}`);
+    await c.put(f, r);
+  }))));
 });
 
 self.addEventListener('activate', event => {
@@ -29,6 +35,7 @@ self.addEventListener('fetch', event => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return; // Supabase y demás: directo a la red
+  if (url.searchParams.has('t')) return; // consulta de versión: siempre a la red
 
   if (url.pathname.endsWith('/config.json')) {
     event.respondWith((async () => {
