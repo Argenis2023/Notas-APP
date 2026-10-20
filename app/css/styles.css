@@ -510,3 +510,18 @@ select:focus { outline: 3px solid var(--acento); outline-offset: 1px; border-col
 .pager-dia .dia-input { max-width: 9.2rem; }
 .bloque-peligro { border-left: 4px solid var(--rojo); padding-left: 0.9rem; }
 .bloque-peligro h2 { color: var(--rojo); }
+
+/* ---------- Avisos ---------- */
+.avisos { list-style: none; margin: 0 0 1rem; padding: 0; display: grid; gap: 0.5rem; }
+.aviso { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 0.4rem; background: var(--hoja); border: 1px solid var(--linea); border-left: 4px solid var(--acento); border-radius: 10px; padding: 0.55rem 0.4rem 0.55rem 0.75rem; }
+.aviso[hidden] { display: none; }
+.aviso-atencion { border-left-color: var(--rojo); }
+.aviso-felicitar { border-left-color: var(--verde); }
+.aviso-recordatorio { border-left-color: var(--ambar); }
+.aviso-cuerpo { display: flex; gap: 0.6rem; align-items: flex-start; color: inherit; text-decoration: none; min-width: 0; }
+.aviso-ico { flex: none; margin-top: 0.1rem; color: var(--acento); }
+.aviso-atencion .aviso-ico { color: var(--rojo); }
+.aviso-felicitar .aviso-ico { color: var(--verde); }
+.aviso-ok { font: inherit; font-size: 0.82rem; color: var(--tinta-suave); background: none; border: 1px solid var(--linea); border-radius: 8px; padding: 0.45rem 0.6rem; min-height: 2.75rem; cursor: pointer; }
+.enlace { font: inherit; background: none; border: 0; padding: 0; color: var(--acento); text-decoration: underline; cursor: pointer; }
+.aviso-ico { margin-top: 0.2rem; }

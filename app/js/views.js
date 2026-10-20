@@ -8,6 +8,7 @@ import { VERSION } from './version.js';
 
 import { bloqueCalculo, bloqueIA } from './views-eval.js';
 import { panelInicio } from './views-inicio.js';
+import { montarAvisos } from './views-avisos.js';
 import { $, $$, campo, areaTexto, errorBox, mostrarError } from './form.js';
 import { leerInstitucion, guardarInstitucion, procesarLogo, coloresDelLogo, paleta, hexValido, COLOR_BASE } from './institucion.js';
 
@@ -100,6 +101,7 @@ export async function inicio(ctx, q = '') {
 
       ${sinRespaldo ? html`<aside class="nota" role="note"><strong>Tus datos solo están en este celular.</strong> El respaldo en la nube todavía no está activado. Mientras tanto, descarga una copia desde Ajustes de vez en cuando.</aside>` : ''}
     `,
+    mount(root) { montarAvisos(root); },
   };
 }
 

@@ -3,6 +3,7 @@ import { lapsoActual } from './data.js';
 import { aprueba, promedio } from './calc.js';
 import { cargarSnapshot, notaAsignatura, resumenAsistencia, promedioGeneral, enRiesgo, logroCurso, esDebil } from './analisis.js';
 import { barra } from './views-reportes.js';
+import { avisosPendientes, tarjetaAviso } from './views-avisos.js';
 import { html, raw, icon, fechaCorta, infoEstado, haceCuanto } from './ui.js';
 
 const DIA = 86400000;
@@ -63,6 +64,8 @@ export async function panelInicio(ctx, seccion, completo, q = '') {
   const hoyIso = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`;
   const deHoy = s.asistencia.filter(a => a.fecha === hoyIso);
   const asisHoy = { n: deHoy.length, faltaron: deHoy.filter(a => a.estado === 'ausente').length, finde: [0, 6].includes(hoy.getDay()) };
+  const av = await avisosPendientes(s, ctx);
+  const avInicio = av.visibles.filter(a => !a.id.startsWith('lista:'));
   const estado = infoEstado(ctx.syncState(), { configurado: ctx.configurado, sesion: ctx.sesion });
   const g = saludo(hoy);
   const ultimo = ctx.syncState().lastSync;
@@ -80,6 +83,13 @@ export async function panelInicio(ctx, seccion, completo, q = '') {
         <span class="avance" role="img" aria-label="${lapsoInfo.pct}% del lapso transcurrido"><span style="width:${lapsoInfo.pct}%"></span></span>`
         : html`<p class="lapso-linea"><a href="#/ajustes">Pon las fechas del lapso en Ajustes</a> para ver cuánto falta.</p>`) : ''}
     </section>
+
+    ${avInicio.length ? html`
+      <section aria-labelledby="avisos-t">
+        <h2 id="avisos-t">Avisos</h2>
+        <ul class="avisos">${avInicio.slice(0, 3).map(tarjetaAviso)}</ul>
+        ${avInicio.length > 3 ? html`<p><a href="#/avisos">Ver los ${avInicio.length} avisos</a></p>` : ''}
+      </section>` : ''}
 
     ${nEst && !asisHoy.finde ? html`
       <section class="asistencia-hoy" aria-labelledby="as-t">
@@ -132,6 +142,7 @@ export async function panelInicio(ctx, seccion, completo, q = '') {
       <h2 id="ir-t">Ir a</h2>
       <ul class="hoja ir-a">
         ${fila('#/estudiantes', 'personas', 'Estudiantes', nEst ? plural(nEst, 'estudiante', 'estudiantes') : 'Agrega o importa tu lista')}
+        ${fila('#/avisos', 'alerta', 'Avisos', avInicio.length ? plural(avInicio.length, 'aviso nuevo', 'avisos nuevos') : 'Nada pendiente por ahora')}
         ${fila('#/asistencia/resumen' + (lapso ? `?l=${lapso.numero}` : ''), 'personas', 'Asistencia', 'Resumen de faltas por lapso')}
         ${fila('#/evaluar', 'evaluar', 'Evaluar', s.asignaturas.length ? `${plural(s.asignaturas.length, 'asignatura', 'asignaturas')}, ${plural(evalsLapso.length, 'evaluación', 'evaluaciones')} en el lapso` : 'Empieza agregando asignaturas')}
         ${fila(`#/reportes${lapso ? `?l=${lapso.numero}` : ''}`, 'reportes', 'Reportes e informes', 'Notas, informe del curso y PDF')}

@@ -6,6 +6,7 @@ import * as V from './views.js';
 import * as E from './views-eval.js';
 import * as R from './views-reportes.js';
 import * as A from './views-asistencia.js';
+import * as AV from './views-avisos.js';
 import { VERSION } from './version.js';
 import { leerInstitucion, aplicarInstitucion } from './institucion.js';
 
@@ -48,6 +49,7 @@ const RUTAS = [
   [/^#\/estudiantes$/, () => V.estudiantes(ctx), 'estudiantes'],
   [/^#\/asistencia\/resumen(?:\?(.*))?$/, m => A.asistenciaResumen(ctx, m[1]), 'inicio'],
   [/^#\/asistencia(?:\?(.*))?$/, m => A.asistenciaDia(ctx, m[1]), 'inicio'],
+  [/^#\/avisos$/, () => AV.avisos(ctx), 'inicio'],
   [/^#\/ajustes$/, () => V.ajustes(ctx), 'ajustes'],
 ];
 
