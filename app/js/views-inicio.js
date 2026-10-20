@@ -4,7 +4,7 @@ import { aprueba, promedio } from './calc.js';
 import { cargarSnapshot, notaAsignatura, resumenAsistencia, promedioGeneral, enRiesgo, logroCurso, esDebil } from './analisis.js';
 import { barra } from './views-reportes.js';
 import { avisosPendientes, tarjetaAviso } from './views-avisos.js';
-import { html, raw, icon, fechaCorta, infoEstado, haceCuanto } from './ui.js';
+import { html, raw, icon, fechaCorta } from './ui.js';
 
 const DIA = 86400000;
 const utc = iso => Date.parse(iso + 'T00:00:00Z');
@@ -66,9 +66,7 @@ export async function panelInicio(ctx, seccion, completo, q = '') {
   const asisHoy = { n: deHoy.length, faltaron: deHoy.filter(a => a.estado === 'ausente').length, finde: [0, 6].includes(hoy.getDay()) };
   const av = await avisosPendientes(s, ctx);
   const avInicio = av.visibles.filter(a => !a.id.startsWith('lista:'));
-  const estado = infoEstado(ctx.syncState(), { configurado: ctx.configurado, sesion: ctx.sesion });
   const g = saludo(hoy);
-  const ultimo = ctx.syncState().lastSync;
   const sub = [seccion.grado, seccion.nombre && `Sección ${seccion.nombre}`, seccion.anio_escolar].filter(Boolean).join(' · ');
   const fila = (href, ico, tit, sub2, extra = '') => html`<li><a class="fila ${extra}" href="${href}"><span class="fila-ico">${icon(ico, 20)}</span><span class="fila-texto"><span class="fila-nombre">${tit}</span><span class="fila-sub">${sub2}</span></span></a></li>`;
 
@@ -147,7 +145,6 @@ export async function panelInicio(ctx, seccion, completo, q = '') {
         ${fila('#/evaluar', 'evaluar', 'Evaluar', s.asignaturas.length ? `${plural(s.asignaturas.length, 'asignatura', 'asignaturas')}, ${plural(evalsLapso.length, 'evaluación', 'evaluaciones')} en el lapso` : 'Empieza agregando asignaturas')}
         ${fila(`#/reportes${lapso ? `?l=${lapso.numero}` : ''}`, 'reportes', 'Reportes e informes', 'Notas, informe del curso y PDF')}
         ${fila('#/reportes/banco', 'libro', 'Mis recomendaciones', `${plural(s.recomendaciones.length, 'guardada', 'guardadas')}`)}
-        ${fila('#/ajustes', 'nube', 'Respaldo', html`<strong>${estado.texto}</strong>${ultimo && ctx.configurado ? ` · último respaldo ${haceCuanto(ultimo)}` : ''}`, 'respaldo ' + estado.clase)}
       </ul>
     </section>`;
 }

@@ -2,7 +2,7 @@
 // - Archivos de la app: se guardan al instalar y se sirven desde el celular, así abre sin internet.
 // - config.json: primero la red (para que un cambio llegue pronto), y si no hay red, la copia guardada.
 // - Una versión nueva espera hasta que la docente toque "Actualizar".
-const VERSION = '71eb44049a';
+const VERSION = '8359ab5d89';
 const CACHE = 'cuaderno-app-' + VERSION;
 const CACHE_CONFIG = 'cuaderno-config';
 const FILES = ["./","css/styles.css","fonts/public-sans.woff2","fonts/source-serif-4.woff2","icons/icon-192.png","icons/icon-512.png","icons/icon-maskable-512.png","index.html","js/analisis.js","js/avisos.js","js/bloqueo.js","js/calc.js","js/data.js","js/excel.js","js/form.js","js/ia.js","js/institucion.js","js/main.js","js/remote.js","js/schema.js","js/sync.js","js/ui.js","js/views-asistencia.js","js/views-avisos.js","js/views-eval.js","js/views-inicio.js","js/views-reportes.js","js/views.js","manifest.webmanifest","vendor/dexie.js","vendor/supabase.js","vendor/xlsx.js","js/version.js","config.json"];
