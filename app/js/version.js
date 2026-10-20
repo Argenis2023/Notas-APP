@@ -1,2 +1,2 @@
 // Generado por tools/build.mjs
-export const VERSION = 'bf18978373';
+export const VERSION = '7e0ceeeb9a';

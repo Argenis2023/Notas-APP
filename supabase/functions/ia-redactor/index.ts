@@ -46,20 +46,32 @@ async function conGemini(sistema: string, datos: string, max: number): Promise<s
   const clave = Deno.env.get('GEMINI_API_KEY');
   if (!clave) throw new Error('sin_clave_gemini');
   const modelo = Deno.env.get('GEMINI_MODEL') || 'gemini-flash-latest';
-  const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-goog-api-key': clave },
-    body: JSON.stringify({
-      systemInstruction: { parts: [{ text: sistema }] },
-      contents: [{ role: 'user', parts: [{ text: datos }] }],
-      generationConfig: { temperature: 0.6, maxOutputTokens: max + 1500 },
-    }),
-  });
-  if (!r.ok) throw new Error(`gemini_${r.status}`);
-  const j = await r.json();
-  const texto = (j?.candidates?.[0]?.content?.parts ?? []).map((p: { text?: string }) => p.text ?? '').join('').trim();
-  if (!texto) throw new Error('gemini_vacio');
-  return texto;
+  // Los modelos Flash recientes "piensan" antes de responder, y eso toma varios segundos.
+  // Para redactar un párrafo no hace falta: se pide el mínimo y, si el modelo no acepta la opción, se prueba la siguiente.
+  const pensamientos: Array<Record<string, unknown>> = [
+    { thinkingConfig: { thinkingBudget: 0 } },
+    { thinkingConfig: { thinkingLevel: 'low' } },
+    {},
+  ];
+  let ultimo = 'gemini_error';
+  for (const extra of pensamientos) {
+    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': clave },
+      body: JSON.stringify({
+        systemInstruction: { parts: [{ text: sistema }] },
+        contents: [{ role: 'user', parts: [{ text: datos }] }],
+        generationConfig: { temperature: 0.6, maxOutputTokens: max + (Object.keys(extra).length ? 300 : 1500), ...extra },
+      }),
+    });
+    if (r.status === 400) { ultimo = 'gemini_400'; continue; } // opción no admitida por este modelo
+    if (!r.ok) throw new Error(`gemini_${r.status}`);
+    const j = await r.json();
+    const texto = (j?.candidates?.[0]?.content?.parts ?? []).map((p: { text?: string }) => p.text ?? '').join('').trim();
+    if (!texto) throw new Error('gemini_vacio');
+    return texto;
+  }
+  throw new Error(ultimo);
 }
 
 async function conGroq(sistema: string, datos: string, max: number): Promise<string> {

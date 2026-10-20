@@ -259,7 +259,7 @@ export async function reporteEstudiante(ctx, estId, q) {
         $('#b-ia-enviar', root).addEventListener('click', async ev => {
           const b = ev.currentTarget;
           b.disabled = true;
-          b.textContent = 'Redactando…';
+          b.textContent = 'Redactando, puede tardar unos segundos…';
           mostrarError(root, 'e-ia', '');
           try {
             const r = await ctx.ia('descripcion_estudiante', $('#ia-datos', root).textContent);
