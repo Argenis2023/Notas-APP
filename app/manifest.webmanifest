@@ -1,0 +1,16 @@
+{
+  "name": "Cuaderno docente",
+  "short_name": "Cuaderno",
+  "description": "Cuaderno de evaluación para docentes: estudiantes, listas de cotejo y reportes.",
+  "lang": "es-VE",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#F6F9FC",
+  "theme_color": "#1F3FB8",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

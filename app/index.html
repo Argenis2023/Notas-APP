@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="es-VE">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cuaderno docente</title>
+<meta name="description" content="Cuaderno de evaluación para docentes: estudiantes, listas de cotejo y reportes.">
+<meta name="theme-color" content="#1F3FB8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0F1726" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="preload" href="fonts/lexend.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<noscript><p style="padding:1rem">El Cuaderno docente necesita JavaScript para funcionar.</p></noscript>
+
+<div id="gate" hidden></div>
+
+<div id="shell" hidden>
+  <header class="top">
+    <h1 id="titulo">Cuaderno docente</h1>
+    <button id="chip" class="chip local" type="button"><span class="punto" aria-hidden="true"></span><span id="chip-texto">Solo en este celular</span></button>
+  </header>
+  <div id="banner" class="banner" hidden></div>
+  <main id="view" tabindex="-1"></main>
+  <nav class="tabs" aria-label="Secciones del cuaderno">
+    <a href="#/" data-ruta="inicio"><svg class="ico" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9.5h13V10"/><path d="M10 19.5v-5h4v5"/></svg><span>Inicio</span></a>
+    <a href="#/estudiantes" data-ruta="estudiantes"><svg class="ico" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 19.5c.4-3.4 3-5.3 6-5.3s5.6 1.9 6 5.3"/><path d="M16 5.2a3.2 3.2 0 0 1 0 5.6"/><path d="M18 14.6c1.8.7 2.9 2.3 3.1 4.4"/></svg><span>Estudiantes</span></a>
+    <a href="#/ajustes" data-ruta="ajustes"><svg class="ico" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h9"/><path d="M17 7h3"/><circle cx="15" cy="7" r="2"/><path d="M4 17h3"/><path d="M11 17h9"/><circle cx="9" cy="17" r="2"/></svg><span>Ajustes</span></a>
+  </nav>
+</div>
+
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
