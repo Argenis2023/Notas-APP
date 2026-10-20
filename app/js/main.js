@@ -3,6 +3,7 @@ import { db, bus, getSeccion } from './data.js';
 import { createSync } from './sync.js';
 import { html, toast, infoEstado, mensajeError } from './ui.js';
 import * as V from './views.js';
+import * as E from './views-eval.js';
 
 const $ = (s, r = document) => r.querySelector(s);
 
@@ -25,6 +26,13 @@ let ficha = 0;
 // ---------- rutas ----------
 const RUTAS = [
   [/^#\/?$/, () => V.inicio(ctx), 'inicio'],
+  [/^#\/evaluar$/, () => E.evaluar(ctx), 'evaluar'],
+  [/^#\/evaluar\/a\/([^/?]+)\/nueva(?:\?(.*))?$/, m => E.evaluacionForm(ctx, { asignaturaId: m[1], lapsoNum: new URLSearchParams(m[2] || '').get('l') }), 'evaluar'],
+  [/^#\/evaluar\/a\/([^/?]+)(?:\?(.*))?$/, m => E.asignatura(ctx, m[1], m[2]), 'evaluar'],
+  [/^#\/evaluar\/e\/([^/?]+)\/editar$/, m => E.evaluacionForm(ctx, { evaluacionId: m[1] }), 'evaluar'],
+  [/^#\/evaluar\/e\/([^/?]+)\/indicador\/([^/?]+)$/, m => E.indicadorForm(ctx, m[1], m[2]), 'evaluar'],
+  [/^#\/evaluar\/e\/([^/?]+)\/cotejo(?:\?(.*))?$/, m => E.cotejo(ctx, m[1], m[2]), 'evaluar'],
+  [/^#\/evaluar\/e\/([^/?]+)$/, m => E.evaluacion(ctx, m[1]), 'evaluar'],
   [/^#\/estudiantes\/importar$/, () => V.importar(ctx), 'estudiantes'],
   [/^#\/estudiantes\/nuevo$/, () => V.estudianteForm(ctx, 'nuevo'), 'estudiantes'],
   [/^#\/estudiantes\/([^/]+)$/, m => V.estudianteForm(ctx, m[1]), 'estudiantes'],

@@ -1,36 +1,13 @@
 // Pantallas de la app. Cada una devuelve { title, html, mount?, onStatus?, live? }.
 import {
   getSeccion, crearSeccion, getLapsos, lapsoActual, listEstudiantes, addEstudiante, get, update, remove,
-  importEstudiantes, anioEscolarActual, exportAll, restoreAll, validateBackup,
+  importEstudiantes, anioEscolarActual, exportAll, restoreAll, validateBackup, listAsignaturas, listEvaluaciones,
 } from './data.js';
 import { html, raw, icon, toast, fechaCorta, haceCuanto, infoEstado } from './ui.js';
 import { VERSION } from './version.js';
 
-const $ = (sel, root = document) => root.querySelector(sel);
-const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
-
-function campo({ id, label, value = '', type = 'text', hint = '', required = false, extra = '' }) {
-  return html`<div class="field">
-    <label for="${id}">${label}${required ? html` <span class="oblig">obligatorio</span>` : ''}</label>
-    <input id="${id}" name="${id}" type="${type}" value="${value ?? ''}" ${raw(extra)}>
-    ${hint ? html`<p class="hint">${hint}</p>` : ''}
-  </div>`;
-}
-function areaTexto({ id, label, value = '', hint = '', rows = 3 }) {
-  return html`<div class="field">
-    <label for="${id}">${label}</label>
-    <textarea id="${id}" name="${id}" rows="${rows}">${value ?? ''}</textarea>
-    ${hint ? html`<p class="hint">${hint}</p>` : ''}
-  </div>`;
-}
-const errorBox = id => html`<p class="error" id="${id}" role="alert" hidden></p>`;
-function mostrarError(root, id, texto) {
-  const el = $('#' + id, root);
-  if (!el) return;
-  el.textContent = texto;
-  el.hidden = !texto;
-  if (texto) el.scrollIntoView({ block: 'center', behavior: 'smooth' });
-}
+import { bloqueCalculo } from './views-eval.js';
+import { $, $$, campo, areaTexto, errorBox, mostrarError } from './form.js';
 
 // =====================================================================
 // Inicio
@@ -71,7 +48,10 @@ export async function inicio(ctx) {
   const estudiantes = await listEstudiantes(seccion.id);
   const fechasListas = lapsos.length > 0 && lapsos.every(l => l.fecha_inicio && l.fecha_fin);
   const actual = lapsoActual(lapsos);
-  const completo = fechasListas && estudiantes.length > 0;
+  const asignaturas = await listAsignaturas(seccion.id);
+  let hayEvaluacion = false;
+  for (const a of asignaturas) if ((await listEvaluaciones(a.id)).length) { hayEvaluacion = true; break; }
+  const completo = fechasListas && estudiantes.length > 0 && asignaturas.length > 0 && hayEvaluacion;
   const sinRespaldo = !ctx.configurado;
 
   return {
@@ -95,7 +75,7 @@ export async function inicio(ctx) {
             <span class="dato-txt">${actual ? `del ${fechaCorta(actual.fecha_inicio)} al ${fechaCorta(actual.fecha_fin)}` : ''}</span>
           </div>
         </section>
-        <p><a class="btn primary" href="#/estudiantes">Ver estudiantes</a></p>
+        <div class="acciones"><a class="btn primary" href="#/evaluar">Evaluar</a><a class="btn secondary" href="#/estudiantes">Ver estudiantes</a></div>
       ` : html`
         <section aria-labelledby="pasos-t">
           <h2 id="pasos-t">Para dejar el cuaderno listo</h2>
@@ -114,6 +94,18 @@ export async function inicio(ctx) {
                     <a class="btn primary chico" href="#/estudiantes/nuevo">Agregar uno</a>
                     <a class="btn secondary chico" href="#/estudiantes/importar">Importar de Excel</a>
                   </p>`}
+              </div>
+            </li>
+            <li class="${asignaturas.length ? 'hecho' : ''}">
+              <span class="marca">${asignaturas.length ? icon('check', 18) : ''}</span>
+              <div><strong>Agregar tus asignaturas</strong>
+                ${asignaturas.length ? html`<p class="hint">${asignaturas.length} ${asignaturas.length === 1 ? 'agregada' : 'agregadas'}. <a href="#/evaluar">Ver</a></p>` : html`<p><a class="btn primary chico" href="#/evaluar">Agregar asignaturas</a></p>`}
+              </div>
+            </li>
+            <li class="${hayEvaluacion ? 'hecho' : ''}">
+              <span class="marca">${hayEvaluacion ? icon('check', 18) : ''}</span>
+              <div><strong>Crear tu primera evaluación</strong>
+                ${hayEvaluacion ? '' : html`<p class="hint">Entra a una asignatura y toca "Nueva evaluación".</p>`}
               </div>
             </li>
           </ul>
@@ -353,6 +345,7 @@ export async function importar(ctx) {
 // =====================================================================
 export async function ajustes(ctx) {
   const seccion = await getSeccion();
+  const calculo = await bloqueCalculo();
   const lapsos = seccion ? await getLapsos(seccion.id) : [];
 
   const bloqueSeccion = seccion ? html`
@@ -421,10 +414,11 @@ export async function ajustes(ctx) {
 
   return {
     title: 'Ajustes',
-    html: html`${bloqueSeccion}${respaldo}${cuenta}${app}`,
+    html: html`${bloqueSeccion}${calculo.html}${respaldo}${cuenta}${app}`,
     onStatus(root) { pintarRespaldo(root); },
     mount(root) {
       pintarRespaldo(root);
+      calculo.mount(root, seccion);
 
       const f = $('#f-ajustes-seccion', root);
       if (f) {
