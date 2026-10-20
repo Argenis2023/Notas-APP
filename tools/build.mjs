@@ -16,8 +16,8 @@ await build({ ...common, stdin: { contents: "export { createClient } from '@supa
 await build({ ...common, stdin: { contents: "import Dexie from 'dexie'; export default Dexie; export { Dexie };", resolveDir: join(root, 'tools') }, outfile: join(app, 'vendor/dexie.js') });
 await build({ ...common, stdin: { contents: "import * as XLSX from 'xlsx'; export default XLSX;", resolveDir: join(root, 'tools') }, outfile: join(app, 'vendor/xlsx.js') });
 
-copyFileSync(join(root, 'tools/node_modules/@fontsource-variable/lexend/files/lexend-latin-wght-normal.woff2'), join(app, 'fonts/lexend.woff2'));
-copyFileSync(join(root, 'tools/node_modules/@fontsource-variable/caveat/files/caveat-latin-wght-normal.woff2'), join(app, 'fonts/caveat.woff2'));
+copyFileSync(join(root, 'tools/node_modules/@fontsource-variable/public-sans/files/public-sans-latin-wght-normal.woff2'), join(app, 'fonts/public-sans.woff2'));
+copyFileSync(join(root, 'tools/node_modules/@fontsource-variable/source-serif-4/files/source-serif-4-latin-wght-normal.woff2'), join(app, 'fonts/source-serif-4.woff2'));
 
 // Lista de archivos de la app y versión (hash del contenido) para el service worker
 const skip = new Set(['sw.js', 'config.json', 'js/version.js']);
