@@ -50,5 +50,19 @@ export function createSupabase(url, anonKey) {
     },
   };
 
-  return { auth, remote };
+  // Asistente de redacción: llama a la función segura de Supabase (la clave de la IA nunca está en la app).
+  const ia = async (tipo, datos) => {
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) throw Object.assign(new Error('offline'), { codigo: 'offline' });
+    const { data, error } = await client.functions.invoke('ia-redactor', { body: { tipo, datos } });
+    if (error) {
+      let cuerpo = null;
+      try { cuerpo = error.context && error.context.json ? await error.context.json() : null; } catch { /* sin cuerpo */ }
+      const estado = error.context && error.context.status;
+      const codigo = cuerpo && cuerpo.error ? cuerpo.error : estado === 404 ? 'no_desplegada' : estado === 401 ? 'sin_sesion' : 'error';
+      throw Object.assign(new Error(codigo), { codigo, detalle: cuerpo && cuerpo.detalle });
+    }
+    return data;
+  };
+
+  return { auth, remote, ia };
 }

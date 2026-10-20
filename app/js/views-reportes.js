@@ -10,6 +10,7 @@ import {
 import { html, raw, icon, toast, fechaLarga } from './ui.js';
 import { $, $$, campo, areaTexto, errorBox, mostrarError } from './form.js';
 import { promedio } from './calc.js';
+import { datosDescripcion, datosRecomendacion, mensajeIA } from './ia.js';
 
 const sinSeccion = titulo => ({ title: titulo, html: html`<p class="vacio">Primero crea tu sección en <a href="#/">Inicio</a>.</p>` });
 const textoNota = n => (n === null || n === undefined ? '–' : String(n));
@@ -44,15 +45,17 @@ const cabecera = (s, lapso, titulo) => html`
   </header>`;
 
 // Recomendación visible para un indicador débil: la del banco, o una sugerencia general.
-function bloqueRecomendacion(s, asig, clave, editable) {
+function bloqueRecomendacion(s, asig, clave, editable, pct = null, alcance = 'estudiante', ia = false) {
   const r = buscarRecomendacion(s, asig.id, clave);
-  return html`<li class="recom" data-asig="${asig.id}" data-clave="${clave}">
+  return html`<li class="recom" data-asig="${asig.id}" data-clave="${clave}" data-pct="${pct ?? ''}" data-alcance="${alcance}">
     <p><strong>${clave}:</strong> <span class="recom-texto">${r ? r.recomendacion : sugerenciaGeneral(clave)}</span>${r ? '' : html` <span class="hint no-print">(sugerencia general)</span>`}</p>
     ${editable ? html`<details class="no-print recom-editar">
       <summary>${r ? 'Cambiar esta recomendación' : 'Escribir mi recomendación'}</summary>
       <div class="stack">
         <textarea rows="3" aria-label="Recomendación para ${clave}">${r ? r.recomendacion : ''}</textarea>
         <p class="hint">Se guarda en tu banco y se usa para todos los estudiantes con este tema débil en ${asig.nombre}.</p>
+        ${ia && pct !== null ? html`<div class="acciones"><button type="button" class="btn secondary chico sugerir-ia">Sugerir con IA</button></div>
+          <p class="hint">La IA recibe solo la asignatura, el tema y el porcentaje, sin ningún dato de estudiantes. Revisa lo que escriba antes de guardarlo.</p>` : ''}
         <button type="button" class="btn secondary chico guardar-recom">Guardar en mi banco</button>
       </div>
     </details>` : ''}
@@ -72,6 +75,21 @@ async function guardarRecomendacion(s, asigId, clave, texto) {
 
 function conectarRecomendaciones(root, s, ctx) {
   $$('.recom', root).forEach(li => {
+    const sug = $('.sugerir-ia', li);
+    if (sug) sug.addEventListener('click', async () => {
+      const asig = s.asignaturas.find(a => a.id === li.dataset.asig);
+      sug.disabled = true;
+      const antes = sug.textContent;
+      sug.textContent = 'Redactando…';
+      try {
+        const datos = datosRecomendacion(s, asig, li.dataset.clave, li.dataset.pct, li.dataset.alcance);
+        const r = await ctx.ia('recomendacion_tema', datos);
+        $('textarea', li).value = r.texto;
+        toast('Sugerencia lista. Revísala y guárdala si te sirve.');
+      } catch (e) { toast(mensajeIA(e), 'error'); }
+      sug.disabled = false;
+      sug.textContent = antes;
+    });
     const b = $('.guardar-recom', li);
     if (!b) return;
     b.addEventListener('click', async () => {
@@ -150,6 +168,7 @@ export async function reporteEstudiante(ctx, estId, q) {
   if (!e) return { title: 'Informe', html: html`<p class="vacio">No encontré a este estudiante. <a href="#/reportes">Volver</a></p>` };
   const lapso = lapsoElegido(s, q);
   const base = `#/reportes/e/${e.id}`;
+  const iaOk = ctx.iaDisponible();
   const prom = promedioGeneral(s, lapso.id, e.id);
 
   const asigs = s.asignaturas.map(a => ({ a, nota: notaAsignatura(s, a.id, lapso.id, e.id), logro: logroEstudiante(s, a.id, lapso.id, e.id) })).filter(x => x.nota !== null);
@@ -188,7 +207,7 @@ export async function reporteEstudiante(ctx, estId, q) {
               ${logro.length ? html`<ul class="barras">${logro.map(l => barra(l.clave, l.pct, s))}</ul>` : html`<p class="hint">Todavía no hay indicadores marcados.</p>`}
               ${logro.some(l => esDebil(l.pct, s)) ? html`
                 <p class="recom-t">Cómo mejorar</p>
-                <ul class="recoms">${logro.filter(l => esDebil(l.pct, s)).map(l => bloqueRecomendacion(s, a, l.clave, true))}</ul>` : ''}
+                <ul class="recoms">${logro.filter(l => esDebil(l.pct, s)).map(l => bloqueRecomendacion(s, a, l.clave, true, l.pct, 'estudiante', iaOk))}</ul>` : ''}
             </section>`)}
 
           <section class="informe-desc">
@@ -196,6 +215,19 @@ export async function reporteEstudiante(ctx, estId, q) {
             <label class="oculto-visual" for="desc">Descripción del lapso</label>
             <textarea id="desc" class="no-print" rows="7">${textoDesc}</textarea>
             <div id="desc-impresa" class="solo-impresion">${textoDesc}</div>
+            <p class="aviso-ia no-print" id="ia-aviso" hidden>Borrador escrito con IA. Léelo y corrígelo con tus palabras antes de guardarlo.</p>
+            ${iaOk ? html`
+              <div class="acciones no-print"><button type="button" class="btn secondary" id="b-ia">Redactar con IA</button></div>
+              <section class="ia-panel no-print" id="ia-panel" hidden aria-labelledby="ia-t">
+                <h4 id="ia-t">Esto es lo que se enviará a la IA</h4>
+                <p class="hint">Solo códigos, notas, indicadores y porcentajes. No se envía el nombre, la cédula, la fecha de nacimiento ni contactos.</p>
+                <pre class="ia-datos" id="ia-datos"></pre>
+                <div class="field"><label for="ia-extra">Algo más que quieras contar (opcional)</label>
+                  <textarea id="ia-extra" rows="2" placeholder="Por ejemplo: participa mucho en clase"></textarea>
+                  <p class="hint">Si escribes un nombre, se cambia por su código antes de enviar. Lo verás arriba.</p></div>
+                ${errorBox('e-ia')}
+                <div class="acciones"><button type="button" class="btn primary" id="b-ia-enviar">Enviar y redactar</button><button type="button" class="btn secondary" id="b-ia-cancelar">Cancelar</button></div>
+              </section>` : ''}
             <div class="acciones no-print">
               <button type="button" class="btn secondary chico" id="b-desc">Guardar descripción</button>
               <button type="button" class="btn borrar" id="b-borrador">Volver al borrador automático</button>
@@ -214,13 +246,44 @@ export async function reporteEstudiante(ctx, estId, q) {
       if (!d) return;
       const espejo = () => { $('#desc-impresa', root).textContent = d.value; };
       d.addEventListener('input', espejo);
+      let desdeIA = !!(guardado && guardado.generado_con_ia);
+      const aviso = () => { const a = $('#ia-aviso', root); if (a) a.hidden = !desdeIA; };
+      aviso();
+      const bIA = $('#b-ia', root);
+      if (bIA) {
+        const panel = $('#ia-panel', root);
+        const pintar = () => { $('#ia-datos', root).textContent = datosDescripcion(s, e, lapso, $('#ia-extra', root).value); };
+        bIA.addEventListener('click', () => { panel.hidden = false; bIA.hidden = true; pintar(); panel.scrollIntoView({ block: 'center', behavior: 'smooth' }); });
+        $('#ia-extra', root).addEventListener('input', pintar);
+        $('#b-ia-cancelar', root).addEventListener('click', () => { panel.hidden = true; bIA.hidden = false; });
+        $('#b-ia-enviar', root).addEventListener('click', async ev => {
+          const b = ev.currentTarget;
+          b.disabled = true;
+          b.textContent = 'Redactando…';
+          mostrarError(root, 'e-ia', '');
+          try {
+            const r = await ctx.ia('descripcion_estudiante', $('#ia-datos', root).textContent);
+            d.value = r.texto;
+            espejo();
+            desdeIA = true;
+            aviso();
+            panel.hidden = true;
+            bIA.hidden = false;
+            toast('Borrador listo. Revísalo y guárdalo.');
+          } catch (err) { mostrarError(root, 'e-ia', mensajeIA(err)); }
+          b.disabled = false;
+          b.textContent = 'Enviar y redactar';
+        });
+      }
       $('#b-desc', root).addEventListener('click', async () => {
-        await guardarConId('reportes', idDesc, { tipo: 'boletin', estudiante_id: e.id, seccion_id: seccion.id, lapso_id: lapso.id, texto: d.value, generado_con_ia: false, revisado_en: new Date().toISOString() });
+        await guardarConId('reportes', idDesc, { tipo: 'boletin', estudiante_id: e.id, seccion_id: seccion.id, lapso_id: lapso.id, texto: d.value, generado_con_ia: desdeIA, revisado_en: new Date().toISOString() });
         toast('Descripción guardada');
       });
       $('#b-borrador', root).addEventListener('click', async () => {
         d.value = borrador;
         espejo();
+        desdeIA = false;
+        aviso();
         if (guardado) await guardarConId('reportes', idDesc, { tipo: 'boletin', estudiante_id: e.id, seccion_id: seccion.id, lapso_id: lapso.id, texto: null, generado_con_ia: false, revisado_en: null });
         toast('Se restauró el borrador automático');
       });
@@ -237,6 +300,7 @@ export async function reporteCurso(ctx, q) {
   const s = await cargarSnapshot(seccion);
   const lapso = lapsoElegido(s, q);
   const base = '#/reportes/curso';
+  const iaOk = ctx.iaDisponible();
   const proms = s.estudiantes.map(e => ({ e, prom: promedioGeneral(s, lapso.id, e.id) }));
   const conNota = proms.filter(p => p.prom !== null);
   const promCurso = promedio(conNota.map(p => p.prom));
@@ -287,7 +351,7 @@ export async function reporteCurso(ctx, q) {
               ${logro.length ? html`<ul class="barras">${logro.map(l => barra(l.clave, l.pct, s))}</ul>` : html`<p class="hint">Todavía no hay indicadores marcados.</p>`}
               ${logro.some(l => esDebil(l.pct, s)) ? html`
                 <p class="recom-t">Qué reforzar con todo el curso</p>
-                <ul class="recoms">${logro.filter(l => esDebil(l.pct, s)).map(l => bloqueRecomendacion(s, a, l.clave, true))}</ul>` : ''}
+                <ul class="recoms">${logro.filter(l => esDebil(l.pct, s)).map(l => bloqueRecomendacion(s, a, l.clave, true, l.pct, 'curso', iaOk))}</ul>` : ''}
             </section>`)}
 
           <section>

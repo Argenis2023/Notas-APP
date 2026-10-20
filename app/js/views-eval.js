@@ -554,3 +554,50 @@ export async function bloqueCalculo() {
     },
   };
 }
+
+// =====================================================================
+// Ajustes: asistente de redacción (IA)
+// =====================================================================
+export function bloqueIA(ctx) {
+  const disponible = ctx.iaDisponible && ctx.iaDisponible();
+  return {
+    html: html`
+      <section class="bloque" aria-labelledby="t-ia">
+        <h2 id="t-ia">Asistente de redacción (IA)</h2>
+        <p>Redacta borradores de la descripción del lapso y sugiere actividades de refuerzo. Siempre ves lo que se envía y el resultado es un borrador que tú revisas.</p>
+        <p class="hint">La IA recibe códigos como "Estudiante 7", notas, indicadores y porcentajes. Nunca recibe nombres, cédula, fecha de nacimiento ni contactos.</p>
+        ${disponible ? html`
+          <div class="acciones"><button type="button" class="btn secondary" id="b-probar-ia">Probar la conexión con la IA</button></div>
+          <p id="estado-ia" class="estado" aria-live="polite"></p>`
+          : html`<p class="estado local">Disponible cuando el respaldo en la nube esté activo y hayas iniciado sesión.</p>`}
+      </section>`,
+    mount(root) {
+      const b = $('#b-probar-ia', root);
+      if (!b) return;
+      b.addEventListener('click', async () => {
+        const out = $('#estado-ia', root);
+        out.className = 'estado';
+        out.textContent = 'Probando…';
+        b.disabled = true;
+        try {
+          const r = await ctx.ia('prueba', '');
+          out.className = 'estado ok';
+          out.textContent = `La IA responde (${r.proveedor}).`;
+        } catch (e) {
+          out.className = 'estado error';
+          out.textContent = mensajeIAAjustes(e);
+        }
+        b.disabled = false;
+      });
+    },
+  };
+}
+function mensajeIAAjustes(e) {
+  const c = e && e.codigo ? e.codigo : '';
+  if (c === 'no_desplegada') return 'La función de IA todavía no está instalada en Supabase.';
+  if (c === 'sin_sesion') return 'Tu sesión venció. Cierra sesión y vuelve a entrar.';
+  if (c === 'cuota') return 'La IA gratuita llegó a su límite por ahora.';
+  if (c === 'ia_no_disponible') return `La función existe, pero la IA no respondió. Revisa la clave en Supabase. ${e.detalle || ''}`.trim();
+  if (c === 'offline') return 'No hay conexión con internet.';
+  return 'No se pudo conectar con la IA.';
+}

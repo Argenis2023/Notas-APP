@@ -423,3 +423,9 @@ select:focus { outline: 3px solid var(--azul); outline-offset: 1px; border-color
 .ficha-ancha { padding-right: 2.8rem; }
 .avance { display: block; height: 0.6rem; margin-top: 0.5rem; background: var(--cuadricula); border: 1px solid var(--linea); border-radius: 4px; overflow: hidden; }
 .avance > span { display: block; height: 100%; background: var(--azul); }
+
+/* ---------- asistente de redacción ---------- */
+.ia-panel { margin: 0.75rem 0; padding: 0.9rem; background: var(--azul-suave); border: 1.5px solid var(--azul); border-radius: 8px; }
+.ia-panel h4 { margin: 0 0 0.3rem; font-size: 1rem; }
+.ia-datos { margin: 0.5rem 0 0.9rem; padding: 0.7rem 0.8rem; max-height: 14rem; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; font: inherit; font-size: 0.88rem; background: var(--hoja); border: 1px solid var(--linea); border-radius: 6px; }
+.aviso-ia { margin: 0 0 0.5rem; padding: 0.5rem 0.7rem; font-size: 0.9rem; font-weight: 500; background: var(--marcatextos); color: var(--sobre-marcatextos); border-radius: 4px; }

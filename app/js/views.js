@@ -6,7 +6,7 @@ import {
 import { html, raw, icon, toast, fechaCorta, haceCuanto, infoEstado } from './ui.js';
 import { VERSION } from './version.js';
 
-import { bloqueCalculo } from './views-eval.js';
+import { bloqueCalculo, bloqueIA } from './views-eval.js';
 import { panelInicio } from './views-inicio.js';
 import { $, $$, campo, areaTexto, errorBox, mostrarError } from './form.js';
 
@@ -341,6 +341,7 @@ export async function importar(ctx) {
 export async function ajustes(ctx) {
   const seccion = await getSeccion();
   const calculo = await bloqueCalculo();
+  const asistente = bloqueIA(ctx);
   const lapsos = seccion ? await getLapsos(seccion.id) : [];
 
   const bloqueSeccion = seccion ? html`
@@ -409,11 +410,12 @@ export async function ajustes(ctx) {
 
   return {
     title: 'Ajustes',
-    html: html`${bloqueSeccion}${calculo.html}${respaldo}${cuenta}${app}`,
+    html: html`${bloqueSeccion}${calculo.html}${asistente.html}${respaldo}${cuenta}${app}`,
     onStatus(root) { pintarRespaldo(root); },
     mount(root) {
       pintarRespaldo(root);
       calculo.mount(root, seccion);
+      asistente.mount(root);
 
       const f = $('#f-ajustes-seccion', root);
       if (f) {

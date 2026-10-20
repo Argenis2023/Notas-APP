@@ -212,6 +212,8 @@ async function boot() {
   }
   ctx.configurado = !!supa;
   ctx.supa = supa;
+  ctx.iaDisponible = () => !!(ctx.configurado && ctx.sesion && ctx.supa && ctx.supa.ia);
+  ctx.ia = (tipo, datos) => ctx.supa.ia(tipo, datos);
   if (supa) {
     ctx.sesion = await supa.auth.session().catch(() => null);
     if (!ctx.sesion) ctx.sesion = await pedirLogin(supa);

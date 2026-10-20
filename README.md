@@ -20,3 +20,11 @@ Nota: el plan gratis pausa el proyecto tras ~1 semana sin uso; basta entrar a la
 
 ## Privacidad
 La IA (etapa 4) solo recibirá códigos ("Estudiante 7"), nunca nombres, cédula, fecha de nacimiento ni contactos.
+
+## Asistente de redacción (IA)
+La función `supabase/functions/ia-redactor/index.ts` redacta borradores con Gemini (y Groq de respaldo).
+1. Clave gratis en aistudio.google.com (Get API key). Nunca va en el código de la app.
+2. Supabase > Edge Functions > Secrets: agregar `GEMINI_API_KEY`. Opcionales: `GROQ_API_KEY`, `GEMINI_MODEL`, `GROQ_MODEL`, `ALLOWED_EMAIL` (solo ese correo puede usarla) y `ALLOWED_ORIGIN`.
+3. Supabase > Edge Functions > Deploy a new function > Via Editor: nombre `ia-redactor`, pegar `index.ts` y Deploy. Dejar activada "Verify JWT".
+4. En la app: Ajustes > Asistente de redacción > "Probar la conexión con la IA".
+La app solo envía códigos ("Estudiante 7"), notas, indicadores y porcentajes. La función además rechaza correos y números largos.
