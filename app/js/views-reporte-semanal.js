@@ -36,14 +36,32 @@ function tarjetaContacto(nombre, correo) {
 function ayudaSpam() {
   return html`
     <div class="ayuda-spam" role="note" id="ay-spam" hidden>
-      <p><strong>Si el reporte llega a spam</strong></p>
+      <p><strong>Guarda a la app en tus contactos para recibir los reportes</strong></p>
+      <p>Los reportes salen del correo <strong id="ay-correo"></strong>. Como es un remitente nuevo, Gmail puede mandarlos a spam y no verás que llegaron. Guardarlo en tus contactos le dice a Gmail que lo conoces y que debe entregarlo en tu bandeja.</p>
       <ol>
-        <li>Abre el correo en spam y toca <strong>No es spam</strong>.</li>
-        <li>Guarda a <strong id="ay-correo"></strong> en tus contactos: toca el botón de abajo y abre el archivo descargado.</li>
+        <li>Toca el botón de abajo y elige <strong>Contactos</strong> en el menú que se abre. Si no se abre ningún menú, se descarga un archivo: ábrelo y guarda el contacto.</li>
+        <li>Si un reporte ya llegó a spam, ábrelo y toca <strong>No es spam</strong>.</li>
         <li>Opcional: en Gmail, busca ese remitente, elige <strong>Filtrar mensajes como estos</strong> y marca <strong>No enviar nunca a spam</strong>.</li>
       </ol>
       <div class="acciones"><button type="button" class="btn secondary" id="b-contacto">Guardar contacto de la app</button></div>
     </div>`;
+}
+
+// Intenta abrir el menú de compartir del celular con la tarjeta (desde ahí se elige Contactos); si el celular no
+// lo permite, descarga el archivo. Devuelve 'compartido', 'descargado' o 'cancelado'.
+async function guardarContacto(nombre, correo) {
+  const archivo = new File([tarjetaContacto(nombre, correo)], 'cuaderno-docente.vcf', { type: 'text/vcard' });
+  try {
+    if (navigator.canShare && navigator.canShare({ files: [archivo] })) {
+      await navigator.share({ files: [archivo], title: nombre });
+      return 'compartido';
+    }
+  } catch (e) {
+    if (e && e.name === 'AbortError') return 'cancelado';
+  }
+  const { descargar } = await import('./excel.js');
+  descargar(archivo, 'cuaderno-docente.vcf');
+  return 'descargado';
 }
 
 function montarAyudaSpam(root, ctx) {
@@ -54,9 +72,8 @@ function montarAyudaSpam(root, ctx) {
     $('#ay-correo', root).textContent = p.remitente;
     caja.hidden = false;
     $('#b-contacto', root).addEventListener('click', async () => {
-      const { descargar } = await import('./excel.js');
-      descargar(new Blob([tarjetaContacto(p.remitente_nombre || 'Cuaderno docente', p.remitente)], { type: 'text/vcard' }), 'cuaderno-docente.vcf');
-      toast('Contacto descargado. Ábrelo para guardarlo.');
+      const r = await guardarContacto(p.remitente_nombre || 'Cuaderno docente', p.remitente);
+      if (r === 'descargado') toast('Contacto descargado. Ábrelo para guardarlo.');
     });
   }).catch(() => { /* sin sesión o sin conexión: la ayuda simplemente no se muestra */ });
 }
