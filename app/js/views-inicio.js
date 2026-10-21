@@ -86,7 +86,7 @@ export async function panelInicio(ctx, seccion, completo, q = '') {
       ${lapso ? (lapsoInfo ? html`
         <p class="lapso-linea">${fechaCorta(lapso.fecha_inicio)} al ${fechaCorta(lapso.fecha_fin)} · ${lapsoInfo.texto}</p>
         <span class="avance" role="img" aria-label="${lapsoInfo.pct}% del lapso transcurrido"><span style="width:${lapsoInfo.pct}%"></span></span>`
-        : html`<p class="lapso-linea"><a href="#/ajustes">Pon las fechas del lapso en Ajustes</a> para ver cuánto falta.</p>`) : ''}
+        : html`<p class="lapso-linea"><a class="btn secondary chico" href="#/ajustes">Pon las fechas del lapso en Ajustes</a> para ver cuánto falta.</p>`) : ''}
     </section>
 
     <section aria-labelledby="aula-t">
@@ -132,7 +132,7 @@ export async function panelInicio(ctx, seccion, completo, q = '') {
             <span class="margen">${p.marca}</span>
             <span class="fila-texto"><span class="fila-nombre">${p.ev.nombre}</span><span class="fila-sub">${[p.asig?.nombre, p.texto].filter(Boolean).join(', ')}</span></span>
           </a></li>`)}</ol>
-        ${resto.length > 4 ? html`<p class="hint">Y ${resto.length - 4} más en <a href="#/evaluar">Evaluar</a>.</p>` : ''}
+        ${resto.length > 4 ? html`<p class="hint">Y ${resto.length - 4} más en <a class="btn secondary chico" href="#/evaluar">Evaluar</a>.</p>` : ''}
       </section>` : ''}
 
     ${seguirYDestacados(s, lapso)}
@@ -147,7 +147,7 @@ export async function panelInicio(ctx, seccion, completo, q = '') {
           <div><dt>Aprueban</dt><dd><span data-cuenta="${aprobados}">${aprobados}</span> de ${proms.length}</dd></div>
           <div><dt>En riesgo</dt><dd class="${riesgo.length ? 'mal' : ''}"><span data-cuenta="${riesgo.length}">${riesgo.length}</span></dd></div>
         </dl>
-        ${riesgo.length ? html`<p class="hint">Necesitan apoyo: ${riesgo.slice(0, 3).map(r => r.estudiante.nombre_completo.split(/\s+/)[0]).join(', ')}${riesgo.length > 3 ? ` y ${riesgo.length - 3} más` : ''}. <a href="#/reportes/curso?l=${lapso.numero}">Ver informe del curso</a></p>` : ''}
+        ${riesgo.length ? html`<p class="hint">Necesitan apoyo: ${riesgo.slice(0, 3).map(r => r.estudiante.nombre_completo.split(/\s+/)[0]).join(', ')}${riesgo.length > 3 ? ` y ${riesgo.length - 3} más` : ''}. <a class="btn secondary chico" href="#/reportes/curso?l=${lapso.numero}">Ver informe del curso</a></p>` : ''}
         ${debiles.length ? html`<p class="hint">Lo más débil: <strong>${debiles[0].clave}</strong> (${debiles[0].asig}), ${debiles[0].pct}% de logro.</p>` : ''}
       </section>` : ''}
 

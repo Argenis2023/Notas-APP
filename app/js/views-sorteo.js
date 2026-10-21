@@ -12,7 +12,7 @@ const plural = (n, uno, varios) => `${n} ${n === 1 ? uno : varios}`;
 
 export async function sorteo(ctx, query) {
   const seccion = await getSeccion();
-  if (!seccion) return { title: 'Sorteo y grupos', html: html`<p class="vacio">Primero crea tu sección en <a href="#/">Inicio</a>.</p>` };
+  if (!seccion) return { title: 'Sorteo y grupos', html: html`<p class="vacio">Primero crea tu sección en <a class="btn secondary chico" href="#/">Inicio</a>.</p>` };
   const q = new URLSearchParams(query || '');
   const modo = MODOS.some(m => m[0] === q.get('m')) ? q.get('m') : 'uno';
   const estudiantes = await listEstudiantes(seccion.id);
@@ -23,7 +23,7 @@ export async function sorteo(ctx, query) {
   return {
     title: 'Sorteo y grupos',
     html: !estudiantes.length
-      ? html`<p><a class="btn secondary chico volver" href="#/">${icon('atras', 18)} Inicio</a></p><p class="vacio">Todavía no hay estudiantes. <a href="#/estudiantes">Agrégalos</a> para poder sortear.</p>`
+      ? html`<p><a class="btn secondary chico volver" href="#/">${icon('atras', 18)} Inicio</a></p><p class="vacio">Todavía no hay estudiantes. <a class="btn secondary chico" href="#/estudiantes">Agrégalos</a> para poder sortear.</p>`
       : html`
       <p><a class="btn secondary chico volver" href="#/">${icon('atras', 18)} Inicio</a></p>
       <section aria-labelledby="so-t">

@@ -16,7 +16,7 @@ import { lineasEncabezado } from './institucion.js';
 import { bloqueEnvioSemanal } from './views-reporte-semanal.js';
 import { datosDescripcion, datosRecomendacion, mensajeIA } from './ia.js';
 
-const sinSeccion = titulo => ({ title: titulo, html: html`<p class="vacio">Primero crea tu sección en <a href="#/">Inicio</a>.</p>` });
+const sinSeccion = titulo => ({ title: titulo, html: html`<p class="vacio">Primero crea tu sección en <a class="btn secondary chico" href="#/">Inicio</a>.</p>` });
 const textoNota = n => (n === null || n === undefined ? '–' : String(n));
 const claseNota = (n, s) => (n === null || n === undefined ? '' : aprueba(n, s.cfg) ? 'nota-ok' : 'nota-baja');
 const queryDe = q => new URLSearchParams(q || '');
@@ -206,7 +206,7 @@ export async function reporteEstudiante(ctx, estId, q) {
   if (!seccion) return sinSeccion('Informe');
   const s = await cargarSnapshot(seccion);
   const e = s.estudiantes.find(x => x.id === estId);
-  if (!e) return { title: 'Informe', html: html`<p class="vacio">No encontré a este estudiante. <a href="#/reportes">Volver</a></p>` };
+  if (!e) return { title: 'Informe', html: html`<p class="vacio">No encontré a este estudiante. <a class="btn secondary chico" href="#/reportes">Volver</a></p>` };
   const lapso = lapsoElegido(s, q);
   const base = `#/reportes/e/${e.id}`;
   const iaOk = ctx.iaDisponible();
@@ -288,7 +288,7 @@ export async function reporteEstudiante(ctx, estId, q) {
             <p class="hint no-print">El borrador se arma con las notas y los indicadores. Edítalo con tus palabras antes de entregarlo.</p>
           </section>
           ${firmas(s)}`
-          : html`<p class="vacio">Este estudiante todavía no tiene notas en el lapso ${lapso.numero}. Pasa la lista de cotejo de alguna evaluación en <a href="#/evaluar">Evaluar</a>.</p>`}
+          : html`<p class="vacio">Este estudiante todavía no tiene notas en el lapso ${lapso.numero}. Pasa la lista de cotejo de alguna evaluación en <a class="btn secondary chico" href="#/evaluar">Evaluar</a>.</p>`}
         </div>
       </article>`,
     mount(root) {
@@ -417,7 +417,7 @@ export async function reporteCurso(ctx, q) {
               : html`<p>Ningún estudiante está por debajo del mínimo en este lapso.</p>`}
           </section>
           ${firmas(s)}`
-          : html`<p class="vacio">Todavía no hay notas en el lapso ${lapso.numero}. Pasa la lista de cotejo de alguna evaluación en <a href="#/evaluar">Evaluar</a>.</p>`}
+          : html`<p class="vacio">Todavía no hay notas en el lapso ${lapso.numero}. Pasa la lista de cotejo de alguna evaluación en <a class="btn secondary chico" href="#/evaluar">Evaluar</a>.</p>`}
         </div>
       </article>`,
     mount(root) {
@@ -458,7 +458,7 @@ export async function banco(ctx) {
           ${areaTexto({ id: 'r-texto', label: 'Recomendación', rows: 3, placeholder: 'Qué actividades se sugieren para reforzar este tema, en el aula y en casa.' })}
           ${errorBox('e-recom')}
           <button class="btn primary" type="submit">Guardar recomendación</button>
-        </form>` : html`<p class="vacio">Primero agrega asignaturas en <a href="#/evaluar">Evaluar</a>.</p>`}
+        </form>` : html`<p class="vacio">Primero agrega asignaturas en <a class="btn secondary chico" href="#/evaluar">Evaluar</a>.</p>`}
 
       ${porAsig.map(g => html`
         <section class="bloque">

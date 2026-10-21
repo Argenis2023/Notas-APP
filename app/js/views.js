@@ -77,7 +77,7 @@ export async function inicio(ctx, q = '') {
             <li class="${estudiantes.length ? 'hecho' : ''}">
               <span class="marca">${estudiantes.length ? icon('check', 18) : ''}</span>
               <div><strong>Cargar a tus estudiantes</strong>
-                ${estudiantes.length ? html`<p class="hint">${estudiantes.length} ${estudiantes.length === 1 ? 'cargado' : 'cargados'}. <a href="#/estudiantes">Ver lista</a></p>` : html`
+                ${estudiantes.length ? html`<p class="hint">${estudiantes.length} ${estudiantes.length === 1 ? 'cargado' : 'cargados'}. <a class="btn secondary chico" href="#/estudiantes">Ver lista</a></p>` : html`
                   <p class="acciones">
                     <a class="btn primary chico" href="#/estudiantes/nuevo">Agregar uno</a>
                     <a class="btn secondary chico" href="#/estudiantes/importar">Importar de Excel</a>
@@ -87,7 +87,7 @@ export async function inicio(ctx, q = '') {
             <li class="${asignaturas.length ? 'hecho' : ''}">
               <span class="marca">${asignaturas.length ? icon('check', 18) : ''}</span>
               <div><strong>Agregar tus asignaturas</strong>
-                ${asignaturas.length ? html`<p class="hint">${asignaturas.length} ${asignaturas.length === 1 ? 'agregada' : 'agregadas'}. <a href="#/evaluar">Ver</a></p>` : html`<p><a class="btn primary chico" href="#/evaluar">Agregar asignaturas</a></p>`}
+                ${asignaturas.length ? html`<p class="hint">${asignaturas.length} ${asignaturas.length === 1 ? 'agregada' : 'agregadas'}. <a class="btn secondary chico" href="#/evaluar">Ver</a></p>` : html`<p><a class="btn primary chico" href="#/evaluar">Agregar asignaturas</a></p>`}
               </div>
             </li>
             <li class="${hayEvaluacion ? 'hecho' : ''}">
@@ -112,7 +112,7 @@ export async function inicio(ctx, q = '') {
 // =====================================================================
 export async function estudiantes(ctx) {
   const seccion = await getSeccion();
-  if (!seccion) return { title: 'Estudiantes', html: html`<p class="vacio">Primero crea tu sección en <a href="#/">Inicio</a>.</p>` };
+  if (!seccion) return { title: 'Estudiantes', html: html`<p class="vacio">Primero crea tu sección en <a class="btn secondary chico" href="#/">Inicio</a>.</p>` };
   const todos = await listEstudiantes(seccion.id);
 
   const fila = e => html`
@@ -168,17 +168,17 @@ export async function estudiantes(ctx) {
 // =====================================================================
 export async function estudianteForm(ctx, id) {
   const seccion = await getSeccion();
-  if (!seccion) return { title: 'Estudiante', html: html`<p class="vacio">Primero crea tu sección en <a href="#/">Inicio</a>.</p>` };
+  if (!seccion) return { title: 'Estudiante', html: html`<p class="vacio">Primero crea tu sección en <a class="btn secondary chico" href="#/">Inicio</a>.</p>` };
   const todos = await listEstudiantes(seccion.id);
   const nuevo = !id || id === 'nuevo';
   const e = nuevo ? null : await get('estudiantes', id);
-  if (!nuevo && (!e || e.deleted)) return { title: 'Estudiante', html: html`<p class="vacio">No encontré a este estudiante. <a href="#/estudiantes">Volver a la lista</a></p>` };
+  if (!nuevo && (!e || e.deleted)) return { title: 'Estudiante', html: html`<p class="vacio">No encontré a este estudiante. <a class="btn secondary chico" href="#/estudiantes">Volver a la lista</a></p>` };
   const siguiente = Math.max(0, ...todos.map(x => x.numero_lista || 0)) + 1;
 
   return {
     title: nuevo ? 'Nuevo estudiante' : 'Estudiante',
     html: html`
-      <p><a class="volver" href="#/estudiantes">${icon('atras', 18)} Estudiantes</a>${e ? html` · <a href="#/asistencia/calendario?e=${e.id}">Ver su asistencia en calendario</a> · <a href="#/anotaciones?e=${e.id}">Sus anotaciones</a>` : ''}</p>
+      <p><a class="volver" href="#/estudiantes">${icon('atras', 18)} Estudiantes</a>${e ? html` · <a class="btn secondary chico" href="#/asistencia/calendario?e=${e.id}">Ver su asistencia en calendario</a> · <a class="btn secondary chico" href="#/anotaciones?e=${e.id}">Sus anotaciones</a>` : ''}</p>
       <form id="f-est" class="stack" novalidate>
         ${campo({ id: 'nombre_completo', label: 'Nombre completo', value: e?.nombre_completo, required: true, placeholder: 'Por ejemplo: María Pérez', extra: 'autocomplete="off"' })}
         ${campo({ id: 'numero_lista', label: 'N.º de lista', value: e ? e.numero_lista : siguiente, type: 'number', placeholder: 'Por ejemplo: 7', extra: 'inputmode="numeric" min="1" step="1"' })}
@@ -242,7 +242,7 @@ export async function estudianteForm(ctx, id) {
 // =====================================================================
 export async function importar(ctx) {
   const seccion = await getSeccion();
-  if (!seccion) return { title: 'Importar', html: html`<p class="vacio">Primero crea tu sección en <a href="#/">Inicio</a>.</p>` };
+  if (!seccion) return { title: 'Importar', html: html`<p class="vacio">Primero crea tu sección en <a class="btn secondary chico" href="#/">Inicio</a>.</p>` };
 
   return {
     title: 'Importar de Excel',
@@ -399,7 +399,7 @@ export async function ajustes(ctx) {
         ${errorBox('e-ajustes')}
         <button class="btn primary" type="submit">Guardar sección y lapsos</button>
       </form>
-    </section>` : html`<section class="bloque"><h2>Sección y lapsos</h2><p>Primero crea tu sección en <a href="#/">Inicio</a>.</p></section>`;
+    </section>` : html`<section class="bloque"><h2>Sección y lapsos</h2><p>Primero crea tu sección en <a class="btn secondary chico" href="#/">Inicio</a>.</p></section>`;
 
   const respaldo = html`
     <section class="bloque" aria-labelledby="t-respaldo">
@@ -435,7 +435,7 @@ export async function ajustes(ctx) {
               <button class="btn secondary" type="button" id="b-salir-no">No, seguir</button>
             </div>
           </div>`
-        : html`<p>No has iniciado sesión. <a href="${location.pathname}" id="a-recargar">Entrar</a></p>`}
+        : html`<p>No has iniciado sesión. <a class="btn secondary chico" href="${location.pathname}" id="a-recargar">Entrar</a></p>`}
     </section>`;
 
   const pinActivo = await hayPin();

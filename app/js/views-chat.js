@@ -64,7 +64,7 @@ export function montarChat() {
     sel.disabled = !hay;
     pregs.innerHTML = hay
       ? PREGUNTAS.map(p => html`<button type="button" class="chat-q" data-q="${p.id}">${p.corta}</button>`.toString()).join('')
-      : html`<p class="hint">Primero agrega estudiantes en <a href="#/estudiantes" data-cerrar>Estudiantes</a>.</p>`.toString();
+      : html`<p class="hint">Primero agrega estudiantes en <a class="btn secondary chico" href="#/estudiantes" data-cerrar>Estudiantes</a>.</p>`.toString();
   }
 
   async function preguntar(id) {
@@ -89,7 +89,7 @@ export function montarChat() {
           <div class="chat-fuente" id="${idf}" hidden>${fuentes.map(f => html`
             <h3>${f.titulo}</h3>
             <ul>${(f.lineas || []).map(l => html`<li>${l}</li>`)}</ul>
-            ${f.enlace ? html`<p><a href="${f.enlace.href}" data-cerrar>${f.enlace.texto}</a></p>` : ''}`)}
+            ${f.enlace ? html`<p><a class="btn secondary chico" href="${f.enlace.href}" data-cerrar>${f.enlace.texto}</a></p>` : ''}`)}
           </div>` : ''}`);
     } catch {
       burbuja('chat-bot', html`<p>No pude leer los datos para responder. Inténtalo otra vez.</p>`);

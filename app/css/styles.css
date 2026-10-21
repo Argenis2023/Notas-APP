@@ -158,6 +158,7 @@ main:focus { outline: none; }
 .top .chip { flex: none; }
 
 .volver { display: inline-flex; align-items: center; gap: 0.2rem; text-decoration: none; font-weight: 500; min-height: 2.75rem; }
+a.volver:not(.btn) { background: var(--hoja); color: var(--acento); border: 1px solid var(--acento); border-radius: 0.5rem; padding: 0.4rem 0.9rem 0.4rem 0.6rem; min-height: 2.5rem; font-size: 0.95rem; }
 .ico { flex: none; }
 
 /* ---------- formularios ---------- */

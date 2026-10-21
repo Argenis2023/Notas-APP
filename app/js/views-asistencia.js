@@ -4,7 +4,7 @@ import { cargarSnapshot, ESTADOS_ASIST, resumenAsistencia } from './analisis.js'
 import { html, raw, icon, toast, fechaLarga, fechaCorta } from './ui.js';
 import { $, $$ } from './form.js';
 
-const sinSeccion = () => ({ title: 'Asistencia', html: html`<p class="vacio">Primero crea tu sección en <a href="#/">Inicio</a>.</p>` });
+const sinSeccion = () => ({ title: 'Asistencia', html: html`<p class="vacio">Primero crea tu sección en <a class="btn secondary chico" href="#/">Inicio</a>.</p>` });
 const pad = n => String(n).padStart(2, '0');
 export const hoyIso = () => { const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
 const fechaValida = f => /^\d{4}-\d{2}-\d{2}$/.test(f || '') && !Number.isNaN(Date.parse(f + 'T00:00:00Z'));
@@ -25,7 +25,7 @@ export async function asistenciaDia(ctx, q) {
   const seccion = await getSeccion();
   if (!seccion) return sinSeccion();
   const estudiantes = await listEstudiantes(seccion.id);
-  if (!estudiantes.length) return { title: 'Asistencia', html: html`<p class="vacio">Primero agrega a tus estudiantes en <a href="#/estudiantes">Estudiantes</a>.</p>` };
+  if (!estudiantes.length) return { title: 'Asistencia', html: html`<p class="vacio">Primero agrega a tus estudiantes en <a class="btn secondary chico" href="#/estudiantes">Estudiantes</a>.</p>` };
   const pedido = new URLSearchParams(q || '').get('f');
   if (!fechaValida(pedido)) return asistenciaCurso(ctx, q, estudiantes);
   const fecha = pedido;
@@ -117,7 +117,7 @@ export async function asistenciaResumen(ctx, q) {
             <th scope="row"><a href="#/asistencia/calendario?e=${e.id}">${e.nombre_completo}</a></th><td class="${r.faltas ? 'nota-baja' : ''}">${r.faltas}</td><td>${r.justificadas}</td><td class="${r.pct !== null && r.pct < 80 ? 'nota-baja' : ''}">${r.pct === null ? '–' : r.pct + '%'}</td></tr>`)}</tbody>
         </table>
         <p class="hint">Asistencia es el porcentaje de días con lista en que el estudiante asistió. Se marca en rojo por debajo de 80%. Toca un nombre para ver su calendario.</p>`
-        : html`<p class="vacio">Todavía no has pasado lista en este lapso. <a href="#/asistencia">Pasar lista de hoy</a></p>`}`,
+        : html`<p class="vacio">Todavía no has pasado lista en este lapso. <a class="btn secondary chico" href="#/asistencia">Pasar lista de hoy</a></p>`}`,
   };
 }
 
@@ -133,7 +133,7 @@ export async function asistenciaCalendario(ctx, q) {
   const seccion = await getSeccion();
   if (!seccion) return sinSeccion();
   const s = await cargarSnapshot(seccion);
-  if (!s.estudiantes.length) return { title: 'Asistencia', html: html`<p class="vacio">Primero agrega a tus estudiantes en <a href="#/estudiantes">Estudiantes</a>.</p>` };
+  if (!s.estudiantes.length) return { title: 'Asistencia', html: html`<p class="vacio">Primero agrega a tus estudiantes en <a class="btn secondary chico" href="#/estudiantes">Estudiantes</a>.</p>` };
   const p = new URLSearchParams(q || '');
   const est = s.estudiantes.find(e => e.id === p.get('e')) || s.estudiantes[0];
   const hoy = hoyIso();

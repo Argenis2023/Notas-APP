@@ -12,7 +12,7 @@ import { $, $$, campo, areaTexto, errorBox, mostrarError } from './form.js';
 export const TIPOS = ['Prueba', 'Trabajo', 'Exposición', 'Taller', 'Participación', 'Actividad en clase', 'Otra'];
 const SUGERIDAS = ['Lenguaje', 'Matemática', 'Ciencias naturales', 'Ciencias sociales', 'Educación física', 'Educación artística'];
 
-const sinSeccion = titulo => ({ title: titulo, html: html`<p class="vacio">Primero crea tu sección en <a href="#/">Inicio</a>.</p>` });
+const sinSeccion = titulo => ({ title: titulo, html: html`<p class="vacio">Primero crea tu sección en <a class="btn secondary chico" href="#/">Inicio</a>.</p>` });
 const hoyIso = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
 const query = q => new URLSearchParams(q || '');
 const claseNota = (n, cfg) => (n === null || n === undefined ? '' : aprueba(n, cfg) ? 'nota-ok' : 'nota-baja');
@@ -104,7 +104,7 @@ export async function asignatura(ctx, id, q) {
   const seccion = await getSeccion();
   if (!seccion) return sinSeccion('Asignatura');
   const asig = await get('asignaturas', id);
-  if (!asig || asig.deleted) return { title: 'Asignatura', html: html`<p class="vacio">No encontré esta asignatura. <a href="#/evaluar">Volver</a></p>` };
+  if (!asig || asig.deleted) return { title: 'Asignatura', html: html`<p class="vacio">No encontré esta asignatura. <a class="btn secondary chico" href="#/evaluar">Volver</a></p>` };
   const [cfg, lapsos, estudiantes, todasEv] = [await getConfig(), await getLapsos(seccion.id), await listEstudiantes(seccion.id), await listEvaluaciones(asig.id)];
   const pedido = parseInt(query(q).get('l'), 10);
   const lapso = lapsos.find(l => l.numero === pedido) || lapsoActual(lapsos) || lapsos[0];
@@ -191,9 +191,9 @@ export async function evaluacionForm(ctx, { asignaturaId, evaluacionId, lapsoNum
   const seccion = await getSeccion();
   if (!seccion) return sinSeccion('Evaluación');
   const ev = evaluacionId ? await get('evaluaciones', evaluacionId) : null;
-  if (evaluacionId && (!ev || ev.deleted)) return { title: 'Evaluación', html: html`<p class="vacio">No encontré esta evaluación. <a href="#/evaluar">Volver</a></p>` };
+  if (evaluacionId && (!ev || ev.deleted)) return { title: 'Evaluación', html: html`<p class="vacio">No encontré esta evaluación. <a class="btn secondary chico" href="#/evaluar">Volver</a></p>` };
   const asig = await get('asignaturas', ev ? ev.asignatura_id : asignaturaId);
-  if (!asig || asig.deleted) return { title: 'Evaluación', html: html`<p class="vacio">No encontré la asignatura. <a href="#/evaluar">Volver</a></p>` };
+  if (!asig || asig.deleted) return { title: 'Evaluación', html: html`<p class="vacio">No encontré la asignatura. <a class="btn secondary chico" href="#/evaluar">Volver</a></p>` };
   const lapsos = await getLapsos(seccion.id);
   const lapsoInicial = ev ? ev.lapso_id : (lapsos.find(l => l.numero === parseInt(lapsoNum, 10)) || lapsoActual(lapsos) || lapsos[0])?.id;
   const nuevo = !ev;
@@ -251,7 +251,7 @@ export async function evaluacion(ctx, id) {
   const seccion = await getSeccion();
   if (!seccion) return sinSeccion('Evaluación');
   const ev = await get('evaluaciones', id);
-  if (!ev || ev.deleted) return { title: 'Evaluación', html: html`<p class="vacio">No encontré esta evaluación. <a href="#/evaluar">Volver</a></p>` };
+  if (!ev || ev.deleted) return { title: 'Evaluación', html: html`<p class="vacio">No encontré esta evaluación. <a class="btn secondary chico" href="#/evaluar">Volver</a></p>` };
   const asig = await get('asignaturas', ev.asignatura_id);
   const lapso = await get('lapsos', ev.lapso_id);
   const [cfg, estudiantes, inds] = [await getConfig(), await listEstudiantes(seccion.id), await listIndicadores(ev.id)];
@@ -272,7 +272,7 @@ export async function evaluacion(ctx, id) {
     live: true,
     html: html`
       <p><a class="volver" href="#/evaluar/a/${asig?.id}?l=${lapso?.numero || 1}">${icon('atras', 18)} ${asig?.nombre || 'Asignatura'}</a></p>
-      <p class="hint meta">${[ev.tipo, fechaCorta(ev.fecha), lapso ? `lapso ${lapso.numero}` : ''].filter(Boolean).join(', ')} · <a href="#/evaluar/e/${ev.id}/editar">Editar datos</a></p>
+      <p class="hint meta">${[ev.tipo, fechaCorta(ev.fecha), lapso ? `lapso ${lapso.numero}` : ''].filter(Boolean).join(', ')} · <a class="btn secondary chico" href="#/evaluar/e/${ev.id}/editar">Editar datos</a></p>
 
       <div class="acciones">
         ${puedeCotejar
@@ -325,7 +325,7 @@ export async function evaluacion(ctx, id) {
 // =====================================================================
 export async function indicadorForm(ctx, evaluacionId, id) {
   const ind = await get('indicadores', id);
-  if (!ind || ind.deleted) return { title: 'Indicador', html: html`<p class="vacio">No encontré este indicador. <a href="#/evaluar/e/${evaluacionId}">Volver</a></p>` };
+  if (!ind || ind.deleted) return { title: 'Indicador', html: html`<p class="vacio">No encontré este indicador. <a class="btn secondary chico" href="#/evaluar/e/${evaluacionId}">Volver</a></p>` };
   const volver = `#/evaluar/e/${ind.evaluacion_id}`;
   return {
     title: 'Indicador',
@@ -375,7 +375,7 @@ export async function cotejo(ctx, id, q) {
   const seccion = await getSeccion();
   if (!seccion) return sinSeccion('Lista de cotejo');
   const ev = await get('evaluaciones', id);
-  if (!ev || ev.deleted) return { title: 'Lista de cotejo', html: html`<p class="vacio">No encontré esta evaluación. <a href="#/evaluar">Volver</a></p>` };
+  if (!ev || ev.deleted) return { title: 'Lista de cotejo', html: html`<p class="vacio">No encontré esta evaluación. <a class="btn secondary chico" href="#/evaluar">Volver</a></p>` };
   const [cfg, estudiantes, inds] = [await getConfig(), await listEstudiantes(seccion.id), await listIndicadores(ev.id)];
   if (!estudiantes.length || !inds.length) return { title: 'Lista de cotejo', html: html`<p><a class="volver" href="#/evaluar/e/${ev.id}">${icon('atras', 18)} ${ev.nombre}</a></p><p class="vacio">Necesitas al menos un estudiante y un indicador.</p>` };
 
