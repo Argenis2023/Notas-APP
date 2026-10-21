@@ -1,7 +1,7 @@
 // Burbuja de consultas: un chat con preguntas predefinidas sobre un estudiante.
 // Responde con los datos del cuaderno (sin IA) y deja ver de dónde salió cada respuesta.
-import { getSeccion, listEstudiantes } from './data.js';
-import { cargarSnapshot } from './analisis.js';
+import { getSeccion, listEstudiantes, lapsoActual, bus } from './data.js';
+import { cargarSnapshot, enRiesgo } from './analisis.js';
 import { PREGUNTAS, responder, primerNombre } from './consultas.js';
 import { html, icon } from './ui.js';
 import { $ } from './form.js';
@@ -22,11 +22,9 @@ export function montarChat() {
   fab.id = 'chat-fab'; fab.type = 'button'; fab.className = 'chat-fab';
   fab.setAttribute('aria-label', 'Abrir consultas sobre un estudiante');
   fab.setAttribute('aria-expanded', 'false');
-  // Hasta que la docente use las consultas por primera vez, una manito "toca" el botón de vez en cuando.
-  let usado = false;
-  try { usado = localStorage.getItem('cuaderno-consultas-usado') === '1'; } catch { /* sin almacenamiento */ }
-  fab.innerHTML = html`${icon('chat', 26)}<span class="chat-fab-txt">Consultas</span>${usado ? '' : html`<span class="chat-mano" aria-hidden="true">${icon('mano', 30)}</span>`}`.toString();
-  if (!usado) fab.classList.add('llama');
+  // Al abrir la app, una manito "toca" el botón y un globo invita a preguntar. Se repite hasta que se abran las consultas.
+  fab.innerHTML = html`${icon('chat', 26)}<span class="chat-fab-txt">Consultas</span><span class="chat-punto" hidden></span><span class="chat-globo" aria-hidden="true">Pregúntame por un estudiante</span><span class="chat-mano" aria-hidden="true">${icon('mano', 30)}</span>`.toString();
+  fab.classList.add('llama');
   const panel = document.createElement('section');
   panel.id = 'chat'; panel.className = 'chat'; panel.hidden = true;
   panel.setAttribute('role', 'dialog'); panel.setAttribute('aria-label', 'Consultas sobre un estudiante');
@@ -53,9 +51,31 @@ export function montarChat() {
     msgs.scrollTop = msgs.scrollHeight;
     return d;
   };
-  const bienvenida = () => {
+  // Estudiantes que necesitan apoyo en el lapso actual: se muestran como puntito rojo en el botón y en la bienvenida.
+  let apoyo = [];
+  async function actualizarAlerta() {
+    try {
+      const seccion = await getSeccion();
+      if (!seccion) { apoyo = []; } else {
+        const s = await cargarSnapshot(seccion);
+        const l = lapsoActual(s.lapsos) || s.lapsos[0];
+        apoyo = l ? enRiesgo(s, l.id).map(r => primerNombre(r.estudiante)) : [];
+      }
+    } catch { apoyo = []; }
+    const punto = $('.chat-punto', fab);
+    punto.hidden = apoyo.length === 0;
+    punto.textContent = apoyo.length ? String(apoyo.length) : '';
+    fab.setAttribute('aria-label', apoyo.length ? `Abrir consultas sobre un estudiante. ${apoyo.length} ${apoyo.length === 1 ? 'estudiante necesita' : 'estudiantes necesitan'} apoyo` : 'Abrir consultas sobre un estudiante');
+  }
+  let tAlerta;
+  bus.addEventListener('change', () => { clearTimeout(tAlerta); tAlerta = setTimeout(actualizarAlerta, 600); });
+  actualizarAlerta();
+  const bienvenida = (preferido = null) => {
     msgs.innerHTML = '';
     burbuja('chat-bot', html`<p>Elige un estudiante y toca una pregunta. Respondo con los datos que ya tienes en el cuaderno y te muestro de dónde salió cada respuesta.</p>`);
+    const e = preferido && estudiantes.find(x => x.id === preferido);
+    if (e) burbuja('chat-bot', html`<p>Ya elegí a <strong>${primerNombre(e)}</strong> porque estás en su pantalla. Si quieres otro estudiante, cámbialo arriba.</p>`);
+    if (apoyo.length) burbuja('chat-bot', html`<p>Ojo: ${apoyo.length === 1 ? 'necesita apoyo' : 'necesitan apoyo'} ${apoyo.slice(0, 4).join(', ')}${apoyo.length > 4 ? ` y ${apoyo.length - 4} más` : ''} en este lapso.</p>`);
   };
 
   async function cargarEstudiantes(preferido) {
@@ -102,11 +122,15 @@ export function montarChat() {
   }
 
   async function abrir() {
-    try { localStorage.setItem('cuaderno-consultas-usado', '1'); } catch { /* sin almacenamiento */ }
     fab.classList.remove('llama');
-    const mano = fab.querySelector('.chat-mano'); if (mano) mano.remove();
-    await cargarEstudiantes(estudianteDeLaRuta());
-    if (!msgs.childElementCount) bienvenida();
+    const mano = fab.querySelector('.chat-mano'), globo = fab.querySelector('.chat-globo');
+    if (mano) mano.remove();
+    if (globo) globo.remove();
+    const preferido = estudianteDeLaRuta();
+    await cargarEstudiantes(preferido);
+    await actualizarAlerta();
+    if (!msgs.childElementCount) bienvenida(preferido);
+    else if (preferido && sel.value === preferido) { const e = estudiantes.find(x => x.id === preferido); if (e) burbuja('chat-nota', html`<p>Elegí a ${primerNombre(e)} porque estás en su pantalla.</p>`); }
     panel.hidden = false;
     fab.hidden = true;
     fab.setAttribute('aria-expanded', 'true');
@@ -144,5 +168,5 @@ export function montarChat() {
     }
     if (ev.target.closest('[data-cerrar]')) cerrar();
   });
-  $('#chat-limpiar', panel).addEventListener('click', bienvenida);
+  $('#chat-limpiar', panel).addEventListener('click', () => bienvenida(estudianteDeLaRuta()));
 }
