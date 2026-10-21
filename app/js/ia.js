@@ -64,6 +64,34 @@ export function datosDescripcion(s, estudiante, lapso, extra = '') {
   return lineas.join('\n');
 }
 
+// Texto para redactar un mensaje de WhatsApp al representante. Sin nombres: el estudiante va como código.
+export function datosMensaje(s, estudiante, lapso, motivo, hechos = {}, extra = '') {
+  const lineas = [
+    `Motivo del mensaje: ${motivo}`,
+    `Estudiante: ${estudiante.codigo_ia || 'Estudiante'}`,
+    s.seccion.grado ? `Grado: ${s.seccion.grado}` : '',
+    lapso ? `Lapso: ${lapso.numero}` : '',
+  ].filter(Boolean);
+  if (hechos.faltas !== undefined && hechos.faltas !== null) lineas.push(`Días de inasistencia en el lapso: ${hechos.faltas}`);
+  if (hechos.promedio !== undefined && hechos.promedio !== null) lineas.push(`Promedio general del lapso: ${hechos.promedio} (escala 1 a 20, mínimo aprobatorio ${s.cfg.minimo_aprobatorio})`);
+  const anots = lapso ? anotacionesDe(s, estudiante.id, lapso).slice(0, 5).reverse() : [];
+  if (anots.length) {
+    lineas.push('', 'Anotaciones de la docente:');
+    for (const a of anots) lineas.push(`- ${nombreTipo(a.tipo)}: ${anonimizarTexto(a.texto, s.estudiantes, estudiante)}`);
+  }
+  const idea = anonimizarTexto(extra, s.estudiantes, estudiante);
+  if (idea) lineas.push('', `Lo que la docente quiere decir: ${idea}`);
+  return lineas.join('\n');
+}
+
+// Devuelve el texto de la IA listo para el representante: pone el nombre de pila y la firma.
+export function completarMensaje(texto, estudiante, docente) {
+  const pila = String(estudiante.nombre_completo || '').trim().split(/\s+/)[0] || 'su representado';
+  let t = String(texto || '').trim().replace(/\[ESTUDIANTE\]/gi, pila);
+  if (estudiante.codigo_ia) t = t.split(estudiante.codigo_ia).join(pila);
+  return `${t}\n${docente ? `Saludos, ${docente}.` : 'Saludos.'}`;
+}
+
 // Texto para sugerir actividades de refuerzo de un tema. No incluye nada de estudiantes.
 export function datosRecomendacion(s, asignatura, tema, pct, alcance) {
   return [
