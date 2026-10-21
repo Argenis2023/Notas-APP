@@ -11,7 +11,7 @@
 //   GEMINI_MODEL     opcional: modelo que se prueba primero (por defecto gemini-3.5-flash-lite)
 //   GROQ_API_KEY     opcional (respaldo)
 //   GROQ_MODEL       opcional: modelo que se prueba primero (por defecto llama-3.3-70b-versatile)
-//   ALLOWED_EMAIL    opcional: si lo pones, solo ese correo puede usar la función
+//   ALLOWED_EMAIL    opcional: si lo pones, solo esos correos pueden usar la función (varios separados por coma)
 //   ALLOWED_ORIGIN   opcional: por ejemplo https://argenis2023.github.io
 
 import { createClient } from 'npm:@supabase/supabase-js@2';
@@ -162,8 +162,9 @@ Deno.serve(async (req: Request) => {
   const supa = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_ANON_KEY')!, { global: { headers: { Authorization: auth } } });
   const { data: { user } } = await supa.auth.getUser();
   if (!user) return json({ error: 'sin_sesion' }, 401, cors);
-  const unico = Deno.env.get('ALLOWED_EMAIL');
-  if (unico && user.email?.toLowerCase() !== unico.toLowerCase()) return json({ error: 'no_autorizado' }, 403, cors);
+  // ALLOWED_EMAIL admite uno o varios correos separados por coma.
+  const permitidos = (Deno.env.get('ALLOWED_EMAIL') || '').split(',').map(x => x.trim().toLowerCase()).filter(Boolean);
+  if (permitidos.length && !permitidos.includes((user.email || '').toLowerCase())) return json({ error: 'no_autorizado' }, 403, cors);
 
   // 2. Validar lo recibido
   let cuerpo: { tipo?: string; datos?: string };
