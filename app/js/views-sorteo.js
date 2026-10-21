@@ -23,9 +23,9 @@ export async function sorteo(ctx, query) {
   return {
     title: 'Sorteo y grupos',
     html: !estudiantes.length
-      ? html`<p><a href="#/">Inicio</a></p><p class="vacio">Todavía no hay estudiantes. <a href="#/estudiantes">Agrégalos</a> para poder sortear.</p>`
+      ? html`<p><a class="btn secondary chico volver" href="#/">${icon('atras', 18)} Inicio</a></p><p class="vacio">Todavía no hay estudiantes. <a href="#/estudiantes">Agrégalos</a> para poder sortear.</p>`
       : html`
-      <p><a href="#/">Inicio</a></p>
+      <p><a class="btn secondary chico volver" href="#/">${icon('atras', 18)} Inicio</a></p>
       <section aria-labelledby="so-t">
         <h2 id="so-t">Sorteo y grupos</h2>
         <p>Elige a alguien al azar, sortea el orden de los turnos o arma grupos. No se guarda nada.</p>

@@ -191,7 +191,7 @@ export async function reportes(ctx, q) {
             <p>Cuando completes la lista de cotejo de alguna evaluación, aquí aparecerán los informes de cada estudiante y del curso.</p>
             <p><a class="btn primary" href="#/evaluar">Ir a Evaluar</a></p>
           </div>
-          <p><a href="#/reportes/banco">Mis recomendaciones</a></p>`}
+          <p><a class="btn secondary" href="#/reportes/banco">Mis recomendaciones</a></p>`}
       ${envio.html}`,
   };
 }

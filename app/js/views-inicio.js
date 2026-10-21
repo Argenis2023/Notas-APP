@@ -105,7 +105,7 @@ export async function panelInicio(ctx, seccion, completo, q = '') {
       <section aria-labelledby="avisos-t">
         <h2 id="avisos-t">Avisos</h2>
         <ul class="avisos">${avInicio.slice(0, 3).map(tarjetaAviso)}</ul>
-        ${avInicio.length > 3 ? html`<p><a href="#/avisos">Ver los ${avInicio.length} avisos</a></p>` : ''}
+        ${avInicio.length > 3 ? html`<p><a class="btn secondary chico" href="#/avisos">Ver los ${avInicio.length} avisos</a></p>` : ''}
       </section>` : ''}
 
     ${nEst && !asisHoy.finde ? html`

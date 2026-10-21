@@ -28,9 +28,9 @@ function pintarVivo() {
 // ----- Ayuda para que el reporte no caiga en spam: instrucciones para que el docente revise su correo -----
 function ayudaSpam() {
   return html`
-    <div class="ayuda-spam" role="note" id="ay-spam" hidden>
+    <div class="ayuda-spam" role="note" id="ay-spam">
       <p><strong>Si no ves el reporte en tu correo, revisa spam</strong></p>
-      <p>Los reportes salen del correo <strong id="ay-correo"></strong>. Como es un remitente nuevo, Gmail puede mandarlos a spam y no verás que llegaron. Para recibirlos en tu bandeja:</p>
+      <p>Los reportes salen del correo <strong id="ay-correo">${correoGuardado() || 'de la app'}</strong>. Como es un remitente nuevo, Gmail puede mandarlos a spam y no verás que llegaron. Para recibirlos en tu bandeja:</p>
       <ol>
         <li>Abre la carpeta <strong>Spam</strong> de tu correo y busca el reporte.</li>
         <li>Ábrelo y toca <strong>No es spam</strong>.</li>
@@ -40,13 +40,16 @@ function ayudaSpam() {
     </div>`;
 }
 
+// La ayuda se ve al instante; la dirección exacta se guarda en el celular para mostrarla sin esperar.
+const CLAVE_REMITENTE = 'cuaderno-remitente';
+function correoGuardado() { try { return localStorage.getItem(CLAVE_REMITENTE) || ''; } catch { return ''; } }
 function montarAyudaSpam(root, ctx) {
   const caja = $('#ay-spam', root);
   if (!caja) return;
   ctx.reporte('prefs').then(p => {
     if (!p || !p.remitente) return;
     $('#ay-correo', root).textContent = p.remitente;
-    caja.hidden = false;
+    try { localStorage.setItem(CLAVE_REMITENTE, p.remitente); } catch { /* sin almacenamiento */ }
   }).catch(() => { /* sin sesión o sin conexión: la ayuda simplemente no se muestra */ });
 }
 

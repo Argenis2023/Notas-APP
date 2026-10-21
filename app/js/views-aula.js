@@ -31,7 +31,7 @@ export async function diccionario(ctx) {
   return {
     title: 'Diccionario',
     html: html`
-      <p><a href="#/">Inicio</a></p>
+      <p><a class="btn secondary chico volver" href="#/">${icon('atras', 18)} Inicio</a></p>
       <section aria-labelledby="dic-t">
         <h2 id="dic-t">Diccionario para el aula</h2>
         <p>Escribe una palabra y la IA te la explica con frases simples, un ejemplo y un sinónimo.${seccion && seccion.grado ? ` Se adapta a ${seccion.grado}.` : ''}</p>
@@ -156,7 +156,7 @@ export async function pausas(ctx, query) {
   return {
     title: 'Pausa activa',
     html: html`
-      <p><a href="#/">Inicio</a></p>
+      <p><a class="btn secondary chico volver" href="#/">${icon('atras', 18)} Inicio</a></p>
       <section aria-labelledby="pa-h">
         <h2 id="pa-h">Pausa activa</h2>
         <p>Actividades cortas para despertar o calmar al curso. Funcionan sin internet.</p>

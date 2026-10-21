@@ -11,7 +11,7 @@ export async function anotaciones(ctx, query) {
   const seccion = await getSeccion();
   if (!seccion) return { title: 'Anotaciones', html: html`<p class="vacio">Primero crea tu sección en <a href="#/">Inicio</a>.</p>` };
   const estudiantes = await listEstudiantes(seccion.id);
-  if (!estudiantes.length) return { title: 'Anotaciones', html: html`<p><a href="#/">Inicio</a></p><p class="vacio">Todavía no hay estudiantes. <a href="#/estudiantes">Agrégalos</a> para poder anotar.</p>` };
+  if (!estudiantes.length) return { title: 'Anotaciones', html: html`<p><a class="btn secondary chico volver" href="#/">${icon('atras', 18)} Inicio</a></p><p class="vacio">Todavía no hay estudiantes. <a href="#/estudiantes">Agrégalos</a> para poder anotar.</p>` };
   const q = new URLSearchParams(query || '');
   const elegido = estudiantes.find(e => e.id === q.get('e'));
   const ids = new Set(estudiantes.map(e => e.id));
@@ -23,7 +23,7 @@ export async function anotaciones(ctx, query) {
   return {
     title: 'Anotaciones',
     html: html`
-      <p><a href="#/">Inicio</a></p>
+      <p><a class="btn secondary chico volver" href="#/">${icon('atras', 18)} Inicio</a></p>
       <section aria-labelledby="an-t">
         <h2 id="an-t">Anotaciones rápidas</h2>
         <p>Anota en segundos algo que pasó con un estudiante. Se suma a su informe del lapso.</p>
@@ -45,7 +45,7 @@ export async function anotaciones(ctx, query) {
       </section>
       <section aria-labelledby="an-l">
         <h2 id="an-l">${elegido ? 'Anotaciones de ' + elegido.nombre_completo : 'Últimas anotaciones'}</h2>
-        ${elegido ? html`<p><a href="#/anotaciones">Ver de todos</a></p>` : ''}
+        ${elegido ? html`<p><a class="btn secondary chico" href="#/anotaciones">Ver de todos</a></p>` : ''}
         ${vistas.length ? html`<ul class="an-lista" id="an-lista">${vistas.map(a => html`
           <li class="an-item an-${tipoValido(a.tipo)}" data-id="${a.id}">
             <p class="an-cab"><strong>${elegido ? '' : nombre(a.estudiante_id)}</strong> <span class="hint">${fechaCorta(a.fecha)} · ${nombreTipo(a.tipo)}</span></p>
