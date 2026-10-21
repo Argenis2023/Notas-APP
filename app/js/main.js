@@ -9,6 +9,7 @@ import * as A from './views-asistencia.js';
 import { revisarDueno, pedirCambioDeCuenta } from './cuenta.js';
 import * as AU from './views-aula.js';
 import { sorteo } from './views-sorteo.js';
+import { anotaciones } from './views-anotaciones.js';
 import * as AV from './views-avisos.js';
 import { VERSION } from './version.js';
 import { leerInstitucion, aplicarInstitucion } from './institucion.js';
@@ -59,6 +60,7 @@ const RUTAS = [
   [/^#\/asistencia(?:\?(.*))?$/, m => A.asistenciaDia(ctx, m[1]), 'asistencia'],
   [/^#\/aula\/diccionario$/, () => AU.diccionario(ctx), 'inicio'],
   [/^#\/aula\/pausas(?:\?(.*))?$/, m => AU.pausas(ctx, m[1]), 'inicio'],
+  [/^#\/anotaciones(?:\?(.*))?$/, m => anotaciones(ctx, m[1]), 'inicio'],
   [/^#\/aula\/sorteo(?:\?(.*))?$/, m => sorteo(ctx, m[1]), 'inicio'],
   [/^#\/avisos$/, () => AV.avisos(ctx), 'inicio'],
   [/^#\/ajustes$/, () => V.ajustes(ctx), 'ajustes'],

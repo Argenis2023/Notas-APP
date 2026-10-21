@@ -56,6 +56,7 @@ const P = {
   campana: '<path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/>',
   diccionario: '<path d="M5 4.5h10a3 3 0 0 1 3 3V19H8a3 3 0 0 1-3-3z"/><path d="M5 16a3 3 0 0 1 3-3h10"/><path d="M9 8h5"/>',
   pausa: '<circle cx="12" cy="5" r="2"/><path d="M12 8v5M12 10l-4-2M12 10l4-2M12 13l-3 6M12 13l3 6"/>',
+  nota: '<path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5"/><path d="M9 13h7M9 17h5"/>',
   sorteo: '<rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1.2"/><circle cx="15" cy="9" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="9" cy="15" r="1.2"/><circle cx="15" cy="15" r="1.2"/>',
   chat: '<path d="M5 5h14a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H10l-4.5 3.5V16H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/><path d="M8.5 9.5h7M8.5 12.5h4"/>',
   cerrar: '<path d="M6 6l12 12M18 6 6 18"/>',

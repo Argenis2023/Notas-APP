@@ -8,6 +8,7 @@ import {
   buscarRecomendacion, sugerenciaGeneral, borradorDescriptivo, claveIndicador, resumenAsistencia,
 } from './analisis.js';
 import { html, raw, icon, toast, fechaLarga, fechaCorta } from './ui.js';
+import { anotacionesDe, tipoValido, nombreTipo } from './anotaciones.js';
 import { evolucionLapsos, cambiosDelCurso } from './graficos.js';
 import { $, $$, campo, areaTexto, errorBox, mostrarError } from './form.js';
 import { promedio } from './calc.js';
@@ -252,6 +253,7 @@ export async function reporteEstudiante(ctx, estId, q) {
 
           ${(() => { const r = resumenAsistencia(s, lapso, e.id); return r.dias && r.marcados ? html`<p class="informe-asistencia"><strong>Asistencia:</strong> ${r.faltas === 0 && r.justificadas === 0 ? 'sin inasistencias' : `${plural2(r.faltas, 'inasistencia', 'inasistencias')}${r.justificadas ? `, ${plural2(r.justificadas, 'justificada', 'justificadas')}` : ''}`} en ${r.dias} ${r.dias === 1 ? 'día' : 'días'} con lista (${r.pct}% de asistencia).</p>` : ''; })()}
           ${evolucionLapsos(s, e.id, s.cfg.minimo_aprobatorio ?? 10)}
+          ${(() => { const an = anotacionesDe(s, e.id, lapso); return an.length ? html`<section class="informe-anot no-print"><h3 class="informe-h">Anotaciones del lapso</h3><ul class="an-lista">${an.map(a => html`<li class="an-item an-${tipoValido(a.tipo)}"><p class="an-cab"><span class="hint">${fechaCorta(a.fecha)} · ${nombreTipo(a.tipo)}</span></p><p class="an-texto">${a.texto}</p></li>`)}</ul></section>` : ''; })()}
           <div class="informe-asigs">${asigs.map(({ a, logro }) => html`
             <section class="informe-asig">
               <h3 class="informe-h">${a.nombre}</h3>

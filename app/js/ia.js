@@ -1,6 +1,7 @@
 // Asistente de redacción: arma el texto que se envía a la IA, SIN datos personales.
 // Regla de privacidad: la IA recibe códigos ("Estudiante 7"), notas, indicadores y porcentajes.
 // Nunca recibe nombres, cédula, fecha de nacimiento, contactos ni los textos de necesidades educativas.
+import { anotacionesDe, nombreTipo } from './anotaciones.js';
 import { notaAsignatura, promedioGeneral, logroEstudiante, esDebil, esFuerte } from './analisis.js';
 
 const quitarAcentos = s => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '');
@@ -52,6 +53,11 @@ export function datosDescripcion(s, estudiante, lapso, extra = '') {
     if (nota === null) continue;
     lineas.push('', `${a.nombre}: nota ${nota}`);
     for (const l of logroEstudiante(s, a.id, lapso.id, estudiante.id)) lineas.push(`- ${l.clave}: ${l.pct}% (${etiqueta(l.pct, s)})`);
+  }
+  const anots = anotacionesDe(s, estudiante.id, lapso).slice(0, 15).reverse();
+  if (anots.length) {
+    lineas.push('', 'Anotaciones de la docente en el lapso:');
+    for (const a of anots) lineas.push(`- ${nombreTipo(a.tipo)}: ${anonimizarTexto(a.texto, s.estudiantes, estudiante)}`);
   }
   const nota = anonimizarTexto(extra, s.estudiantes, estudiante);
   if (nota) lineas.push('', `Observación adicional: ${nota}`);

@@ -37,6 +37,8 @@ export function createSupabase(url, anonKey) {
     },
   };
 
+  // Si la tabla aún no existe en Supabase (falta correr el SQL nuevo), no se rompe la sincronización.
+  const falta = e => e && (e.code === '42P01' || e.code === 'PGRST205' || /does not exist|schema cache|Could not find the table/i.test(e.message || ''));
   const remote = {
     async pull(table, since) {
       const out = [];
@@ -45,7 +47,7 @@ export function createSupabase(url, anonKey) {
         let q = client.from(table).select('*');
         if (since) q = q.gte('server_updated_at', since);
         const { data, error } = await q.order('server_updated_at', { ascending: true }).order('id', { ascending: true }).range(from, from + PAGE - 1);
-        if (error) throw new Error(error.message);
+        if (error) { if (falta(error)) return out; throw new Error(error.message); }
         out.push(...data);
         if (data.length < PAGE) break;
       }
@@ -54,11 +56,13 @@ export function createSupabase(url, anonKey) {
     async push(table, rows) {
       if (!rows.length) return;
       const { error } = await client.from(table).upsert(rows, { onConflict: 'id' });
+      if (error && falta(error)) throw new Error('Falta crear la tabla ' + table + ' en Supabase. Corre el SQL nuevo del proyecto.');
       if (error) throw new Error(error.message);
     },
     // Borra todas las filas de la cuenta en una tabla (la regla de seguridad deja borrar solo las propias).
     async wipe(table) {
       const { error } = await client.from(table).delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      if (error && falta(error)) return;
       if (error) throw new Error(error.message);
     },
   };

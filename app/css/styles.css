@@ -886,3 +886,13 @@ input[type='date']::-webkit-datetime-edit { padding: 0; }
 .so-grupo ul { margin: 0; padding-left: 1.1rem; }
 .so-grupo li { overflow-wrap: anywhere; }
 @media print { .so-quienes, .acciones { display: none; } }
+
+/* Anotaciones rápidas */
+.an-lista { list-style: none; margin: 0.6rem 0 0; padding: 0; display: grid; gap: 0.6rem; }
+.an-item { border: 1px solid var(--borde, #d8d8d8); border-left-width: 0.3rem; border-radius: 0.5rem; padding: 0.6rem 0.8rem; }
+.an-item p { margin: 0; }
+.an-item .acciones { margin-top: 0.4rem; }
+.an-positivo { border-left-color: #2e7d4f; }
+.an-mejorar { border-left-color: #b26a00; }
+.an-nota { border-left-color: #5a6b8c; }
+.an-texto { white-space: pre-wrap; overflow-wrap: anywhere; }

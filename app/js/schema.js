@@ -55,6 +55,10 @@ export const TABLES = {
     },
     idx: 'estudiante_id, lapso_id',
   },
+  anotaciones: {
+    cols: { estudiante_id: 'uuid', seccion_id: 'uuid', fecha: 'date', texto: 'text', tipo: 'text' },
+    idx: 'estudiante_id, fecha',
+  },
   configuracion: {
     cols: {
       umbral_indicador_debil: 'num', minimo_aprobatorio: 'int', puntos_logrado: 'num',
