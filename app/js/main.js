@@ -1,5 +1,5 @@
 // Arranque de la app: base de datos, sesión, sincronización, rutas y actualizaciones.
-import { db, bus, getSeccion, borrarTodoLocal, TABLE_NAMES, normalizarNombresGuardados } from './data.js';
+import { db, bus, getSeccion, borrarTodoLocal, countPending, TABLE_NAMES, normalizarNombresGuardados } from './data.js';
 import { createSync } from './sync.js';
 import { html, toast, infoEstado, mensajeError } from './ui.js';
 import * as V from './views.js';
@@ -26,6 +26,7 @@ const ctx = {
   syncNow: () => (sync ? sync.syncNow() : Promise.resolve({ status: 'disabled' })),
   syncState: () => (sync ? sync.state : { status: 'disabled', pending: 0 }),
   signOut,
+  cerrarSesionSegura,
   checkUpdate,
   borrarTodo,
 };
@@ -182,6 +183,19 @@ function pedirLogin(supa) {
 async function signOut() {
   try { await ctx.supa.auth.signOut(); } catch { /* sin conexión: se limpia igual al recargar */ }
   location.reload();
+}
+
+// Cierra la sesión y deja este celular limpio, pero SOLO si todo quedó respaldado en la nube. Si no se puede respaldar
+// (sin internet, error, cambios pendientes) no cierra nada y explica por qué, para no perder datos.
+async function cerrarSesionSegura() {
+  if (!(ctx.sesion && sync && sync.enabled)) { await signOut(); return; }
+  if (navigator.onLine === false) throw new Error('Sin internet no se puede respaldar, así que no se cerró la sesión. Conéctate e inténtalo otra vez.');
+  const r = await sync.syncNow();
+  if (!r || r.status !== 'ok') throw new Error(r && r.status === 'offline' ? 'Sin internet no se puede respaldar, así que no se cerró la sesión. Conéctate e inténtalo otra vez.' : 'No se pudo respaldar tus datos, así que no se cerró la sesión ni se borró nada. Inténtalo otra vez en unos minutos.');
+  if ((await countPending()) > 0) throw new Error('Todavía hay cambios sin respaldar, así que no se cerró la sesión ni se borró nada. Inténtalo otra vez.');
+  await sync.detener();
+  await borrarTodoLocal();
+  await signOut();
 }
 
 // Borra todo: la nube (si hay cuenta) y este dispositivo. Con cuenta pide su clave de nuevo.

@@ -428,9 +428,10 @@ export async function ajustes(ctx) {
           <p>Sesión iniciada como <strong>${ctx.sesion.email}</strong>.</p>
           <button class="btn secondary" type="button" id="b-salir">Cerrar sesión</button>
           <div id="salir-conf" hidden>
-            <p><strong>¿Cerrar sesión?</strong> Tus datos siguen en este celular, pero no se respaldarán hasta que vuelvas a entrar.</p>
+            <p><strong>¿Cerrar sesión?</strong> Primero se respaldan tus datos en la nube y después se borran de este celular, para que nadie más los vea. Para volver a verlos, entra con tu correo. Si no se puede respaldar, la sesión no se cierra y no se borra nada.</p>
+            ${errorBox('e-salir')}
             <div class="acciones">
-              <button class="btn danger" type="button" id="b-salir-si">Sí, cerrar sesión</button>
+              <button class="btn danger" type="button" id="b-salir-si">Respaldar y cerrar sesión</button>
               <button class="btn secondary" type="button" id="b-salir-no">No, seguir</button>
             </div>
           </div>`
@@ -540,7 +541,13 @@ export async function ajustes(ctx) {
       if (salir) {
         salir.addEventListener('click', () => { $('#salir-conf', root).hidden = false; salir.hidden = true; $('#b-salir-no', root).focus(); });
         $('#b-salir-no', root).addEventListener('click', () => { $('#salir-conf', root).hidden = true; salir.hidden = false; salir.focus(); });
-        $('#b-salir-si', root).addEventListener('click', () => ctx.signOut());
+        const si = $('#b-salir-si', root);
+        si.addEventListener('click', async () => {
+          si.disabled = true; si.textContent = 'Respaldando…';
+          mostrarError(root, 'e-salir', '');
+          try { await ctx.cerrarSesionSegura(); }
+          catch (e) { mostrarError(root, 'e-salir', e.message); si.disabled = false; si.textContent = 'Respaldar y cerrar sesión'; }
+        });
       }
 
       const bBorrar = $('#b-borrar-todo', root), fBorrar = $('#f-borrar-todo', root);
