@@ -9,7 +9,7 @@
 // El reporte SIEMPRE va al correo de la cuenta de quien lo pide: esta función no sirve para escribirle a otras personas.
 //
 // Secretos: BREVO_API_KEY, BREVO_SENDER_EMAIL (remitente verificado en Brevo), BREVO_SENDER_NAME (opcional),
-//           CRON_SECRET, GEMINI_API_KEY (y GROQ_API_KEY opcional), ALLOWED_EMAIL (opcional, varios con coma), ALLOWED_ORIGIN (opcional).
+//           GEMINI_API_KEY (y GROQ_API_KEY opcional), ALLOWED_EMAIL (opcional, varios con coma), ALLOWED_ORIGIN (opcional).
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { armarSnapshot, armarReporte, datosParaIA, hoyCaracas, isoDe, fechaLarga } from './datos.js';
 import { crearPDF } from './pdf.js';
@@ -116,8 +116,10 @@ Deno.serve(async req => {
 
   // ----- programador: envía a quien le toca ahora (hora de Venezuela) -----
   if (accion === 'cron') {
-    const secreto = env('CRON_SECRET');
-    if (!secreto || req.headers.get('x-cron-secret') !== secreto) return json({ error: 'no_autorizado' }, 403, cors);
+    // El secreto del programador vive en la base de datos (tabla reporte_semanal_cron), no en los secretos de la función.
+    const { data: fila } = await db.from('reporte_semanal_cron').select('secreto').maybeSingle();
+    const dado = req.headers.get('x-cron-secret') || '';
+    if (!fila || !fila.secreto || dado !== fila.secreto) return json({ error: 'no_autorizado' }, 403, cors);
     const c = new Date(Date.now() - 4 * 3600000);
     const dow = c.getUTCDay() || 7, hora = c.getUTCHours();
     const { data: lista } = await db.from('reporte_semanal_pref').select('*').eq('activo', true).eq('dia', dow).eq('hora', hora);

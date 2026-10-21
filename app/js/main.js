@@ -302,6 +302,8 @@ async function boot() {
   ctx.supa = supa;
   ctx.iaDisponible = () => !!(ctx.configurado && ctx.sesion && ctx.supa && ctx.supa.ia);
   ctx.ia = (tipo, datos) => ctx.supa.ia(tipo, datos);
+  ctx.reporteDisponible = () => !!(ctx.configurado && ctx.sesion && ctx.supa && ctx.supa.reporte);
+  ctx.reporte = (accion, datos) => ctx.supa.reporte(accion, datos);
   await iniciarBloqueo(supa);
   if (supa) {
     ctx.sesion = await supa.auth.session().catch(() => null);

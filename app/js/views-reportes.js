@@ -11,6 +11,7 @@ import { html, raw, icon, toast, fechaLarga, fechaCorta } from './ui.js';
 import { $, $$, campo, areaTexto, errorBox, mostrarError } from './form.js';
 import { promedio } from './calc.js';
 import { lineasEncabezado } from './institucion.js';
+import { bloqueEnvioSemanal } from './views-reporte-semanal.js';
 import { datosDescripcion, datosRecomendacion, mensajeIA } from './ia.js';
 
 const sinSeccion = titulo => ({ title: titulo, html: html`<p class="vacio">Primero crea tu sección en <a href="#/">Inicio</a>.</p>` });
@@ -161,9 +162,11 @@ export async function reportes(ctx, q) {
     return { e, prom, debiles, bajas };
   });
 
+  const envio = bloqueEnvioSemanal(ctx);
   return {
     title: 'Reportes',
     live: true,
+    mount(root) { envio.mount(root); },
     html: html`
       ${tabsLapso(s, lapso, base)}
       ${hayDatos ? html`
@@ -185,7 +188,8 @@ export async function reportes(ctx, q) {
             <p>Cuando completes la lista de cotejo de alguna evaluación, aquí aparecerán los informes de cada estudiante y del curso.</p>
             <p><a class="btn primary" href="#/evaluar">Ir a Evaluar</a></p>
           </div>
-          <p><a href="#/reportes/banco">Mis recomendaciones</a></p>`}`,
+          <p><a href="#/reportes/banco">Mis recomendaciones</a></p>`}
+      ${envio.html}`,
   };
 }
 

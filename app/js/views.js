@@ -10,6 +10,7 @@ import { bloqueCalculo, bloqueIA } from './views-eval.js';
 import { panelInicio } from './views-inicio.js';
 import { montarAvisos } from './views-avisos.js';
 import { $, $$, campo, areaTexto, errorBox, mostrarError } from './form.js';
+import { bloqueProgramacion } from './views-reporte-semanal.js';
 import { bloqueAjustes, montarBloqueoAjustes, hayPin } from './bloqueo.js';
 import { leerInstitucion, guardarInstitucion, procesarLogo, coloresDelLogo, paleta, hexValido, COLOR_BASE } from './institucion.js';
 
@@ -337,6 +338,7 @@ export async function ajustes(ctx) {
   const seccion = await getSeccion();
   const calculo = await bloqueCalculo();
   const asistente = bloqueIA(ctx);
+  const programa = bloqueProgramacion(ctx);
   const lapsos = seccion ? await getLapsos(seccion.id) : [];
   const inst = await leerInstitucion();
 
@@ -463,12 +465,13 @@ export async function ajustes(ctx) {
 
   return {
     title: 'Ajustes',
-    html: html`${bloqueInstitucion}${bloqueSeccion}${calculo.html}${asistente.html}${respaldo}${cuenta}${bloqueAjustes(pinActivo)}${borrar}${app}`,
+    html: html`${bloqueInstitucion}${bloqueSeccion}${calculo.html}${asistente.html}${programa.html}${respaldo}${cuenta}${bloqueAjustes(pinActivo)}${borrar}${app}`,
     onStatus(root) { pintarRespaldo(root); },
     mount(root) {
       pintarRespaldo(root);
       calculo.mount(root, seccion);
       asistente.mount(root);
+      programa.mount(root);
 
       montarInstitucion(root, inst);
 

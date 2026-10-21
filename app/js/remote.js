@@ -64,9 +64,9 @@ export function createSupabase(url, anonKey) {
   };
 
   // Asistente de redacción: llama a la función segura de Supabase (la clave de la IA nunca está en la app).
-  const ia = async (tipo, datos) => {
+  const invocar = async (funcion, body) => {
     if (typeof navigator !== 'undefined' && navigator.onLine === false) throw Object.assign(new Error('offline'), { codigo: 'offline' });
-    const { data, error } = await client.functions.invoke('ia-redactor', { body: { tipo, datos } });
+    const { data, error } = await client.functions.invoke(funcion, { body });
     if (error) {
       let cuerpo = null;
       try { cuerpo = error.context && error.context.json ? await error.context.json() : null; } catch { /* sin cuerpo */ }
@@ -76,6 +76,9 @@ export function createSupabase(url, anonKey) {
     }
     return data;
   };
+  const ia = (tipo, datos) => invocar('ia-redactor', { tipo, datos });
+  // Reporte semanal por correo (configuración, envío ahora). El programador lo llama el servidor.
+  const reporte = (accion, datos = {}) => invocar('reporte-semanal', { accion, ...datos });
 
-  return { auth, remote, ia };
+  return { auth, remote, ia, reporte };
 }

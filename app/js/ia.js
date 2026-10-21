@@ -92,3 +92,18 @@ export function mensajeIA(e) {
   if (c === 'ia_no_disponible' && /_503|_500|_502/.test(e.detalle || '')) return 'La IA de Google está saturada en este momento. Espera un minuto e inténtalo otra vez.';
   return 'No se pudo redactar con la IA. Puedes escribir el texto tú, o intentarlo otra vez.';
 }
+
+// Mensajes para el reporte semanal por correo.
+export function mensajeReporte(e) {
+  const c = e && e.codigo ? e.codigo : String(e && e.message ? e.message : e).toLowerCase();
+  if (c === 'sin_sesion' || c.includes('401')) return 'Tu sesión venció. Entra de nuevo desde Ajustes.';
+  if (c === 'no_autorizado') return 'Esta cuenta no tiene permiso para usar el reporte semanal.';
+  if (c === 'offline') return 'No hay conexión con internet.';
+  if (c === 'no_desplegada') return 'La función del reporte semanal todavía no está instalada en Supabase.';
+  if (c === 'correo_no_configurado') return 'Falta configurar el servicio de correo en Supabase, así que todavía no se puede enviar.';
+  if (c === 'correo_fallo') return 'No se pudo enviar el correo. Inténtalo de nuevo en unos minutos.';
+  if (c === 'limite_diario') return 'Llegaste al límite de envíos de hoy. Inténtalo mañana.';
+  if (c === 'sin_cuaderno') return 'Todavía no hay un cuaderno respaldado en la nube. Respalda tus datos primero.';
+  if (c === 'sin_estudiantes') return 'No hay estudiantes respaldados en la nube todavía. Agrega estudiantes y respalda tus datos.';
+  return 'No se pudo enviar el reporte. Inténtalo otra vez.';
+}
