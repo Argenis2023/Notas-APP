@@ -6,6 +6,7 @@ import * as V from './views.js';
 import * as E from './views-eval.js';
 import * as R from './views-reportes.js';
 import * as A from './views-asistencia.js';
+import { revisarDueno, pedirCambioDeCuenta } from './cuenta.js';
 import * as AU from './views-aula.js';
 import * as AV from './views-avisos.js';
 import { VERSION } from './version.js';
@@ -305,6 +306,10 @@ async function boot() {
   if (supa) {
     ctx.sesion = await supa.auth.session().catch(() => null);
     if (!ctx.sesion) ctx.sesion = await pedirLogin(supa);
+    // Si este celular tenía datos de otra cuenta, se pregunta antes de usarlos o subirlos a la cuenta nueva.
+    if (ctx.sesion && ctx.sesion.email && (await revisarDueno(ctx.sesion.email)) === 'otra') {
+      if (!(await pedirCambioDeCuenta(ctx.sesion.email))) { await signOut(); return; }
+    }
   }
 
   sync = createSync({ remote: ctx.sesion ? supa.remote : null, onStatus: pintarEstado });
