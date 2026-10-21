@@ -848,3 +848,8 @@ body.bloqueada #shell, body.bloqueada #gate, body.bloqueada #toast { display: no
 
 /* texto de ayuda dentro de los cuadros */
 input::placeholder, textarea::placeholder { color: var(--tinta-suave); opacity: 0.75; }
+
+.ayuda-spam { margin: 1rem 0 0; padding: 0.8rem 1rem; border: 1px solid var(--linea); background: var(--hoja); border-radius: 8px; font-size: 0.95rem; }
+.ayuda-spam p { margin: 0 0 0.4rem; }
+.ayuda-spam ol { margin: 0 0 0.8rem; padding-left: 1.3rem; }
+.ayuda-spam li { margin-bottom: 0.3rem; }

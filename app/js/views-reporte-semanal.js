@@ -24,6 +24,43 @@ function pintarVivo() {
   e.hidden = !estadoEnvio.error;
 }
 
+
+// ----- Ayuda para que el reporte no caiga en spam: guardar la app como contacto -----
+// Un correo de alguien que ya está en tus contactos casi nunca llega a spam. El botón baja una tarjeta de
+// contacto (.vcf) que el celular ofrece guardar con un toque; no hace falta ningún servicio extra.
+function tarjetaContacto(nombre, correo) {
+  const limpio = t => String(t).replace(/[\r\n;,\\]/g, ' ').trim();
+  return ['BEGIN:VCARD', 'VERSION:3.0', `FN:${limpio(nombre)}`, `ORG:${limpio(nombre)}`, `EMAIL;TYPE=INTERNET:${limpio(correo)}`, 'NOTE:Envía el reporte semanal del Cuaderno docente', 'END:VCARD', ''].join('\r\n');
+}
+
+function ayudaSpam() {
+  return html`
+    <div class="ayuda-spam" role="note" id="ay-spam" hidden>
+      <p><strong>Si el reporte llega a spam</strong></p>
+      <ol>
+        <li>Abre el correo en spam y toca <strong>No es spam</strong>.</li>
+        <li>Guarda a <strong id="ay-correo"></strong> en tus contactos: toca el botón de abajo y abre el archivo descargado.</li>
+        <li>Opcional: en Gmail, busca ese remitente, elige <strong>Filtrar mensajes como estos</strong> y marca <strong>No enviar nunca a spam</strong>.</li>
+      </ol>
+      <div class="acciones"><button type="button" class="btn secondary" id="b-contacto">Guardar contacto de la app</button></div>
+    </div>`;
+}
+
+function montarAyudaSpam(root, ctx) {
+  const caja = $('#ay-spam', root);
+  if (!caja) return;
+  ctx.reporte('prefs').then(p => {
+    if (!p || !p.remitente) return;
+    $('#ay-correo', root).textContent = p.remitente;
+    caja.hidden = false;
+    $('#b-contacto', root).addEventListener('click', async () => {
+      const { descargar } = await import('./excel.js');
+      descargar(new Blob([tarjetaContacto(p.remitente_nombre || 'Cuaderno docente', p.remitente)], { type: 'text/vcard' }), 'cuaderno-docente.vcf');
+      toast('Contacto descargado. Ábrelo para guardarlo.');
+    });
+  }).catch(() => { /* sin sesión o sin conexión: la ayuda simplemente no se muestra */ });
+}
+
 // ----- Reportes: botón "Enviar reporte semanal" -----
 export function bloqueEnvioSemanal(ctx) {
   const disponible = ctx.reporteDisponible && ctx.reporteDisponible();
@@ -41,12 +78,14 @@ export function bloqueEnvioSemanal(ctx) {
               <button type="button" class="btn secondary" id="b-rs-no">Cancelar</button>
             </div>
           </div>
-          ${errorBox('e-rs')}`
+          ${errorBox('e-rs')}
+          ${ayudaSpam()}`
           : html`<p>Para recibir el reporte por correo necesitas la cuenta con respaldo en la nube. Actívala en Ajustes.</p>`}
       </section>`,
     mount(root) {
       const b = $('#b-rs', root);
       if (!b) return;
+      montarAyudaSpam(root, ctx);
       const panel = $('#rs-confirma', root), texto = $('#rs-texto', root), si = $('#b-rs-si', root);
       const pintar = () => {
         panel.hidden = !estadoEnvio.correo;
@@ -103,12 +142,14 @@ export function bloqueProgramacion(ctx) {
             <p class="hint" id="rp-estado" role="status">Cargando…</p>
             ${errorBox('e-rp')}
             <button class="btn secondary" type="submit" id="b-rp">Guardar</button>
-          </form>`
+          </form>
+          ${ayudaSpam()}`
           : html`<p>Necesitas la cuenta con respaldo en la nube para recibir el reporte por correo.</p>`}
       </section>`,
     mount(root) {
       const f = $('#f-rp', root);
       if (!f) return;
+      montarAyudaSpam(root, ctx);
       const estado = $('#rp-estado', root);
       const pintar = p => {
         $('#rp-activo', root).checked = !!p.activo;

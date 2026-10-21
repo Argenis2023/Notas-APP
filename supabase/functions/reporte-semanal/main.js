@@ -151,7 +151,7 @@ Deno.serve(async req => {
 
   if (accion === 'prefs') {
     const p = await prefDe(db, user.id);
-    return json({ activo: p.activo, dia: p.dia, hora: p.hora, ultimo_envio: p.ultimo_envio, ultimo_error: p.ultimo_error, email: user.email, correo_listo: !!(env('GMAIL_USER') && env('GMAIL_APP_PASSWORD')) }, 200, cors);
+    return json({ activo: p.activo, dia: p.dia, hora: p.hora, ultimo_envio: p.ultimo_envio, ultimo_error: p.ultimo_error, email: user.email, remitente: env('GMAIL_USER'), remitente_nombre: env('GMAIL_SENDER_NAME') || 'Cuaderno docente', correo_listo: !!(env('GMAIL_USER') && env('GMAIL_APP_PASSWORD')) }, 200, cors);
   }
   if (accion === 'prefs_guardar') {
     const dia = Number(cuerpo.dia), hora = Number(cuerpo.hora);
