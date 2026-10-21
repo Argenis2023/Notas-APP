@@ -867,3 +867,22 @@ input[type='date']::-webkit-datetime-edit { padding: 0; }
 .cambio.baja { color: var(--rojo); }
 .cambio.igual { color: var(--tinta-suave); }
 .evo-lapsos { max-width: 28rem; }
+
+/* Sorteo y grupos */
+.so-quienes { margin: 0 0 1rem; padding: 0.6rem 0.9rem; background: var(--hoja); border: 1px solid var(--linea); border-radius: 10px; }
+.so-quienes summary { cursor: pointer; font-weight: 600; min-height: 2.5rem; display: flex; align-items: center; }
+.so-lista { list-style: none; margin: 0.6rem 0 0; padding: 0; display: grid; gap: 0.1rem; }
+.so-nombre { margin: 1rem 0 0.2rem; padding: 1.4rem 1rem; min-height: 6rem; display: flex; align-items: center; justify-content: center; text-align: center; font-family: var(--serif, Georgia, serif); font-size: clamp(1.6rem, 7vw, 2.6rem); font-weight: 600; line-height: 1.15; overflow-wrap: anywhere; background: var(--hoja); border: 1px solid var(--linea); border-radius: 0.9rem; color: var(--tinta-suave); }
+.so-nombre.listo { color: var(--tinta); border-color: var(--acento); }
+.so-ya { margin: 0.2rem 0 1rem; padding-left: 1.4rem; }
+.so-opciones { border: 0; padding: 0; margin: 0 0 1rem; display: grid; gap: 0.6rem; }
+.so-opciones legend { font-weight: 600; padding: 0; margin-bottom: 0.4rem; }
+.so-turnos { counter-reset: turno; list-style: none; margin: 1rem 0 0.5rem; padding: 0; }
+.so-turnos li { counter-increment: turno; display: flex; gap: 0.8rem; align-items: center; padding: 0.7rem 1rem; min-height: 3rem; border-bottom: 1px solid var(--linea); }
+.so-turnos li::before { content: counter(turno); flex: none; width: 2rem; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--acento); }
+.so-cuadros { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 14rem), 1fr)); gap: 0.8rem; margin-top: 0.6rem; }
+.so-grupo { padding: 0.8rem 1rem; background: var(--hoja); border: 1px solid var(--linea); border-radius: 10px; min-width: 0; }
+.so-grupo h3 { margin: 0 0 0.4rem; font-size: 1.05rem; }
+.so-grupo ul { margin: 0; padding-left: 1.1rem; }
+.so-grupo li { overflow-wrap: anywhere; }
+@media print { .so-quienes, .acciones { display: none; } }

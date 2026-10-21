@@ -94,6 +94,7 @@ export async function panelInicio(ctx, seccion, completo, q = '') {
       <div class="acciones">
         <a class="btn secondary" href="#/aula/diccionario">${icon('diccionario', 20)} Diccionario</a>
         <a class="btn secondary" href="#/aula/pausas">${icon('pausa', 20)} Pausa activa</a>
+        <a class="btn secondary" href="#/aula/sorteo">${icon('sorteo', 20)} Sorteo y grupos</a>
       </div>
     </section>
 
