@@ -41,7 +41,7 @@ export async function avisos(ctx) {
     title: 'Avisos',
     live: true,
     html: html`
-      <p><a class="volver" href="#/">${icon('atras', 18)} Inicio</a></p>
+      
       ${grupos.length ? grupos.map(g => html`
         <section aria-labelledby="av-${g.id}">
           <h2 id="av-${g.id}">${g.t.titulo}</h2>

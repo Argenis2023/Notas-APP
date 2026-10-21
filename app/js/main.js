@@ -61,8 +61,8 @@ const RUTAS = [
   [/^#\/asistencia(?:\?(.*))?$/, m => A.asistenciaDia(ctx, m[1]), 'asistencia'],
   [/^#\/aula\/diccionario$/, () => AU.diccionario(ctx), 'inicio'],
   [/^#\/aula\/pausas(?:\?(.*))?$/, m => AU.pausas(ctx, m[1]), 'inicio'],
-  [/^#\/representantes(?:\?(.*))?$/, m => representantes(ctx, m[1]), 'inicio'],
-  [/^#\/anotaciones(?:\?(.*))?$/, m => anotaciones(ctx, m[1]), 'inicio'],
+  [/^#\/representantes(?:\?(.*))?$/, m => representantes(ctx, m[1]), 'reportes'],
+  [/^#\/anotaciones(?:\?(.*))?$/, m => anotaciones(ctx, m[1]), 'reportes'],
   [/^#\/aula\/sorteo(?:\?(.*))?$/, m => sorteo(ctx, m[1]), 'inicio'],
   [/^#\/avisos$/, () => AV.avisos(ctx), 'inicio'],
   [/^#\/ajustes$/, () => V.ajustes(ctx), 'ajustes'],
@@ -365,3 +365,6 @@ async function boot() {
 }
 
 boot();
+
+// Safari de iPhone ignora el bloqueo del zoom en la etiqueta del viewport: se frenan los gestos de pellizco.
+for (const ev of ['gesturestart', 'gesturechange', 'gestureend']) document.addEventListener(ev, e => e.preventDefault(), { passive: false });

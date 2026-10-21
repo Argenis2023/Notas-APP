@@ -11,7 +11,7 @@ export async function anotaciones(ctx, query) {
   const seccion = await getSeccion();
   if (!seccion) return { title: 'Anotaciones', html: html`<p class="vacio">Primero crea tu sección en <a class="btn secondary chico" href="#/">Inicio</a>.</p>` };
   const estudiantes = await listEstudiantes(seccion.id);
-  if (!estudiantes.length) return { title: 'Anotaciones', html: html`<p><a class="btn secondary chico volver" href="#/">${icon('atras', 18)} Inicio</a></p><p class="vacio">Todavía no hay estudiantes. <a class="btn secondary chico" href="#/estudiantes">Agrégalos</a> para poder anotar.</p>` };
+  if (!estudiantes.length) return { title: 'Anotaciones', html: html`<p class="vacio">Todavía no hay estudiantes. <a class="btn secondary chico" href="#/estudiantes">Agrégalos</a> para poder anotar.</p>` };
   const q = new URLSearchParams(query || '');
   const elegido = estudiantes.find(e => e.id === q.get('e'));
   const ids = new Set(estudiantes.map(e => e.id));
@@ -23,7 +23,7 @@ export async function anotaciones(ctx, query) {
   return {
     title: 'Anotaciones',
     html: html`
-      <p><a class="btn secondary chico volver" href="#/">${icon('atras', 18)} Inicio</a></p>
+      
       <section aria-labelledby="an-t">
         <h2 id="an-t">Anotaciones rápidas</h2>
         <p>Anota en segundos algo que pasó con un estudiante. Se suma a su informe del lapso.</p>

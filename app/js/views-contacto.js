@@ -8,7 +8,7 @@ import { datosMensaje, completarMensaje, mensajeIA } from './ia.js';
 
 export async function representantes(ctx, query) {
   const seccion = await getSeccion();
-  const volver = html`<p><a class="btn secondary chico volver" href="#/">${icon('atras', 18)} Inicio</a></p>`;
+  const volver = html``;
   if (!seccion) return { title: 'Representantes', html: html`${volver}<p class="vacio">Primero crea tu sección.</p>` };
   const estudiantes = await listEstudiantes(seccion.id);
   if (!estudiantes.length) return { title: 'Representantes', html: html`${volver}<p class="vacio">Todavía no hay estudiantes.</p><p><a class="btn primary" href="#/estudiantes">Agregar estudiantes</a></p>` };

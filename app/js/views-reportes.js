@@ -171,6 +171,13 @@ export async function reportes(ctx, q) {
     mount(root) { envio.mount(root); },
     html: html`
       ${tabsLapso(s, lapso, base)}
+      <section class="bloque" aria-labelledby="com-t">
+        <h2 id="com-t">Seguimiento y familias</h2>
+        <div class="acciones">
+          <a class="btn secondary" href="#/anotaciones">${icon('nota', 20)} Anotaciones</a>
+          <a class="btn secondary" href="#/representantes">${icon('whatsapp', 20)} Representantes</a>
+        </div>
+      </section>
       ${hayDatos ? html`
         <div class="acciones">
           <a class="btn primary" href="#/reportes/curso?l=${lapso.numero}">Informe del curso</a>
