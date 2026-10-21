@@ -4,6 +4,7 @@ import { list, guardarConId, idPar, remove } from './data.js';
 import { lapsoActual } from './data.js';
 import { promedioGeneral, enRiesgo, resumenAsistencia, cambioEnLapso, CAMBIO_BAJA, CAMBIO_SUBE } from './analisis.js';
 import { aprueba } from './calc.js';
+import { proximos, etiquetaDia } from './agenda.js';
 
 const DIA = 86400000;
 const iso = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -74,6 +75,11 @@ export function calcularAvisos(s, { hoy = new Date(), ultimoRespaldo = null, con
       const dias2 = Math.ceil((utc(lapso.fecha_fin) - hoyUtc) / DIA);
       if (dias2 >= 0 && dias2 <= 7) add({ id: `cierre:${lapso.numero}`, tipo: 'recordatorio', titulo: dias2 === 0 ? `Hoy termina el lapso ${lapso.numero}` : `Quedan ${plural(dias2, 'día', 'días')} del lapso ${lapso.numero}`, texto: 'Revisa que todas las evaluaciones tengan nota y prepara los informes.', href: `#/reportes?l=${lapso.numero}` });
     }
+  }
+
+  // ----- agenda: lo de hoy y mañana -----
+  for (const e of proximos(s, hoyIso, 1)) {
+    add({ id: `agenda:${e.id}:${e.fecha}`, tipo: 'recordatorio', titulo: `${etiquetaDia(e.fecha, hoyIso)}: ${e.titulo}`, texto: [e.hora, e.nota].filter(Boolean).join(' · '), href: e.href || '#/agenda' });
   }
 
   // ----- cumpleaños (de hoy a 3 días) -----

@@ -2,6 +2,7 @@
 import { lapsoActual, nombrePropio } from './data.js';
 import { aprueba, promedio } from './calc.js';
 import { cargarSnapshot, notaAsignatura, resumenAsistencia, promedioGeneral, enRiesgo, logroCurso, esDebil } from './analisis.js';
+import { proximos, etiquetaDia } from './agenda.js';
 import { barra } from './views-reportes.js';
 import { avisosPendientes, tarjetaAviso } from './views-avisos.js';
 import { semanaAsistencia, notasDelCurso, evolucionPromedio, seguirYDestacados } from './graficos.js';
@@ -72,6 +73,7 @@ export async function panelInicio(ctx, seccion, completo, q = '') {
   const hoyIso = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`;
   const deHoy = s.asistencia.filter(a => a.fecha === hoyIso);
   const asisHoy = { n: deHoy.length, faltaron: deHoy.filter(a => a.estado === 'ausente').length, finde: [0, 6].includes(hoy.getDay()) };
+  const proxAgenda = proximos(s, hoyIso, 7);
   const av = await avisosPendientes(s, ctx);
   const avInicio = av.visibles.filter(a => !a.id.startsWith('lista:'));
   const g = saludo(hoy);
@@ -106,6 +108,12 @@ export async function panelInicio(ctx, seccion, completo, q = '') {
         <ul class="avisos">${avInicio.slice(0, 3).map(tarjetaAviso)}</ul>
         ${avInicio.length > 3 ? html`<p><a class="btn secondary chico" href="#/avisos">Ver los ${avInicio.length} avisos</a></p>` : ''}
       </section>` : ''}
+
+    <section aria-labelledby="ag-t">
+      <h2 id="ag-t">Agenda</h2>
+      ${proxAgenda.length ? html`<ul class="ag-lista">${proxAgenda.slice(0, 3).map(e => html`<li class="ag-item ag-${e.tipo}"><p class="ag-cab"><strong>${e.titulo}</strong></p><p class="hint">${[etiquetaDia(e.fecha, hoyIso), e.hora].filter(Boolean).join(' · ')}</p></li>`)}</ul>` : html`<p>No tienes nada anotado para esta semana.</p>`}
+      <a class="btn secondary" href="#/agenda">${icon('calendario', 20)} ${proxAgenda.length > 3 ? `Ver la agenda (${proxAgenda.length})` : 'Abrir la agenda'}</a>
+    </section>
 
     ${nEst && !asisHoy.finde ? html`
       <section class="asistencia-hoy" aria-labelledby="as-t">

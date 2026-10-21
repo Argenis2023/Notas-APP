@@ -376,6 +376,40 @@ drop trigger if exists cuaderno_touch on public.anotaciones;
 create trigger cuaderno_touch before insert or update on public.anotaciones
   for each row execute function public.cuaderno_touch();
 
+create table if not exists public.agenda (
+  id uuid primary key,
+  user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  server_updated_at timestamptz not null default now(),
+  deleted boolean not null default false,
+  seccion_id uuid,
+  fecha date,
+  hora text,
+  titulo text,
+  tipo text,
+  nota text,
+  hecho boolean
+);
+alter table public.agenda add column if not exists seccion_id uuid;
+alter table public.agenda add column if not exists fecha date;
+alter table public.agenda add column if not exists hora text;
+alter table public.agenda add column if not exists titulo text;
+alter table public.agenda add column if not exists tipo text;
+alter table public.agenda add column if not exists nota text;
+alter table public.agenda add column if not exists hecho boolean;
+create index if not exists agenda_sync on public.agenda (user_id, server_updated_at);
+alter table public.agenda enable row level security;
+grant select, insert, update, delete on public.agenda to authenticated;
+drop policy if exists "solo el dueño" on public.agenda;
+create policy "solo el dueño" on public.agenda
+  for all to authenticated
+  using (user_id = auth.uid())
+  with check (user_id = auth.uid());
+drop trigger if exists cuaderno_touch on public.agenda;
+create trigger cuaderno_touch before insert or update on public.agenda
+  for each row execute function public.cuaderno_touch();
+
 create table if not exists public.configuracion (
   id uuid primary key,
   user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,

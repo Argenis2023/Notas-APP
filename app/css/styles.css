@@ -951,3 +951,18 @@ input, select, textarea { font-size: max(1rem, 16px); }
 }
 
 .chat .chat-yo { color: #ffffff; background: var(--cabecera-chat, #0d5a4a); }
+
+/* Agenda */
+.ag-lista { list-style: none; margin: 0.6rem 0 1rem; padding: 0; display: grid; gap: 0.6rem; }
+.ag-item { border: 1px solid var(--linea); border-left-width: 0.3rem; border-radius: 0.5rem; padding: 0.6rem 0.8rem; background: var(--hoja); }
+.ag-item p { margin: 0; }
+.ag-item .acciones { margin-top: 0.5rem; }
+.ag-evaluacion { border-left-color: var(--acento); }
+.ag-reunion { border-left-color: #8a5a9a; }
+.ag-entrega { border-left-color: #b26a00; }
+.ag-actividad { border-left-color: #2e7d4f; }
+.ag-evento, .ag-recordatorio { border-left-color: #5a6b8c; }
+.ag-hecho strong { text-decoration: line-through; opacity: 0.7; }
+.ag-nota { overflow-wrap: anywhere; white-space: pre-wrap; }
+.ag-mas { margin: 0.5rem 0 1rem; }
+.ag-mas summary { cursor: pointer; min-height: 2.75rem; display: flex; align-items: center; font-weight: 500; }

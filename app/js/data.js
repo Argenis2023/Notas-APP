@@ -8,10 +8,12 @@ export { TABLES, TABLE_NAMES };
 export const db = new Dexie('cuaderno-docente');
 const storeDe = t => ['id', 'updated_at', '_dirty', ...(t.idx ? t.idx.split(',').map(s => s.trim()) : [])].join(', ');
 const stores = { meta: 'key' };
-for (const [name, t] of Object.entries(TABLES)) if (name !== 'anotaciones') stores[name] = storeDe(t);
+for (const [name, t] of Object.entries(TABLES)) if (name !== 'anotaciones' && name !== 'agenda') stores[name] = storeDe(t);
 db.version(1).stores(stores);
 // Versión 2: se agrega la tabla de anotaciones rápidas (las demás se conservan tal cual).
 db.version(2).stores({ ...stores, anotaciones: storeDe(TABLES.anotaciones) });
+// Versión 3: agenda del aula.
+db.version(3).stores({ ...stores, anotaciones: storeDe(TABLES.anotaciones), agenda: storeDe(TABLES.agenda) });
 
 // Avisos de cambios para refrescar pantallas y programar la sincronización
 export const bus = new EventTarget();

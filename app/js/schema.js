@@ -59,6 +59,10 @@ export const TABLES = {
     cols: { estudiante_id: 'uuid', seccion_id: 'uuid', fecha: 'date', texto: 'text', tipo: 'text' },
     idx: 'estudiante_id, fecha',
   },
+  agenda: {
+    cols: { seccion_id: 'uuid', fecha: 'date', hora: 'text', titulo: 'text', tipo: 'text', nota: 'text', hecho: 'bool' },
+    idx: 'seccion_id, fecha',
+  },
   configuracion: {
     cols: {
       umbral_indicador_debil: 'num', minimo_aprobatorio: 'int', puntos_logrado: 'num',
