@@ -9,10 +9,16 @@ export const UMBRAL_FUERTE = 80; // % desde el cual un indicador se considera do
 export const claveIndicador = i => (i.etiqueta && i.etiqueta.trim() ? i.etiqueta.trim() : i.texto.trim());
 const norm = s => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
 
+const TABLAS_SNAPSHOT = ['estudiantes', 'asignaturas', 'evaluaciones', 'indicadores', 'resultados', 'notas', 'lapsos', 'configuracion', 'reportes', 'recomendaciones', 'asistencia'];
+
 export async function cargarSnapshot(seccion) {
-  const [estudiantes, asignaturas, evaluaciones, indicadores, resultados, notas, lapsos, cfgs, reportes, recomendaciones, asistenciaTodas] = await Promise.all(
-    ['estudiantes', 'asignaturas', 'evaluaciones', 'indicadores', 'resultados', 'notas', 'lapsos', 'configuracion', 'reportes', 'recomendaciones', 'asistencia'].map(list),
-  );
+  const filas = await Promise.all(TABLAS_SNAPSHOT.map(list));
+  return armarSnapshot(seccion, Object.fromEntries(TABLAS_SNAPSHOT.map((t, i) => [t, filas[i]])));
+}
+
+// Arma la foto a partir de las filas de cada tabla (sirve igual con datos del celular o de la nube).
+export function armarSnapshot(seccion, t) {
+  const { estudiantes, asignaturas, evaluaciones, indicadores, resultados, notas, lapsos, configuracion: cfgs, reportes, recomendaciones, asistencia: asistenciaTodas } = t;
   const est = estudiantes.filter(e => e.seccion_id === seccion.id).sort((a, b) => (a.numero_lista ?? 1e9) - (b.numero_lista ?? 1e9) || (a.nombre_completo || '').localeCompare(b.nombre_completo || '', 'es'));
   const asig = asignaturas.filter(a => a.seccion_id === seccion.id).sort((a, b) => (a.orden ?? 1e9) - (b.orden ?? 1e9));
   const asigIds = new Set(asig.map(a => a.id));
