@@ -59,6 +59,33 @@ export function promedioGeneral(s, lapsoId, estId) {
   return promedio(s.asignaturas.map(a => notaAsignatura(s, a.id, lapsoId, estId)));
 }
 
+// Evolución de un estudiante entre lapsos: promedio general y nota por asignatura en cada lapso que ya tiene notas.
+export function evolucionEstudiante(s, estId) {
+  const out = [];
+  for (const l of s.lapsos) {
+    const prom = promedioGeneral(s, l.id, estId);
+    if (prom === null) continue;
+    const asig = {};
+    for (const a of s.asignaturas) { const n = notaAsignatura(s, a.id, l.id, estId); if (n !== null) asig[a.id] = n; }
+    out.push({ lapso: l, promedio: prom, asig });
+  }
+  return out;
+}
+
+// Cambio del promedio general de un lapso respecto al lapso anterior que tenga notas.
+// Devuelve null si el estudiante no tiene notas en ese lapso o no hay un lapso anterior con notas.
+export function cambioEnLapso(s, estId, lapsoId) {
+  const evo = evolucionEstudiante(s, estId);
+  const i = evo.findIndex(x => x.lapso.id === lapsoId);
+  if (i < 1) return null;
+  const actual = evo[i], anterior = evo[i - 1];
+  return { actual: actual.promedio, anterior: anterior.promedio, diff: actual.promedio - anterior.promedio, lapsoAnterior: anterior.lapso };
+}
+
+// Cuánto tiene que cambiar el promedio (en la escala de 1 a 20) para avisar a la docente.
+export const CAMBIO_BAJA = 2;
+export const CAMBIO_SUBE = 3;
+
 const pctNivel = (nivel, cfg) => {
   const p = puntosDe(nivel, cfg);
   if (p === null) return null;

@@ -8,6 +8,7 @@ import {
   buscarRecomendacion, sugerenciaGeneral, borradorDescriptivo, claveIndicador, resumenAsistencia,
 } from './analisis.js';
 import { html, raw, icon, toast, fechaLarga, fechaCorta } from './ui.js';
+import { evolucionLapsos, cambiosDelCurso } from './graficos.js';
 import { $, $$, campo, areaTexto, errorBox, mostrarError } from './form.js';
 import { promedio } from './calc.js';
 import { lineasEncabezado } from './institucion.js';
@@ -182,7 +183,8 @@ export async function reportes(ctx, q) {
               <span class="fila-sub">${prom === null ? 'Sin notas en este lapso' : [bajas.length ? `Por debajo del mínimo en ${bajas.join(', ')}` : '', debiles ? `${debiles} ${debiles === 1 ? 'indicador débil' : 'indicadores débiles'}` : 'Sin indicadores débiles'].filter(Boolean).join(', ')}</span>
             </span>
           </a></li>`)}</ol>
-        <p class="hint">El número en el margen es el promedio general del estudiante en el lapso.</p>`
+        <p class="hint">El número en el margen es el promedio general del estudiante en el lapso.</p>
+        ${cambiosDelCurso(s, lapso)}`
         : html`<div class="vacio">
             <p><strong>Todavía no hay notas en el lapso ${lapso?.numero ?? ''}.</strong></p>
             <p>Cuando completes la lista de cotejo de alguna evaluación, aquí aparecerán los informes de cada estudiante y del curso.</p>
@@ -249,6 +251,7 @@ export async function reporteEstudiante(ctx, estId, q) {
           </table>
 
           ${(() => { const r = resumenAsistencia(s, lapso, e.id); return r.dias && r.marcados ? html`<p class="informe-asistencia"><strong>Asistencia:</strong> ${r.faltas === 0 && r.justificadas === 0 ? 'sin inasistencias' : `${plural2(r.faltas, 'inasistencia', 'inasistencias')}${r.justificadas ? `, ${plural2(r.justificadas, 'justificada', 'justificadas')}` : ''}`} en ${r.dias} ${r.dias === 1 ? 'día' : 'días'} con lista (${r.pct}% de asistencia).</p>` : ''; })()}
+          ${evolucionLapsos(s, e.id, s.cfg.minimo_aprobatorio ?? 10)}
           <div class="informe-asigs">${asigs.map(({ a, logro }) => html`
             <section class="informe-asig">
               <h3 class="informe-h">${a.nombre}</h3>

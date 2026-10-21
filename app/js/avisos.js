@@ -2,7 +2,7 @@
 // Se calculan al vuelo con los datos del cuaderno. Solo se guarda cuáles descartó ("Entendido").
 import { list, guardarConId, idPar, remove } from './data.js';
 import { lapsoActual } from './data.js';
-import { promedioGeneral, enRiesgo, resumenAsistencia } from './analisis.js';
+import { promedioGeneral, enRiesgo, resumenAsistencia, cambioEnLapso, CAMBIO_BAJA, CAMBIO_SUBE } from './analisis.js';
 import { aprueba } from './calc.js';
 
 const DIA = 86400000;
@@ -49,6 +49,12 @@ export function calcularAvisos(s, { hoy = new Date(), ultimoRespaldo = null, con
       const nombres = x.asignaturas.map(a => a.nombre);
       const detalle = nombres.length ? `Por debajo del mínimo en ${nombres.join(', ')}.` : `Promedio general ${x.promedio}, el mínimo es ${s.cfg.minimo_aprobatorio ?? 10}.`;
       add({ id: `riesgo:${e.id}:${lapso.numero}:${x.asignaturas.map(a => a.id).sort().join('-')}`, tipo: 'atencion', titulo: `${nombre(e)} necesita apoyo`, texto: detalle, href: `#/reportes/e/${e.id}?l=${lapso.numero}` });
+    }
+    const enApoyo = new Set(enRiesgo(s, lapso.id).map(x => x.estudiante.id));
+    for (const e of s.estudiantes) {
+      const c = cambioEnLapso(s, e.id, lapso.id);
+      if (c && c.diff <= -CAMBIO_BAJA && !enApoyo.has(e.id)) add({ id: `baja:${e.id}:${lapso.numero}`, tipo: 'atencion', titulo: `El promedio de ${nombre(e)} bajó ${plural(-c.diff, 'punto', 'puntos')}`, texto: `Pasó de ${c.anterior} en el lapso ${c.lapsoAnterior.numero} a ${c.actual} en el lapso ${lapso.numero}.`, href: `#/reportes/e/${e.id}?l=${lapso.numero}` });
+      if (c && c.diff >= CAMBIO_SUBE && c.actual < 18) add({ id: `sube:${e.id}:${lapso.numero}`, tipo: 'felicitar', titulo: `${nombre(e)} subió ${plural(c.diff, 'punto', 'puntos')} su promedio`, texto: `Pasó de ${c.anterior} en el lapso ${c.lapsoAnterior.numero} a ${c.actual} en el lapso ${lapso.numero}.`, href: `#/reportes/e/${e.id}?l=${lapso.numero}` });
     }
     for (const e of s.estudiantes) {
       const p = promedioGeneral(s, lapso.id, e.id);

@@ -860,3 +860,10 @@ input[type='date']::-webkit-date-and-time-value { text-align: left; min-width: 0
 input[type='date']::-webkit-datetime-edit { padding: 0; }
 .lapso .field { min-width: 0; overflow: hidden; }
 @media (max-width: 30rem) { .lapso { grid-template-columns: minmax(0, 1fr); gap: 0.6rem; } }
+
+/* Evolución entre lapsos: flechas de cambio */
+.cambio { font-weight: 600; white-space: nowrap; }
+.cambio.sube { color: var(--verde); }
+.cambio.baja { color: var(--rojo); }
+.cambio.igual { color: var(--tinta-suave); }
+.evo-lapsos { max-width: 28rem; }

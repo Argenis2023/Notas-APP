@@ -1,6 +1,6 @@
 // Gráficos y estadísticas del Inicio. Son funciones puras: reciben la "foto" de los datos y devuelven HTML.
 // Los gráficos son HTML y SVG simples (sin librerías), para que funcionen sin internet y se vean nítidos al imprimir.
-import { distribucion, resumenAsistencia, promedioGeneral } from './analisis.js';
+import { distribucion, resumenAsistencia, promedioGeneral, evolucionEstudiante, cambioEnLapso } from './analisis.js';
 import { promedio, aprueba } from './calc.js';
 import { html } from './ui.js';
 
@@ -126,4 +126,72 @@ export function seguirYDestacados(s, lapso, nombrePropio = x => x) {
         </a></li>`)}</ul>
     </section>`;
   return html`${seguir.length ? lista('Para seguir de cerca', 'seg-t', seguir, f => motivo(f).join(', ')) : ''}${destacados.length ? lista('Destacados del lapso', 'des-t', destacados, f => `promedio ${f.prom}${f.r.pct !== null && f.r.marcados >= 5 ? `, ${f.r.pct}% de asistencia` : ''}`) : ''}`;
+}
+
+// ----- Evolución de un estudiante entre lapsos -----
+const flecha = d => (d > 0 ? html`<span class="cambio sube" aria-label="sube ${d}">▲ ${d}</span>` : d < 0 ? html`<span class="cambio baja" aria-label="baja ${-d}">▼ ${-d}</span>` : html`<span class="cambio igual" aria-label="se mantiene">=</span>`);
+
+export function evolucionLapsos(s, estId, minimo) {
+  const evo = evolucionEstudiante(s, estId);
+  if (evo.length < 2) {
+    return html`
+      <section class="no-print" aria-labelledby="evl-t">
+        <h3 class="informe-h" id="evl-t">Evolución entre lapsos</h3>
+        <p class="hint">Aparecerá cuando el estudiante tenga notas en al menos 2 lapsos.</p>
+      </section>`;
+  }
+  const W = 300, H = 130, L = 26, R = 14, T = 14, B = 22;
+  const x = i => L + (i * (W - L - R)) / (evo.length - 1);
+  const y = v => T + (1 - Math.max(0, Math.min(20, v)) / 20) * (H - T - B);
+  const linea = evo.map((p, i) => `${x(i).toFixed(1)},${y(p.promedio).toFixed(1)}`).join(' ');
+  const resumen = evo.map(p => `Lapso ${p.lapso.numero}: ${p.promedio}`).join('; ');
+  const dif = evo[evo.length - 1].promedio - evo[0].promedio;
+  const ultimo = evo[evo.length - 1].promedio - evo[evo.length - 2].promedio;
+  const frase = ultimo === 0 ? 'Se mantiene igual que en el lapso anterior.' : ultimo > 0 ? `Subió ${plural(ultimo, 'punto', 'puntos')} respecto al lapso anterior.` : `Bajó ${plural(-ultimo, 'punto', 'puntos')} respecto al lapso anterior.`;
+  const asigs = s.asignaturas.filter(a => evo.some(p => p.asig[a.id] !== undefined));
+  return html`
+    <section class="no-print" aria-labelledby="evl-t">
+      <h3 class="informe-h" id="evl-t">Evolución entre lapsos</h3>
+      <svg class="evo evo-lapsos" viewBox="0 0 ${W} ${H}" role="img" aria-label="Promedio general por lapso. ${resumen}" preserveAspectRatio="xMidYMid meet">
+        <line class="evo-eje" x1="${L}" y1="${y(0)}" x2="${W - R}" y2="${y(0)}"/>
+        <line class="evo-min" x1="${L}" y1="${y(minimo).toFixed(1)}" x2="${W - R}" y2="${y(minimo).toFixed(1)}"/>
+        <text class="evo-txt" x="${L - 4}" y="${(y(minimo) + 3).toFixed(1)}" text-anchor="end">${minimo}</text>
+        <text class="evo-txt" x="${L - 4}" y="${(y(20) + 3).toFixed(1)}" text-anchor="end">20</text>
+        <polyline class="evo-linea" pathLength="1" points="${linea}"/>
+        ${evo.map((p, i) => html`
+          <circle class="evo-pto" cx="${x(i).toFixed(1)}" cy="${y(p.promedio).toFixed(1)}" r="3.6"><title>Lapso ${p.lapso.numero}: ${p.promedio}</title></circle>
+          <text class="evo-val" x="${x(i).toFixed(1)}" y="${(y(p.promedio) - 8).toFixed(1)}" text-anchor="middle">${p.promedio}</text>
+          <text class="evo-txt" x="${x(i).toFixed(1)}" y="${H - 6}" text-anchor="middle">Lapso ${p.lapso.numero}</text>`)}
+      </svg>
+      <p class="hint">${frase}${evo.length > 2 ? ` En total ${dif === 0 ? 'queda igual' : dif > 0 ? `sube ${plural(dif, 'punto', 'puntos')}` : `baja ${plural(-dif, 'punto', 'puntos')}`} desde el lapso ${evo[0].lapso.numero}.` : ''} La línea punteada es la nota mínima para aprobar.</p>
+      <div class="tabla-wrap"><table class="tabla">
+        <thead><tr><th scope="col">Asignatura</th>${evo.map(p => html`<th scope="col">Lapso ${p.lapso.numero}</th>`)}<th scope="col">Cambio</th></tr></thead>
+        <tbody>${asigs.map(a => {
+          const vals = evo.map(p => p.asig[a.id]);
+          const conNota = vals.filter(v => v !== undefined);
+          const d = conNota.length >= 2 ? conNota[conNota.length - 1] - conNota[conNota.length - 2] : null;
+          return html`<tr><th scope="row">${a.nombre}</th>${vals.map(v => html`<td>${v === undefined ? '–' : v}</td>`)}<td>${d === null ? '–' : flecha(d)}</td></tr>`;
+        })}</tbody>
+        <tfoot><tr><th scope="row">Promedio general</th>${evo.map(p => html`<td><strong>${p.promedio}</strong></td>`)}<td>${flecha(ultimo)}</td></tr></tfoot>
+      </table></div>
+    </section>`;
+}
+
+// Quiénes suben y quiénes bajan su promedio general respecto al lapso anterior (los 3 mayores cambios de cada lado).
+export function cambiosDelCurso(s, lapso) {
+  if (!lapso) return '';
+  const filas = s.estudiantes.map(e => ({ e, c: cambioEnLapso(s, e.id, lapso.id) })).filter(f => f.c && f.c.diff !== 0);
+  const suben = filas.filter(f => f.c.diff > 0).sort((a, b) => b.c.diff - a.c.diff).slice(0, 3);
+  const bajan = filas.filter(f => f.c.diff < 0).sort((a, b) => a.c.diff - b.c.diff).slice(0, 3);
+  if (!suben.length && !bajan.length) return '';
+  const lista = (titulo, id, items) => html`
+    <section aria-labelledby="${id}">
+      <h2 id="${id}">${titulo}</h2>
+      <ul class="hoja">${items.map(({ e, c }) => html`
+        <li><a class="fila" href="#/reportes/e/${e.id}?l=${lapso.numero}">
+          <span class="margen">${c.actual}</span>
+          <span class="fila-texto"><span class="fila-nombre">${e.nombre_completo}</span><span class="fila-sub">${flecha(c.diff)} desde ${c.anterior} en el lapso ${c.lapsoAnterior.numero}</span></span>
+        </a></li>`)}</ul>
+    </section>`;
+  return html`${suben.length ? lista('Suben respecto al lapso anterior', 'cam-sube', suben) : ''}${bajan.length ? lista('Bajan respecto al lapso anterior', 'cam-baja', bajan) : ''}`;
 }
