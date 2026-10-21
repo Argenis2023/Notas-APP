@@ -178,7 +178,7 @@ export async function estudianteForm(ctx, id) {
   return {
     title: nuevo ? 'Nuevo estudiante' : 'Estudiante',
     html: html`
-      <p><a class="volver" href="#/estudiantes">${icon('atras', 18)} Estudiantes</a>${e ? html` · <a class="btn secondary chico" href="#/asistencia/calendario?e=${e.id}">Ver su asistencia en calendario</a> · <a class="btn secondary chico" href="#/anotaciones?e=${e.id}">Sus anotaciones</a>` : ''}</p>
+      <p><a class="volver" href="#/estudiantes">${icon('atras', 18)} Estudiantes</a>${e ? html` · <a class="btn secondary chico" href="#/asistencia/calendario?e=${e.id}">Ver su asistencia en calendario</a> · <a class="btn secondary chico" href="#/representantes?e=${e.id}">Escribir al representante</a> · <a class="btn secondary chico" href="#/anotaciones?e=${e.id}">Sus anotaciones</a>` : ''}</p>
       <form id="f-est" class="stack" novalidate>
         ${campo({ id: 'nombre_completo', label: 'Nombre completo', value: e?.nombre_completo, required: true, placeholder: 'Por ejemplo: María Pérez', extra: 'autocomplete="off"' })}
         ${campo({ id: 'numero_lista', label: 'N.º de lista', value: e ? e.numero_lista : siguiente, type: 'number', placeholder: 'Por ejemplo: 7', extra: 'inputmode="numeric" min="1" step="1"' })}
