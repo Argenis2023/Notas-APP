@@ -31,12 +31,12 @@ export function montarChat() {
   panel.innerHTML = html`
     <header class="chat-cab">
       <h2>Consultas</h2>
+      <button type="button" class="chat-limpiar" id="chat-limpiar" aria-label="Limpiar la conversación">${icon('limpiar', 18)} Limpiar</button>
       <button type="button" class="chat-x" id="chat-cerrar" aria-label="Cerrar consultas">${icon('cerrar', 22)}</button>
     </header>
     <div class="chat-est"><label for="chat-est">Estudiante</label><select id="chat-est"></select></div>
     <div class="chat-msgs" id="chat-msgs" role="log" aria-live="polite"></div>
-    <div class="chat-preguntas" id="chat-preguntas" role="group" aria-label="Preguntas sobre el estudiante"></div>
-    <div class="chat-pie"><button type="button" class="enlace" id="chat-limpiar">Limpiar conversación</button></div>`.toString();
+    <div class="chat-preguntas" id="chat-preguntas" role="group" aria-label="Preguntas sobre el estudiante"></div>`.toString();
   shell.append(fab, panel);
 
   const msgs = $('#chat-msgs', panel), sel = $('#chat-est', panel), pregs = $('#chat-preguntas', panel);

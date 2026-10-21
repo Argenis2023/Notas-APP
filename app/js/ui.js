@@ -59,6 +59,7 @@ const P = {
   nota: '<path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5"/><path d="M9 13h7M9 17h5"/>',
   whatsapp: '<path d="M4 20l1.4-4.2A8 8 0 1 1 8.2 18.6z"/><path d="M9 9c0 3 3 6 6 6l1-1.5-2-1-1 .7c-.8-.4-1.5-1.1-1.9-1.9l.7-1-1-2z"/>',
   mano: '<path d="M9 12V5.5a1.5 1.5 0 0 1 3 0V11"/><path d="M12 11a1.5 1.5 0 0 1 3 0v1"/><path d="M15 12a1.5 1.5 0 0 1 3 0v3.5c0 3.3-2.2 6-5.5 6h-1.2c-1.9 0-3.1-.8-4.2-2L5 16.2a1.6 1.6 0 0 1 2.4-2.1L9 15.5V12"/>',
+  limpiar: '<path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13h10l1-13"/><path d="M10 11v6M14 11v6"/>',
   sorteo: '<rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1.2"/><circle cx="15" cy="9" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="9" cy="15" r="1.2"/><circle cx="15" cy="15" r="1.2"/>',
   chat: '<path d="M5 5h14a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H10l-4.5 3.5V16H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/><path d="M8.5 9.5h7M8.5 12.5h4"/>',
   cerrar: '<path d="M6 6l12 12M18 6 6 18"/>',
