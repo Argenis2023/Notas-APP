@@ -897,3 +897,17 @@ input[type='date']::-webkit-datetime-edit { padding: 0; }
 .an-mejorar { border-left-color: #b26a00; }
 .an-nota { border-left-color: #5a6b8c; }
 .an-texto { white-space: pre-wrap; overflow-wrap: anywhere; }
+
+/* Representantes */
+.motivos { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0 0 1.1rem; }
+.rp-rep { margin: 0.6rem 0 0.9rem; overflow-wrap: anywhere; }
+#rp-texto { min-height: 9rem; }
+
+/* Cabecera en pantallas angostas: que el título no se parta a la mitad de una palabra */
+.top h1 { overflow-wrap: break-word; }
+@media (max-width: 26rem) {
+  .top { gap: 0.5rem; padding-inline: 0.75rem; }
+  .top h1 { font-size: 1.05rem; }
+  .top-logo { width: 2.2rem; height: 2.2rem; }
+  .chip { padding: 0.3rem 0.6rem; font-size: 0.78rem; gap: 0.35rem; }
+}

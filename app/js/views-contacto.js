@@ -43,8 +43,8 @@ export async function representantes(ctx, query) {
             ${estudiantes.map(e => html`<option value="${e.id}" ${elegido && e.id === elegido.id ? 'selected' : ''}>${e.numero_lista ? e.numero_lista + '. ' : ''}${e.nombre_completo}</option>`)}
           </select></div>
         ${elegido ? html`
-          <p class="hint">Representante: <strong>${elegido.representante_nombre || 'sin nombre'}</strong> · ${elegido.representante_contacto || 'sin teléfono'}</p>
-          <nav class="lapso-tabs" aria-label="Motivo del mensaje">${MOTIVOS.map(([id, t]) => html`<a href="#/representantes?e=${elegido.id}&m=${id}" ${id === motivo ? html`aria-current="page"` : ''}>${t}</a>`)}</nav>
+          <p class="hint rp-rep">Representante: <strong>${elegido.representante_nombre || 'sin nombre'}</strong> · ${elegido.representante_contacto || 'sin teléfono'}</p>
+          <nav class="motivos" aria-label="Motivo del mensaje">${MOTIVOS.map(([id, t]) => html`<a class="btn chico ${id === motivo ? 'primary' : 'secondary'}" href="#/representantes?e=${elegido.id}&m=${id}" ${id === motivo ? html`aria-current="page"` : ''}>${t}</a>`)}</nav>
           ${tiene ? html`
             <div class="field"><label for="rp-texto">Mensaje</label><textarea id="rp-texto" rows="6">${texto}</textarea>
               <p class="hint">Puedes cambiarlo. Se abre WhatsApp con este texto y tú lo envías.</p></div>
