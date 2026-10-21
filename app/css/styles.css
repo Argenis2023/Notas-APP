@@ -853,3 +853,10 @@ input::placeholder, textarea::placeholder { color: var(--tinta-suave); opacity: 
 .ayuda-spam p { margin: 0 0 0.4rem; }
 .ayuda-spam ol { margin: 0 0 0.8rem; padding-left: 1.3rem; }
 .ayuda-spam li { margin-bottom: 0.3rem; }
+
+/* Safari del iPhone da a los campos de fecha un ancho propio que se sale de su columna: se fuerza al ancho de la celda. */
+input[type='date'] { -webkit-appearance: none; appearance: none; display: block; min-width: 0; max-width: 100%; box-sizing: border-box; text-align: left; line-height: 1.4; }
+input[type='date']::-webkit-date-and-time-value { text-align: left; min-width: 0; }
+input[type='date']::-webkit-datetime-edit { padding: 0; }
+.lapso .field { min-width: 0; overflow: hidden; }
+@media (max-width: 30rem) { .lapso { grid-template-columns: minmax(0, 1fr); gap: 0.6rem; } }
