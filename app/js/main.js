@@ -77,7 +77,7 @@ async function render({ suave = false } = {}) {
   if (token !== ficha) return;
   try { aplicarInstitucion(await leerInstitucion()); } catch { /* sin datos de la institución: se ve el tema base */ }
   actual = vista;
-  $('#titulo').textContent = vista.title === 'Cuaderno docente' ? 'CUADERNO DOCENTE' : vista.title;
+  $('#titulo').textContent = vista.title === 'Cuaderno docente' ? 'Inicio' : vista.title;
   document.title = vista.title === 'Cuaderno docente' ? 'Cuaderno docente' : `${vista.title} | Cuaderno docente`;
   const main = $('#view');
   main.innerHTML = vista.html.toString();
@@ -353,7 +353,7 @@ async function boot() {
   // Dispositivo nuevo con sesión: se traen primero los datos de la nube, para no ofrecer crear un cuaderno que ya existe.
   let yaSincronizo = false;
   if (ctx.sesion && sync.enabled && !(await getSeccion()) && navigator.onLine !== false) {
-    $('#titulo').textContent = 'CUADERNO DOCENTE';
+    $('#titulo').textContent = 'Inicio';
     $('#view').innerHTML = html`<p class="vacio" role="status">Buscando tu cuaderno en la nube…</p>`.toString();
     await Promise.race([sync.syncNow(), new Promise(r => setTimeout(r, 12000))]);
     yaSincronizo = true;

@@ -22,7 +22,11 @@ export function montarChat() {
   fab.id = 'chat-fab'; fab.type = 'button'; fab.className = 'chat-fab';
   fab.setAttribute('aria-label', 'Abrir consultas sobre un estudiante');
   fab.setAttribute('aria-expanded', 'false');
-  fab.innerHTML = html`${icon('chat', 26)}<span class="chat-fab-txt">Consultas</span>`.toString();
+  // Hasta que la docente use las consultas por primera vez, una manito "toca" el botón de vez en cuando.
+  let usado = false;
+  try { usado = localStorage.getItem('cuaderno-consultas-usado') === '1'; } catch { /* sin almacenamiento */ }
+  fab.innerHTML = html`${icon('chat', 26)}<span class="chat-fab-txt">Consultas</span>${usado ? '' : html`<span class="chat-mano" aria-hidden="true">${icon('mano', 30)}</span>`}`.toString();
+  if (!usado) fab.classList.add('llama');
   const panel = document.createElement('section');
   panel.id = 'chat'; panel.className = 'chat'; panel.hidden = true;
   panel.setAttribute('role', 'dialog'); panel.setAttribute('aria-label', 'Consultas sobre un estudiante');
@@ -98,6 +102,9 @@ export function montarChat() {
   }
 
   async function abrir() {
+    try { localStorage.setItem('cuaderno-consultas-usado', '1'); } catch { /* sin almacenamiento */ }
+    fab.classList.remove('llama');
+    const mano = fab.querySelector('.chat-mano'); if (mano) mano.remove();
     await cargarEstudiantes(estudianteDeLaRuta());
     if (!msgs.childElementCount) bienvenida();
     panel.hidden = false;
