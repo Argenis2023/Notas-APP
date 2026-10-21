@@ -309,8 +309,9 @@ async function boot() {
     ctx.sesion = await supa.auth.session().catch(() => null);
     if (!ctx.sesion) ctx.sesion = await pedirLogin(supa);
     // Si este celular tenía datos de otra cuenta, se pregunta antes de usarlos o subirlos a la cuenta nueva.
-    if (ctx.sesion && ctx.sesion.email && (await revisarDueno(ctx.sesion.email)) === 'otra') {
-      if (!(await pedirCambioDeCuenta(ctx.sesion.email))) { await signOut(); return; }
+    if (ctx.sesion && ctx.sesion.email) {
+      const caso = await revisarDueno(ctx.sesion.email);
+      if ((caso === 'otra' || caso === 'desconocida') && !(await pedirCambioDeCuenta(ctx.sesion.email, caso))) { await signOut(); return; }
     }
   }
 
