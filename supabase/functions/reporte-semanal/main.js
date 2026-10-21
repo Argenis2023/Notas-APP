@@ -8,9 +8,12 @@
 //
 // El reporte SIEMPRE va al correo de la cuenta de quien lo pide: esta función no sirve para escribirle a otras personas.
 //
-// Secretos: BREVO_API_KEY, BREVO_SENDER_EMAIL (remitente verificado en Brevo), BREVO_SENDER_NAME (opcional),
+// Secretos de correo: GMAIL_USER y GMAIL_APP_PASSWORD (contraseña de aplicación de Gmail, SMTP seguro por el puerto 465),
+//           GMAIL_SENDER_NAME (opcional). Si no están, usa Brevo: BREVO_API_KEY, BREVO_SENDER_EMAIL, BREVO_SENDER_NAME.
+// Otros secretos:
 //           GEMINI_API_KEY (y GROQ_API_KEY opcional), ALLOWED_EMAIL (opcional, varios con coma), ALLOWED_ORIGIN (opcional).
 import { createClient } from 'npm:@supabase/supabase-js@2';
+import nodemailer from 'npm:nodemailer@6.9.16';
 import { armarSnapshot, armarReporte, datosParaIA, hoyCaracas, isoDe, fechaLarga } from './datos.js';
 import { crearPDF } from './pdf.js';
 import { redactar, SISTEMA_LECTURA } from './ia.js';
@@ -56,8 +59,9 @@ async function armarParaUsuario(db, uid, hoy) {
 }
 
 async function enviarCorreo(para, nombreDocente, r, pdf, fechaIso) {
+  const gUser = env('GMAIL_USER'), gPass = env('GMAIL_APP_PASSWORD').replace(/\s+/g, '');
   const clave = env('BREVO_API_KEY'), remite = env('BREVO_SENDER_EMAIL');
-  if (!clave || !remite) throw new Error('correo_no_configurado');
+  if (!(gUser && gPass) && !(clave && remite)) throw new Error('correo_no_configurado');
   const d1 = r.semana.desde, d2 = r.semana.hasta;
   const filas = [
     ['Promedio general', r.stats.promedio !== null ? r.stats.promedio : 'sin notas'],
@@ -72,6 +76,18 @@ async function enviarCorreo(para, nombreDocente, r, pdf, fechaIso) {
     <table style="border-collapse:collapse;width:100%">${filas.map(([a, b]) => `<tr><td style="padding:6px 0;border-bottom:1px solid #d9e1df">${esc(a)}</td><td style="padding:6px 0;border-bottom:1px solid #d9e1df;text-align:right"><strong>${esc(b)}</strong></td></tr>`).join('')}</table>
     <p>El informe completo, con asistencia, notas, debilidades por abordar y cumpleaños, va en el PDF adjunto.</p>
     <p style="color:#4a5b58;font-size:12px">Enviado por Cuaderno docente. Contiene datos de estudiantes: no lo reenvíes a personas que no deban verlo.</p></div>`;
+  const asunto = `Reporte semanal del curso · semana del ${d1.getDate()}/${d1.getMonth() + 1} al ${d2.getDate()}/${d2.getMonth() + 1}`;
+  if (gUser && gPass) {
+    const transporte = nodemailer.createTransport({ host: 'smtp.gmail.com', port: 465, secure: true, auth: { user: gUser, pass: gPass } });
+    try {
+      await transporte.sendMail({
+        from: { name: env('GMAIL_SENDER_NAME') || 'Cuaderno docente', address: gUser },
+        to: para, subject: asunto, html,
+        attachments: [{ filename: `reporte-semanal-${fechaIso}.pdf`, content: pdf, contentType: 'application/pdf' }],
+      });
+    } catch (e) { throw new Error(`correo_gmail: ${String((e && e.message) || e).slice(0, 200)}`); }
+    return;
+  }
   const resp = await fetch('https://api.brevo.com/v3/smtp/email', {
     method: 'POST',
     headers: { 'api-key': clave, 'Content-Type': 'application/json', accept: 'application/json' },
@@ -152,7 +168,7 @@ Deno.serve(async req => {
 
   if (accion === 'prefs') {
     const p = await prefDe(db, user.id);
-    return json({ activo: p.activo, dia: p.dia, hora: p.hora, ultimo_envio: p.ultimo_envio, ultimo_error: p.ultimo_error, email: user.email, correo_listo: !!(env('BREVO_API_KEY') && env('BREVO_SENDER_EMAIL')) }, 200, cors);
+    return json({ activo: p.activo, dia: p.dia, hora: p.hora, ultimo_envio: p.ultimo_envio, ultimo_error: p.ultimo_error, email: user.email, correo_listo: !!((env('GMAIL_USER') && env('GMAIL_APP_PASSWORD')) || (env('BREVO_API_KEY') && env('BREVO_SENDER_EMAIL'))) }, 200, cors);
   }
   if (accion === 'prefs_guardar') {
     const dia = Number(cuerpo.dia), hora = Number(cuerpo.hora);
