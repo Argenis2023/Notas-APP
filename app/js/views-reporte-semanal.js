@@ -25,43 +25,19 @@ function pintarVivo() {
 }
 
 
-// ----- Ayuda para que el reporte no caiga en spam: guardar la app como contacto -----
-// Un correo de alguien que ya está en tus contactos casi nunca llega a spam. El botón baja una tarjeta de
-// contacto (.vcf) que el celular ofrece guardar con un toque; no hace falta ningún servicio extra.
-function tarjetaContacto(nombre, correo) {
-  const limpio = t => String(t).replace(/[\r\n;,\\]/g, ' ').trim();
-  return ['BEGIN:VCARD', 'VERSION:3.0', `FN:${limpio(nombre)}`, `ORG:${limpio(nombre)}`, `EMAIL;TYPE=INTERNET:${limpio(correo)}`, 'NOTE:Envía el reporte semanal del Cuaderno docente', 'END:VCARD', ''].join('\r\n');
-}
-
+// ----- Ayuda para que el reporte no caiga en spam: instrucciones para que el docente revise su correo -----
 function ayudaSpam() {
   return html`
     <div class="ayuda-spam" role="note" id="ay-spam" hidden>
-      <p><strong>Guarda a la app en tus contactos para recibir los reportes</strong></p>
-      <p>Los reportes salen del correo <strong id="ay-correo"></strong>. Como es un remitente nuevo, Gmail puede mandarlos a spam y no verás que llegaron. Guardarlo en tus contactos le dice a Gmail que lo conoces y que debe entregarlo en tu bandeja.</p>
+      <p><strong>Si no ves el reporte en tu correo, revisa spam</strong></p>
+      <p>Los reportes salen del correo <strong id="ay-correo"></strong>. Como es un remitente nuevo, Gmail puede mandarlos a spam y no verás que llegaron. Para recibirlos en tu bandeja:</p>
       <ol>
-        <li>Toca el botón de abajo y elige <strong>Contactos</strong> en el menú que se abre. Si no se abre ningún menú, se descarga un archivo: ábrelo y guarda el contacto.</li>
-        <li>Si un reporte ya llegó a spam, ábrelo y toca <strong>No es spam</strong>.</li>
-        <li>Opcional: en Gmail, busca ese remitente, elige <strong>Filtrar mensajes como estos</strong> y marca <strong>No enviar nunca a spam</strong>.</li>
+        <li>Abre la carpeta <strong>Spam</strong> de tu correo y busca el reporte.</li>
+        <li>Ábrelo y toca <strong>No es spam</strong>.</li>
+        <li>Guarda ese correo en tus contactos, por ejemplo desde la app de Contactos de tu celular, con el nombre <strong>Cuaderno docente</strong>.</li>
+        <li>Opcional: elige <strong>Filtrar mensajes como estos</strong> y marca <strong>No enviar nunca a spam</strong>.</li>
       </ol>
-      <div class="acciones"><button type="button" class="btn secondary" id="b-contacto">Guardar contacto de la app</button></div>
     </div>`;
-}
-
-// Intenta abrir el menú de compartir del celular con la tarjeta (desde ahí se elige Contactos); si el celular no
-// lo permite, descarga el archivo. Devuelve 'compartido', 'descargado' o 'cancelado'.
-async function guardarContacto(nombre, correo) {
-  const archivo = new File([tarjetaContacto(nombre, correo)], 'cuaderno-docente.vcf', { type: 'text/vcard' });
-  try {
-    if (navigator.canShare && navigator.canShare({ files: [archivo] })) {
-      await navigator.share({ files: [archivo], title: nombre });
-      return 'compartido';
-    }
-  } catch (e) {
-    if (e && e.name === 'AbortError') return 'cancelado';
-  }
-  const { descargar } = await import('./excel.js');
-  descargar(archivo, 'cuaderno-docente.vcf');
-  return 'descargado';
 }
 
 function montarAyudaSpam(root, ctx) {
@@ -71,10 +47,6 @@ function montarAyudaSpam(root, ctx) {
     if (!p || !p.remitente) return;
     $('#ay-correo', root).textContent = p.remitente;
     caja.hidden = false;
-    $('#b-contacto', root).addEventListener('click', async () => {
-      const r = await guardarContacto(p.remitente_nombre || 'Cuaderno docente', p.remitente);
-      if (r === 'descargado') toast('Contacto descargado. Ábrelo para guardarlo.');
-    });
   }).catch(() => { /* sin sesión o sin conexión: la ayuda simplemente no se muestra */ });
 }
 
