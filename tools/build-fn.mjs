@@ -14,7 +14,7 @@ const dexieStub = {
     b.onLoad({ filter: /.*/, namespace: 'stub' }, () => ({ contents: 'export default class Dexie { version() { return { stores() {} }; } }', loader: 'js' }));
     if (prueba) b.onResolve({ filter: /^npm:@supabase/ }, () => ({ path: mockSupa }));
     if (prueba) b.onResolve({ filter: /^npm:nodemailer/ }, () => ({ path: 'nm-stub', namespace: 'stub2' }));
-    b.onLoad({ filter: /.*/, namespace: 'stub2' }, () => ({ contents: 'export default { createTransport() { return { sendMail: async () => ({}) }; } }', loader: 'js' }));
+    b.onLoad({ filter: /.*/, namespace: 'stub2' }, () => ({ contents: 'export default { createTransport() { return { sendMail: async m => { (globalThis.__correos = globalThis.__correos || []).push(m); return {}; } }; } }', loader: 'js' }));
     if (prueba) b.onResolve({ filter: /^npm:pdf-lib/ }, a => b.resolve(a.path.replace(/^npm:/, '').replace(/@[\d.]+$/, ''), { resolveDir: aqui, kind: a.kind }));
   },
 };
