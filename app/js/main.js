@@ -70,7 +70,7 @@ const RUTAS = [
   [/^#\/anotaciones(?:\?(.*))?$/, m => anotaciones(ctx, m[1]), 'reportes'],
   [/^#\/aula\/sorteo(?:\?(.*))?$/, m => sorteo(ctx, m[1]), 'inicio'],
   [/^#\/avisos$/, () => AV.avisos(ctx), 'inicio'],
-  [/^#\/ajustes$/, () => V.ajustes(ctx), 'ajustes'],
+  [/^#\/ajustes(?:\?(.*))?$/, m => V.ajustes(ctx, m[1]), 'ajustes'],
 ];
 
 async function render({ suave = false } = {}) {

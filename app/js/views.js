@@ -1,7 +1,7 @@
 // Pantallas de la app. Cada una devuelve { title, html, mount?, onStatus?, live? }.
 import {
   getSeccion, crearSeccion, getLapsos, lapsoActual, listEstudiantes, addEstudiante, get, update, remove,
-  importEstudiantes, nombrePropio, anioEscolarActual, exportAll, restoreAll, validateBackup, listAsignaturas, listEvaluaciones,
+  getConfig, importEstudiantes, nombrePropio, anioEscolarActual, exportAll, restoreAll, validateBackup, listAsignaturas, listEvaluaciones,
 } from './data.js';
 import { html, raw, icon, toast, fechaCorta, haceCuanto, infoEstado } from './ui.js';
 import { VERSION } from './version.js';
@@ -334,7 +334,18 @@ export async function importar(ctx) {
 // =====================================================================
 // Ajustes
 // =====================================================================
-export async function ajustes(ctx) {
+const CATEGORIAS_AJUSTES = [
+  ['colegio', 'Mi colegio y curso', 'inicio'],
+  ['notas', 'Notas y asistente de IA', 'evaluar'],
+  ['avisos', 'Avisos y reporte semanal', 'campana'],
+  ['seguridad', 'Seguridad', 'candado'],
+  ['datos', 'Datos y respaldo', 'nube'],
+  ['cuenta', 'Mi cuenta', 'personas'],
+  ['app', 'La aplicación', 'ajustes'],
+];
+
+export async function ajustes(ctx, query = '') {
+  const cat = (CATEGORIAS_AJUSTES.find(c => c[0] === new URLSearchParams(query || '').get('c')) || [])[0] || '';
   const seccion = await getSeccion();
   const calculo = await bloqueCalculo();
   const asistente = bloqueIA(ctx);
@@ -464,9 +475,36 @@ export async function ajustes(ctx) {
       <button class="btn secondary" type="button" id="b-actualizar">Buscar actualización</button>
     </section>`;
 
+  const cfgMin = (await getConfig()).minimo_aprobatorio;
+  const resumenes = {
+    colegio: [inst.nombre, [seccion && seccion.grado, seccion && seccion.nombre && `sección ${seccion.nombre}`].filter(Boolean).join(' · ')].filter(Boolean).join(' · ') || 'Institución, sección y lapsos',
+    notas: `Nota mínima ${cfgMin ?? 10} y redacción con IA`,
+    avisos: 'Reporte semanal por correo y avisos',
+    seguridad: pinActivo ? 'Bloqueo con PIN activado' : 'Bloqueo con PIN',
+    datos: 'Respaldo, copias y restaurar',
+    cuenta: ctx.sesion ? ctx.sesion.email : 'Sin sesión iniciada',
+    app: `Versión ${VERSION}`,
+  };
   return {
-    title: 'Ajustes',
-    html: html`${bloqueInstitucion}${bloqueSeccion}${calculo.html}${asistente.html}${programa.html}${respaldo}${cuenta}${bloqueAjustes(pinActivo)}${borrar}${app}`,
+    title: cat ? CATEGORIAS_AJUSTES.find(c => c[0] === cat)[1] : 'Ajustes',
+    html: html`
+      ${cat ? html`<p><a class="btn secondary chico volver" href="#/ajustes">${icon('atras', 18)} Ajustes</a></p>` : ''}
+      <nav class="aj-menu" aria-label="Categorías de ajustes" ${cat ? raw('hidden') : ''}>
+        <ul>${CATEGORIAS_AJUSTES.map(([id, nombre, ico]) => html`
+          <li><a class="aj-fila" href="#/ajustes?c=${id}">
+            <span class="aj-ico" aria-hidden="true">${icon(ico, 22)}</span>
+            <span class="aj-texto"><span class="aj-nombre">${nombre}</span><span class="aj-sub">${resumenes[id]}</span></span>
+            <span class="aj-flecha" aria-hidden="true">${icon('atras', 18)}</span>
+          </a></li>`)}</ul>
+      </nav>
+      <div class="aj-grupo" data-cat="colegio" ${cat === 'colegio' ? '' : raw('hidden')}>${bloqueInstitucion}${bloqueSeccion}</div>
+      <div class="aj-grupo" data-cat="notas" ${cat === 'notas' ? '' : raw('hidden')}>${calculo.html}${asistente.html}</div>
+      <div class="aj-grupo" data-cat="avisos" ${cat === 'avisos' ? '' : raw('hidden')}>${programa.html}</div>
+      <div class="aj-grupo" data-cat="seguridad" ${cat === 'seguridad' ? '' : raw('hidden')}>${bloqueAjustes(pinActivo)}</div>
+      <div class="aj-grupo" data-cat="datos" ${cat === 'datos' ? '' : raw('hidden')}>${respaldo}
+        <details class="aj-peligro"><summary>Zona delicada: borrar todos mis datos</summary>${borrar}</details></div>
+      <div class="aj-grupo" data-cat="cuenta" ${cat === 'cuenta' ? '' : raw('hidden')}>${cuenta}</div>
+      <div class="aj-grupo" data-cat="app" ${cat === 'app' ? '' : raw('hidden')}>${app}</div>`,
     onStatus(root) { pintarRespaldo(root); },
     mount(root) {
       pintarRespaldo(root);

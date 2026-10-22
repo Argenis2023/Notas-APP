@@ -974,3 +974,15 @@ input, select, textarea { font-size: max(1rem, 16px); }
   .plan p { margin: 0 0 3pt; max-width: none; }
 }
 @media print { html, body, #shell, main, #view { min-height: 0 !important; height: auto !important; } }
+
+/* Ajustes: menú de categorías */
+.aj-grupo[hidden], .aj-menu[hidden] { display: none; }
+.aj-menu ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.6rem; }
+.aj-fila { display: grid; grid-template-columns: 2.6rem 1fr 1.2rem; align-items: center; gap: 0.8rem; min-height: 3.8rem; padding: 0.6rem 0.9rem; color: var(--tinta); text-decoration: none; background: var(--hoja); border: 1px solid var(--linea); border-radius: 12px; }
+.aj-ico { display: grid; place-items: center; width: 2.6rem; height: 2.6rem; color: var(--acento); background: var(--acento-suave); border-radius: 50%; }
+.aj-texto { display: grid; gap: 0.1rem; min-width: 0; }
+.aj-nombre { font-weight: 600; }
+.aj-sub { font-size: 0.85rem; color: var(--tinta-suave); overflow-wrap: anywhere; }
+.aj-flecha { color: var(--tinta-suave); transform: rotate(180deg); display: grid; place-items: center; }
+.aj-peligro { margin-top: 1.5rem; }
+.aj-peligro > summary { cursor: pointer; min-height: 2.75rem; display: flex; align-items: center; font-weight: 600; color: var(--rojo); }
