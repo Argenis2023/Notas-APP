@@ -966,3 +966,11 @@ input, select, textarea { font-size: max(1rem, 16px); }
 .ag-nota { overflow-wrap: anywhere; white-space: pre-wrap; }
 .ag-mas { margin: 0.5rem 0 1rem; }
 .ag-mas summary { cursor: pointer; min-height: 2.75rem; display: flex; align-items: center; font-weight: 500; }
+
+/* Planificación: la hoja impresa */
+@media print {
+  #view > *, #view .col > * { opacity: 1 !important; animation: none !important; transform: none !important; }
+  .informe.plan { white-space: normal !important; }
+  .plan p { margin: 0 0 3pt; max-width: none; }
+}
+@media print { html, body, #shell, main, #view { min-height: 0 !important; height: auto !important; } }

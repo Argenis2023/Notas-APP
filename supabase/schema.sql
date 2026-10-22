@@ -410,6 +410,52 @@ drop trigger if exists cuaderno_touch on public.agenda;
 create trigger cuaderno_touch before insert or update on public.agenda
   for each row execute function public.cuaderno_touch();
 
+create table if not exists public.planificaciones (
+  id uuid primary key,
+  user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  server_updated_at timestamptz not null default now(),
+  deleted boolean not null default false,
+  seccion_id uuid,
+  fecha date,
+  area text,
+  tema text,
+  proyecto text,
+  lineas text,
+  tejido text,
+  intencion text,
+  inicio text,
+  desarrollo text,
+  cierre text,
+  evaluacion text,
+  generado_con_ia boolean
+);
+alter table public.planificaciones add column if not exists seccion_id uuid;
+alter table public.planificaciones add column if not exists fecha date;
+alter table public.planificaciones add column if not exists area text;
+alter table public.planificaciones add column if not exists tema text;
+alter table public.planificaciones add column if not exists proyecto text;
+alter table public.planificaciones add column if not exists lineas text;
+alter table public.planificaciones add column if not exists tejido text;
+alter table public.planificaciones add column if not exists intencion text;
+alter table public.planificaciones add column if not exists inicio text;
+alter table public.planificaciones add column if not exists desarrollo text;
+alter table public.planificaciones add column if not exists cierre text;
+alter table public.planificaciones add column if not exists evaluacion text;
+alter table public.planificaciones add column if not exists generado_con_ia boolean;
+create index if not exists planificaciones_sync on public.planificaciones (user_id, server_updated_at);
+alter table public.planificaciones enable row level security;
+grant select, insert, update, delete on public.planificaciones to authenticated;
+drop policy if exists "solo el dueño" on public.planificaciones;
+create policy "solo el dueño" on public.planificaciones
+  for all to authenticated
+  using (user_id = auth.uid())
+  with check (user_id = auth.uid());
+drop trigger if exists cuaderno_touch on public.planificaciones;
+create trigger cuaderno_touch before insert or update on public.planificaciones
+  for each row execute function public.cuaderno_touch();
+
 create table if not exists public.configuracion (
   id uuid primary key,
   user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,

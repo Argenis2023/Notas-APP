@@ -112,7 +112,10 @@ export async function panelInicio(ctx, seccion, completo, q = '') {
     <section aria-labelledby="ag-t">
       <h2 id="ag-t">Agenda</h2>
       ${proxAgenda.length ? html`<ul class="ag-lista">${proxAgenda.slice(0, 3).map(e => html`<li class="ag-item ag-${e.tipo}"><p class="ag-cab"><strong>${e.titulo}</strong></p><p class="hint">${[etiquetaDia(e.fecha, hoyIso), e.hora].filter(Boolean).join(' · ')}</p></li>`)}</ul>` : html`<p>No tienes nada anotado para esta semana.</p>`}
-      <a class="btn secondary" href="#/agenda">${icon('calendario', 20)} ${proxAgenda.length > 3 ? `Ver la agenda (${proxAgenda.length})` : 'Abrir la agenda'}</a>
+      <div class="acciones">
+        <a class="btn secondary" href="#/agenda">${icon('calendario', 20)} ${proxAgenda.length > 3 ? `Ver la agenda (${proxAgenda.length})` : 'Abrir la agenda'}</a>
+        <a class="btn secondary" href="#/planificacion">${icon('nota', 20)} Planificación diaria</a>
+      </div>
     </section>
 
     ${nEst && !asisHoy.finde ? html`

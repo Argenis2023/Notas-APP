@@ -42,7 +42,7 @@ export const barra = (clave, pct, s) => {
 };
 
 // Franja superior del informe: logo y datos de la institución a la izquierda, tipo de informe y lapso a la derecha.
-const banda = (s, lapso, tipo = 'Informe de rendimiento') => html`
+export const banda = (s, lapso, tipo = 'Informe de rendimiento') => html`
   <header class="informe-banda">
     <div class="informe-inst">
       ${s.inst && s.inst.logo ? html`<img class="informe-logo" src="${s.inst.logo}" alt="">` : ''}
@@ -73,7 +73,7 @@ const identidad = (s, lapso, titulo, campos = []) => {
 const kpi = (num, txt, clase = '') => html`<div class="kpi"><span class="kpi-num ${clase}">${num}</span><span class="kpi-txt">${txt}</span></div>`;
 const chipNota = (n, cfg) => (n === null || n === undefined ? html`<span class="chip-nota">–</span>` : html`<span class="chip-nota ${aprueba(n, cfg) ? 'ok' : 'baja'}">${n}</span>`);
 const chipSituacion = (ok, ok1 = 'Aprobada', no = 'Por reforzar') => html`<span class="chip-sit ${ok ? 'ok' : 'baja'}">${ok ? ok1 : no}</span>`;
-const firmas = (s) => html`
+export const firmas = (s) => html`
   <section class="informe-firmas" aria-label="Firmas">
     <div class="firma"><span class="firma-linea"></span><strong>${s.inst && s.inst.docente ? s.inst.docente : ''}</strong><span class="firma-rol">Docente</span></div>
   </section>
@@ -135,7 +135,7 @@ function conectarRecomendaciones(root, s, ctx) {
   });
 }
 
-const botonImprimir = () => html`
+export const botonImprimir = () => html`
   <div class="acciones no-print">
     <button type="button" class="btn primary" id="b-imprimir">${icon('bajar', 20)} Guardar como PDF o imprimir</button>
   </div>

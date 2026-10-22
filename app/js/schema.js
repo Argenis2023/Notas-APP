@@ -63,6 +63,13 @@ export const TABLES = {
     cols: { seccion_id: 'uuid', fecha: 'date', hora: 'text', titulo: 'text', tipo: 'text', nota: 'text', hecho: 'bool' },
     idx: 'seccion_id, fecha',
   },
+  planificaciones: {
+    cols: {
+      seccion_id: 'uuid', fecha: 'date', area: 'text', tema: 'text', proyecto: 'text', lineas: 'text',
+      tejido: 'text', intencion: 'text', inicio: 'text', desarrollo: 'text', cierre: 'text', evaluacion: 'text', generado_con_ia: 'bool',
+    },
+    idx: 'seccion_id, fecha',
+  },
   configuracion: {
     cols: {
       umbral_indicador_debil: 'num', minimo_aprobatorio: 'int', puntos_logrado: 'num',
