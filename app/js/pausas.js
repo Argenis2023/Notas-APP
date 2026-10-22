@@ -1,7 +1,7 @@
 // Pausas activas: actividades cortas para hacer con el curso. Funcionan sin internet y sin IA.
 export const TIPOS = [
   { id: 'todas', texto: 'Todas' },
-  { id: 'activar', texto: 'Activar el cuerpo' },
+  { id: 'activar', texto: 'Activar el cuerpo', corto: 'Cuerpo' },
   { id: 'calmar', texto: 'Calmar' },
   { id: 'concentrar', texto: 'Concentrarse' },
 ];

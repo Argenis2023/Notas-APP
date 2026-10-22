@@ -88,7 +88,7 @@ export async function panelInicio(ctx, seccion, completo, q = '') {
       ${lapso ? (lapsoInfo ? html`
         <p class="lapso-linea">${fechaCorta(lapso.fecha_inicio)} al ${fechaCorta(lapso.fecha_fin)} · ${lapsoInfo.texto}</p>
         <span class="avance" role="img" aria-label="${lapsoInfo.pct}% del lapso transcurrido"><span style="width:${lapsoInfo.pct}%"></span></span>`
-        : html`<p class="lapso-linea"><a class="btn secondary chico" href="#/ajustes">Pon las fechas del lapso en Ajustes</a> para ver cuánto falta.</p>`) : ''}
+        : html`<p class="lapso-linea"><a class="btn secondary chico" href="#/ajustes?c=colegio">Poner las fechas del lapso</a></p>`) : ''}
     </section>
 
     <section aria-labelledby="aula-t">

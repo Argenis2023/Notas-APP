@@ -20,9 +20,9 @@ export async function planificaciones(ctx) {
     title: 'Planificación',
     html: html`
       <section aria-labelledby="pl-t">
-        <h2 id="pl-t">Planificación diaria</h2>
-        <p>Arma tu planificación del día con ayuda de la IA, corrígela con tus palabras y guárdala como PDF.</p>
-        <a class="btn primary" href="#/planificacion/nueva">Nueva planificación</a>
+        <h2 class="oculto-visual" id="pl-t">Planificación diaria</h2>
+        <p class="lead">Arma tu planificación del día con ayuda de la IA, corrígela con tus palabras y guárdala como PDF.</p>
+        <div class="acciones"><a class="btn primary" href="#/planificacion/nueva">Nueva planificación</a></div>
       </section>
       <section aria-labelledby="pl-l">
         <h2 id="pl-l">Guardadas</h2>

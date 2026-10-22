@@ -942,7 +942,7 @@ input, select, textarea { font-size: max(1rem, 16px); }
 
 .chat-punto { position: absolute; top: -0.35rem; right: -0.1rem; min-width: 1.35rem; height: 1.35rem; padding: 0 0.3rem; display: grid; place-items: center; font-size: 0.75rem; font-weight: 700; line-height: 1; color: #ffffff; background: var(--rojo); border: 2px solid var(--papel, #ffffff); border-radius: 999px; }
 .chat-punto[hidden] { display: none; }
-.chat-globo { position: absolute; right: 0; bottom: calc(100% + 2.6rem); width: max-content; max-width: 13rem; padding: 0.4rem 0.7rem; font-size: 0.85rem; font-weight: 500; line-height: 1.3; text-align: left; color: var(--tinta); background: #ffffff; border-radius: 12px 12px 4px 12px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.22); opacity: 0; pointer-events: none; }
+.chat-globo { position: absolute; right: 0; bottom: calc(100% + 2.6rem); width: max-content; max-width: 13rem; padding: 0.4rem 0.7rem; font-size: 0.85rem; font-weight: 500; line-height: 1.3; text-align: left; color: var(--tinta); background: var(--hoja); border-radius: 12px 12px 4px 12px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.22); opacity: 0; pointer-events: none; }
 .chat-mano { top: auto; bottom: calc(100% + 0.1rem); }
 @keyframes globo {
   0%, 2% { opacity: 0; transform: translateY(4px); }
@@ -986,3 +986,137 @@ input, select, textarea { font-size: max(1rem, 16px); }
 .aj-flecha { color: var(--tinta-suave); transform: rotate(180deg); display: grid; place-items: center; }
 .aj-peligro { margin-top: 1.5rem; }
 .aj-peligro > summary { cursor: pointer; min-height: 2.75rem; display: flex; align-items: center; font-weight: 600; color: var(--rojo); }
+
+/* ---------- refinamiento visual ----------
+   Una sola escala de esquinas, una sola escala de elevación y líneas más suaves.
+   La idea sigue siendo la hoja del cuaderno: papel claro, poco ruido, un acento. */
+:root {
+  --r-chico: 10px;
+  --r-medio: 14px;
+  --r-grande: 18px;
+  --elev-1: 0 1px 2px rgba(16, 34, 31, 0.05), 0 2px 6px rgba(16, 34, 31, 0.045);
+  --elev-2: 0 2px 4px rgba(16, 34, 31, 0.05), 0 8px 24px rgba(16, 34, 31, 0.08);
+  --linea: #e2e9e7;
+  --linea-fuerte: #cfdad7;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --linea: #2a3836;
+    --linea-fuerte: #3a4b48;
+    --elev-1: none;
+    --elev-2: 0 8px 24px rgba(0, 0, 0, 0.45);
+  }
+}
+
+/* tarjetas y superficies */
+.hoja, .portada, .dato, .pasos li, .tabla-wrap, .ag-item, .aj-fila, .lapsos, .tarjeta {
+  border-color: var(--linea);
+  border-radius: var(--r-medio);
+  box-shadow: var(--elev-1);
+}
+.ag-item { border-left-width: 0.28rem; }
+.hoja li { border-bottom-color: var(--linea); }
+.tabla th, .tabla td { border-bottom-color: var(--linea); }
+
+/* botones y campos: misma esquina en toda la app */
+.btn, .error, .nota, .toast { border-radius: var(--r-chico); }
+.btn.primary { box-shadow: var(--elev-1); }
+input[type='text'], input[type='email'], input[type='password'], input[type='number'],
+input[type='tel'], input[type='date'], input[type='time'], input[type='datetime-local'],
+input[type='month'], input[type='search'], textarea, select {
+  width: 100%; min-height: 3rem; padding: 0.55rem 0.8rem;
+  font: inherit; color: var(--tinta); background: var(--hoja);
+  border: 1.5px solid var(--linea-fuerte); border-radius: var(--r-chico);
+}
+textarea { min-height: 6rem; }
+input:focus, textarea:focus, select:focus { outline: 2px solid var(--acento); outline-offset: 0; border-color: var(--acento); }
+
+/* listas y pestañas */
+.lapso-tabs, .segmento { border-radius: var(--r-medio); }
+.lapso-tabs a, .segmento button { border-radius: var(--r-chico); }
+.tabs { box-shadow: 0 -1px 0 var(--linea), 0 -6px 20px rgba(16, 34, 31, 0.04); }
+
+/* estado vacío: centrado y tranquilo, no un texto suelto en el vacío */
+p.vacio, div.vacio {
+  margin: 0.5rem 0 1rem; padding: 1.6rem 1.25rem; text-align: center;
+  color: var(--tinta-suave); background: var(--hoja);
+  border: 1px solid var(--linea); border-radius: var(--r-medio);
+}
+p.vacio strong, div.vacio strong { display: block; margin-bottom: 0.2rem; color: var(--tinta); }
+div.vacio p { margin: 0 auto 0.75rem; }
+div.vacio p:last-of-type { margin-bottom: 1rem; }
+
+/* ritmo de los títulos */
+h2 { margin-bottom: 0.65rem; }
+h3 { margin: 1.5rem 0 0.4rem; }
+.hint { margin-top: 0.1rem; }
+
+/* globo de ayuda del botón de consultas */
+.chat-globo { box-shadow: var(--elev-2); border: 1px solid var(--linea); }
+
+/* párrafo guía: la frase que explica la vista bajo el título de la barra */
+.lead { margin: 0 0 1.25rem; color: var(--tinta-suave); font-size: 1rem; }
+.meta-fila { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap; margin: 0 0 1rem; }
+.meta-fila .meta { margin: 0; }
+
+/* grupos de opciones: tarjetas seleccionables, sin huecos sueltos */
+.so-opciones .check { margin: 0; padding: 0.55rem 0.9rem; min-height: 3rem; background: var(--hoja); border: 1.5px solid var(--linea-fuerte); border-radius: var(--r-chico); }
+.so-opciones .check:has(input:checked) { border-color: var(--acento); background: var(--acento-suave); }
+/* pestañas con muchas opciones: letra un poco menor para que no se parta en dos líneas */
+.lapso-tabs:has(a:nth-child(4)) a { font-size: 0.86rem; padding-left: 0.25rem; padding-right: 0.25rem; }
+
+/* aire entre secciones: que un título nunca quede pegado al bloque anterior */
+#view section + section, #view section + h2, #view form + h2, #view .hoja + h2,
+#view .acciones + h2, #view p + h2, #view ol + h2, #view ul + h2, #view .tabla-wrap + h2 { margin-top: 1.75rem; }
+#view section + h2, #view form + h2, #view .hoja + h2, #view .acciones + h2,
+#view p + h2, #view ol + h2, #view ul + h2, #view .tabla-wrap + h2 { margin-bottom: 0.65rem; }
+#view .informe p + h2, #view .informe section + h2, #view .vacio p + h2 { margin-top: 0; }
+
+/* desplegables: que se vean como botones, no como texto suelto */
+.mas > summary, .recom-editar > summary, .ag-mas > summary, .aj-peligro > summary {
+  display: inline-flex; align-items: center; gap: 0.45rem;
+  min-height: 2.75rem; padding: 0.45rem 0.9rem;
+  font-size: 0.95rem; font-weight: 600; color: var(--acento);
+  background: var(--hoja); border: 1.5px solid var(--acento); border-radius: var(--r-chico);
+  cursor: pointer; list-style: none;
+}
+.mas > summary::-webkit-details-marker, .recom-editar > summary::-webkit-details-marker,
+.ag-mas > summary::-webkit-details-marker, .aj-peligro > summary::-webkit-details-marker { display: none; }
+.mas > summary::after, .recom-editar > summary::after, .ag-mas > summary::after, .aj-peligro > summary::after {
+  content: ''; width: 0.5rem; height: 0.5rem; margin-left: 0.1rem;
+  border-right: 2px solid currentColor; border-bottom: 2px solid currentColor;
+  transform: translateY(-2px) rotate(45deg); transition: transform 0.18s ease-out;
+}
+.mas[open] > summary::after, .recom-editar[open] > summary::after,
+.ag-mas[open] > summary::after, .aj-peligro[open] > summary::after { transform: translateY(1px) rotate(-135deg); }
+.aj-peligro > summary { color: var(--rojo); border-color: var(--rojo); }
+.recom-editar > summary { font-size: 0.9rem; }
+.mas[open] > summary, .recom-editar[open] > summary, .ag-mas[open] > summary, .aj-peligro[open] > summary { margin-bottom: 0.85rem; }
+.lista-simple li { padding: 0.75rem 1rem; }
+
+/* subtítulos dentro de un formulario largo */
+.grupo-t { font-size: 1.05rem; margin: 0.6rem 0 -0.25rem; padding-bottom: 0.45rem; border-bottom: 1px solid var(--linea); }
+.stack > .grupo-t:first-child { margin-top: 0; }
+
+/* acciones al final de un formulario: una debajo de otra, a todo el ancho */
+form.stack > .acciones > .btn { flex: 1 1 100%; }
+
+/* el botón de limpiar del chat, con el mismo lenguaje que el resto */
+.chat-limpiar { color: var(--acento); background: var(--hoja); border: 1.5px solid var(--linea-fuerte); border-radius: var(--r-chico); padding: 0 0.75rem; }
+.chat-limpiar:hover { border-color: var(--acento); }
+
+/* filas que llevan a otra vista: una flecha para que se note que se tocan */
+a.fila { position: relative; padding-right: 1.75rem; }
+a.fila::after {
+  content: ''; position: absolute; right: 1rem; top: 50%;
+  width: 0.45rem; height: 0.45rem; opacity: 0.5;
+  border-right: 2px solid var(--tinta-suave); border-top: 2px solid var(--tinta-suave);
+  transform: translateY(-50%) rotate(45deg);
+}
+.progreso + .avance { margin: 0.1rem 0 1rem; }
+.avance > span { transition: width 0.25s ease-out; }
+
+/* bloques separados por línea: menos aire muerto alrededor de la línea */
+.bloque { margin-bottom: 1.5rem; padding-bottom: 1.25rem; }
+.bloque > :last-child { margin-bottom: 0; }
+.bloque + .vacio, .bloque + .acciones { margin-top: 0; }

@@ -72,12 +72,12 @@ export async function inicio(ctx, q = '') {
             <li class="${fechasListas ? 'hecho' : ''}">
               <span class="marca">${fechasListas ? icon('check', 18) : ''}</span>
               <div><strong>Poner las fechas del lapso en curso</strong>
-                ${fechasListas ? '' : html`<p><a class="btn secondary chico" href="#/ajustes">Poner fechas</a></p>`}</div>
+                ${fechasListas ? '' : html`<p><a class="btn secondary chico" href="#/ajustes?c=colegio">Poner fechas</a></p>`}</div>
             </li>
             <li class="${estudiantes.length ? 'hecho' : ''}">
               <span class="marca">${estudiantes.length ? icon('check', 18) : ''}</span>
               <div><strong>Cargar a tus estudiantes</strong>
-                ${estudiantes.length ? html`<p class="hint">${estudiantes.length} ${estudiantes.length === 1 ? 'cargado' : 'cargados'}. <a class="btn secondary chico" href="#/estudiantes">Ver lista</a></p>` : html`
+                ${estudiantes.length ? html`<p class="hint">${estudiantes.length} ${estudiantes.length === 1 ? 'cargado' : 'cargados'}.</p><p class="acciones"><a class="btn secondary chico" href="#/estudiantes">Ver estudiantes</a></p>` : html`
                   <p class="acciones">
                     <a class="btn primary chico" href="#/estudiantes/nuevo">Agregar uno</a>
                     <a class="btn secondary chico" href="#/estudiantes/importar">Importar de Excel</a>
@@ -87,7 +87,7 @@ export async function inicio(ctx, q = '') {
             <li class="${asignaturas.length ? 'hecho' : ''}">
               <span class="marca">${asignaturas.length ? icon('check', 18) : ''}</span>
               <div><strong>Agregar tus asignaturas</strong>
-                ${asignaturas.length ? html`<p class="hint">${asignaturas.length} ${asignaturas.length === 1 ? 'agregada' : 'agregadas'}. <a class="btn secondary chico" href="#/evaluar">Ver</a></p>` : html`<p><a class="btn primary chico" href="#/evaluar">Agregar asignaturas</a></p>`}
+                ${asignaturas.length ? html`<p class="hint">${asignaturas.length} ${asignaturas.length === 1 ? 'agregada' : 'agregadas'}.</p><p class="acciones"><a class="btn secondary chico" href="#/evaluar">Ver asignaturas</a></p>` : html`<p><a class="btn primary chico" href="#/evaluar">Agregar asignaturas</a></p>`}
               </div>
             </li>
             <li class="${hayEvaluacion ? 'hecho' : ''}">
@@ -139,8 +139,8 @@ export async function estudiantes(ctx) {
     live: true,
     html: html`
       <div class="acciones">
-        <a class="btn primary" href="#/estudiantes/nuevo">${icon('mas', 20)} Agregar estudiante</a>
-        <a class="btn secondary" href="#/estudiantes/importar">${icon('subir', 20)} Importar de Excel</a>
+        <a class="btn primary" href="#/estudiantes/nuevo">${icon('mas', 20)} Agregar</a>
+        <a class="btn secondary" href="#/estudiantes/importar">${icon('subir', 20)} Importar</a>
       </div>
       ${todos.length > 6 ? html`
         <div class="field buscar">
@@ -178,14 +178,22 @@ export async function estudianteForm(ctx, id) {
   return {
     title: nuevo ? 'Nuevo estudiante' : 'Estudiante',
     html: html`
-      <p><a class="volver" href="#/estudiantes">${icon('atras', 18)} Estudiantes</a>${e ? html` · <a class="btn secondary chico" href="#/asistencia/calendario?e=${e.id}">Ver su asistencia en calendario</a> · <a class="btn secondary chico" href="#/representantes?e=${e.id}">Escribir al representante</a> · <a class="btn secondary chico" href="#/anotaciones?e=${e.id}">Sus anotaciones</a>` : ''}</p>
+      <p><a class="volver" href="#/estudiantes">${icon('atras', 18)} Estudiantes</a></p>
+      ${e ? html`<div class="acciones">
+        <a class="btn secondary chico" href="#/asistencia/calendario?e=${e.id}">Su asistencia</a>
+        <a class="btn secondary chico" href="#/representantes?e=${e.id}">Escribir al representante</a>
+        <a class="btn secondary chico" href="#/anotaciones?e=${e.id}">Sus anotaciones</a>
+      </div>` : ''}
       <form id="f-est" class="stack" novalidate>
+        <h2 class="grupo-t">Datos del estudiante</h2>
         ${campo({ id: 'nombre_completo', label: 'Nombre completo', value: e?.nombre_completo, required: true, placeholder: 'Por ejemplo: María Pérez', extra: 'autocomplete="off"' })}
         ${campo({ id: 'numero_lista', label: 'N.º de lista', value: e ? e.numero_lista : siguiente, type: 'number', placeholder: 'Por ejemplo: 7', extra: 'inputmode="numeric" min="1" step="1"' })}
         ${campo({ id: 'cedula', label: 'Cédula o cédula escolar', value: e?.cedula, placeholder: 'Por ejemplo: V-31234567 o cédula escolar', extra: 'autocomplete="off"' })}
         ${campo({ id: 'fecha_nacimiento', label: 'Fecha de nacimiento', value: e?.fecha_nacimiento, type: 'date' })}
+        <h2 class="grupo-t">Representante</h2>
         ${campo({ id: 'representante_nombre', label: 'Nombre del representante', value: e?.representante_nombre, placeholder: 'Por ejemplo: Carmen Gil', extra: 'autocomplete="off"' })}
         ${campo({ id: 'representante_contacto', label: 'Contacto del representante', value: e?.representante_contacto, type: 'tel', placeholder: 'Teléfono, por ejemplo: 0412 123 4567', extra: 'autocomplete="off"' })}
+        <h2 class="grupo-t">Para tus informes</h2>
         ${areaTexto({ id: 'necesidades_educativas', label: 'Necesidades educativas', value: e?.necesidades_educativas, placeholder: 'Opcional. Por ejemplo: necesita sentarse cerca del pizarrón; apoyo en lectura.' })}
         ${areaTexto({ id: 'observaciones_conducta', label: 'Observaciones de conducta', value: e?.observaciones_conducta, placeholder: 'Opcional. Por ejemplo: colabora con sus compañeros; conversa durante las explicaciones.' })}
         ${e ? html`<p class="hint codigo">Código para la IA: <strong>${e.codigo_ia}</strong>. Cuando se use IA, verá este código y nunca el nombre.</p>` : ''}
@@ -358,6 +366,7 @@ export async function ajustes(ctx, query = '') {
       <h2 id="t-inst">Mi institución</h2>
       <p class="hint">Estos datos aparecen en la parte de arriba de la app y en el encabezado de tus informes. Puedes cambiarlos cuando quieras.</p>
       <form id="f-inst" class="stack" novalidate>
+        <p class="hint">Así se ve la barra de arriba de la app:</p>
         <div id="inst-prev" class="inst-prev" aria-label="Vista previa de la cabecera"></div>
         ${campo({ id: 'inst_nombre', label: 'Nombre de la institución', value: inst.nombre, extra: 'autocomplete="off" placeholder="Por ejemplo: U.E.E. Nombre del colegio"' })}
         ${campo({ id: 'inst_subtitulo', label: 'Ubicación o lema', value: inst.subtitulo, extra: 'autocomplete="off" placeholder="Por ejemplo: El Bambú, estado Miranda"' })}
@@ -433,7 +442,7 @@ export async function ajustes(ctx, query = '') {
 
   const cuenta = html`
     <section class="bloque" aria-labelledby="t-cuenta">
-      <h2 id="t-cuenta">Cuenta</h2>
+      <h2 class="oculto-visual" id="t-cuenta">Cuenta</h2>
       ${!ctx.configurado ? html`<p>El respaldo en la nube no está activado. Cuando se active, aquí aparecerá tu cuenta.</p>`
         : ctx.sesion ? html`
           <p>Sesión iniciada como <strong>${ctx.sesion.email}</strong>.</p>
@@ -470,14 +479,14 @@ export async function ajustes(ctx, query = '') {
 
   const app = html`
     <section class="bloque" aria-labelledby="t-app">
-      <h2 id="t-app">La aplicación</h2>
+      <h2 class="oculto-visual" id="t-app">La aplicación</h2>
       <p>Versión <code>${VERSION}</code></p>
       <button class="btn secondary" type="button" id="b-actualizar">Buscar actualización</button>
     </section>`;
 
   const cfgMin = (await getConfig()).minimo_aprobatorio;
   const resumenes = {
-    colegio: [inst.nombre, [seccion && seccion.grado, seccion && seccion.nombre && `sección ${seccion.nombre}`].filter(Boolean).join(' · ')].filter(Boolean).join(' · ') || 'Institución, sección y lapsos',
+    colegio: [inst.nombre, [seccion && seccion.grado, seccion && seccion.nombre && `Sección ${seccion.nombre}`].filter(Boolean).join(' · ')].filter(Boolean).join(' · ') || 'Institución, sección y lapsos',
     notas: `Nota mínima ${cfgMin ?? 10} y redacción con IA`,
     avisos: 'Reporte semanal por correo y avisos',
     seguridad: pinActivo ? 'Bloqueo con PIN activado' : 'Bloqueo con PIN',

@@ -36,8 +36,8 @@ export async function representantes(ctx, query) {
     html: html`
       ${volver}
       <section aria-labelledby="rp-t">
-        <h2 id="rp-t">Escribir a un representante</h2>
-        <p>Prepara un mensaje y ábrelo en WhatsApp. La app no envía nada: tú lo revisas y lo mandas.</p>
+        <h2 class="oculto-visual" id="rp-t">Escribir a un representante</h2>
+        <p class="lead">Prepara un mensaje y ábrelo en WhatsApp. La app no envía nada: tú lo revisas y lo mandas.</p>
         <div class="field"><label for="rp-est">Estudiante</label>
           <select id="rp-est"><option value="">Elige un estudiante</option>
             ${estudiantes.map(e => html`<option value="${e.id}" ${elegido && e.id === elegido.id ? 'selected' : ''}>${e.numero_lista ? e.numero_lista + '. ' : ''}${e.nombre_completo}</option>`)}
@@ -70,7 +70,7 @@ export async function representantes(ctx, query) {
       </section>
       ${sinContacto.length ? html`
         <section aria-labelledby="rp-s"><h2 id="rp-s">Sin teléfono válido (${sinContacto.length})</h2>
-          <ul class="so-lista">${sinContacto.map(e => html`<li>${e.nombre_completo}</li>`)}</ul>
+          <ul class="hoja lista-simple">${sinContacto.map(e => html`<li>${e.nombre_completo}</li>`)}</ul>
           <p class="hint">Escribe el teléfono con el código de área, por ejemplo 0412 123 4567.</p></section>` : ''}`,
     mount(root) {
       $('#rp-est', root).addEventListener('change', ev => { location.hash = ev.target.value ? `#/representantes?e=${ev.target.value}` : '#/representantes'; });

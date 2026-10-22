@@ -25,8 +25,8 @@ export async function anotaciones(ctx, query) {
     html: html`
       
       <section aria-labelledby="an-t">
-        <h2 id="an-t">Anotaciones rápidas</h2>
-        <p>Anota en segundos algo que pasó con un estudiante. Se suma a su informe del lapso.</p>
+        <h2 class="oculto-visual" id="an-t">Anotaciones rápidas</h2>
+        <p class="lead">Anota en segundos algo que pasó con un estudiante. Se suma a su informe del lapso.</p>
         <form id="f-an" class="stack" novalidate>
           <div class="field"><label for="an-est">Estudiante</label>
             <select id="an-est" name="estudiante_id">
@@ -36,7 +36,7 @@ export async function anotaciones(ctx, query) {
           <fieldset class="so-opciones"><legend>Tipo</legend>
             ${TIPOS.map(([id, texto], i) => html`<label class="check"><input type="radio" name="tipo" value="${id}" ${i === 0 ? 'checked' : ''}> <span>${texto}</span></label>`)}
           </fieldset>
-          <div class="field"><label for="an-texto">Qué pasó</label>
+          <div class="field"><label for="an-texto">¿Qué pasó?</label>
             <textarea id="an-texto" name="texto" rows="3" placeholder="Por ejemplo: ayudó a un compañero con la suma; no trajo el material."></textarea></div>
           <div class="field"><label for="an-fecha">Fecha</label><input id="an-fecha" name="fecha" type="date" value="${hoyIso()}"></div>
           ${errorBox('e-an')}

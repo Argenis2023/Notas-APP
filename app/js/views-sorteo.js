@@ -4,7 +4,7 @@ import { mezclar, repartirGrupos, sacarUno, cantidadDeGrupos } from './sorteo.js
 import { html, icon } from './ui.js';
 import { $, $$ } from './form.js';
 
-const MODOS = [['uno', 'Elegir uno'], ['turnos', 'Orden de turnos'], ['grupos', 'Grupos']];
+const MODOS = [['uno', 'Elegir uno'], ['turnos', 'Turnos'], ['grupos', 'Grupos']];
 const pad = n => String(n).padStart(2, '0');
 const hoyIso = () => { const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
 const menosMov = () => { try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch { return false; } };
@@ -27,8 +27,8 @@ export async function sorteo(ctx, query) {
       : html`
       
       <section aria-labelledby="so-t">
-        <h2 id="so-t">Sorteo y grupos</h2>
-        <p>Elige a alguien al azar, sortea el orden de los turnos o arma grupos. No se guarda nada.</p>
+        <h2 class="oculto-visual" id="so-t">Sorteo y grupos</h2>
+        <p class="lead">Elige a alguien al azar, sortea el orden de los turnos o arma grupos. No se guarda nada.</p>
         <nav class="lapso-tabs" aria-label="Qué quieres hacer">${MODOS.map(([id, texto]) => html`<a href="#/aula/sorteo?m=${id}" ${id === modo ? html`aria-current="page"` : ''}>${texto}</a>`)}</nav>
 
         <details class="so-quienes" id="so-quienes">

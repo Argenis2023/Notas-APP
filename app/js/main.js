@@ -352,7 +352,7 @@ async function boot() {
       else if (r.status === 'offline') toast('Sin conexión. Se respaldará cuando vuelva internet.', 'error');
       else toast('No se pudo respaldar. Revisa Ajustes.', 'error');
     });
-    else ctx.go('#/ajustes');
+    else ctx.go('#/ajustes?c=datos');
   });
   window.addEventListener('hashchange', () => render());
   // Dispositivo nuevo con sesión: se traen primero los datos de la nube, para no ofrecer crear un cuaderno que ya existe.

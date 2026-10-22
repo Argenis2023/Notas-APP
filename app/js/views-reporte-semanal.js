@@ -72,7 +72,8 @@ export function bloqueEnvioSemanal(ctx) {
           </div>
           ${errorBox('e-rs')}
           ${ayudaSpam()}`
-          : html`<p>Para recibir el reporte por correo necesitas la cuenta con respaldo en la nube. Actívala en Ajustes.</p>`}
+          : html`<p>Para recibir el reporte por correo necesitas la cuenta con respaldo en la nube.</p>
+          <div class="acciones"><a class="btn secondary" href="#/ajustes?c=cuenta">Activar la cuenta</a></div>`}
       </section>`,
     mount(root) {
       const b = $('#b-rs', root);
@@ -136,7 +137,8 @@ export function bloqueProgramacion(ctx) {
             <button class="btn secondary" type="submit" id="b-rp">Guardar</button>
           </form>
           ${ayudaSpam()}`
-          : html`<p>Necesitas la cuenta con respaldo en la nube para recibir el reporte por correo.</p>`}
+          : html`<p>Necesitas la cuenta con respaldo en la nube para recibir el reporte por correo.</p>
+          <div class="acciones"><a class="btn secondary" href="#/ajustes?c=cuenta">Activar la cuenta</a></div>`}
       </section>`,
     mount(root) {
       const f = $('#f-rp', root);

@@ -99,12 +99,14 @@ export async function asistenciaResumen(ctx, q) {
   const s = await cargarSnapshot(seccion);
   const num = parseInt(new URLSearchParams(q || '').get('l'), 10);
   const lapso = s.lapsos.find(l => l.numero === num) || lapsoActual(s.lapsos);
-  if (!lapso) return { title: 'Asistencia', html: html`<p class="vacio">Todavía no hay lapsos.</p>` };
+  if (!lapso) return { title: 'Resumen del lapso', html: html`
+    <p><a class="volver" href="#/asistencia">${icon('atras', 18)} Pasar lista</a></p>
+    <div class="vacio"><p><strong>Todavía no hay lapsos.</strong></p><p>Pon las fechas de tus lapsos para ver el resumen de asistencia.</p><a class="btn primary" href="#/ajustes?c=colegio">Poner las fechas</a></div>` };
   const filas = s.estudiantes.map(e => ({ e, r: resumenAsistencia(s, lapso, e.id) }));
   const dias = filas[0]?.r.dias || 0;
   const ordenadas = [...filas].sort((a, b) => b.r.faltas - a.r.faltas || (a.e.numero_lista ?? 1e9) - (b.e.numero_lista ?? 1e9));
   return {
-    title: 'Asistencia',
+    title: 'Resumen del lapso',
     html: html`
       <p><a class="volver" href="#/asistencia">${icon('atras', 18)} Pasar lista</a></p>
       ${s.lapsos.length > 1 ? html`<nav class="lapso-tabs" aria-label="Lapso">${s.lapsos.map(l => html`
@@ -162,7 +164,7 @@ export async function asistenciaCalendario(ctx, q) {
   }
   const base = `#/asistencia/calendario?e=${est.id}`;
   return {
-    title: 'Asistencia',
+    title: 'Calendario del estudiante',
     html: html`
       <p><a class="volver" href="#/asistencia/resumen">${icon('atras', 18)} Resumen del lapso</a></p>
       <div class="field cal-est"><label for="cal-est">Estudiante</label>

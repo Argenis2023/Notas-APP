@@ -79,7 +79,7 @@ export function calcularAvisos(s, { hoy = new Date(), ultimoRespaldo = null, con
 
   // ----- agenda: lo de hoy y mañana -----
   for (const e of proximos(s, hoyIso, 1)) {
-    add({ id: `agenda:${e.id}:${e.fecha}`, tipo: 'recordatorio', titulo: `${etiquetaDia(e.fecha, hoyIso)}: ${e.titulo}`, texto: [e.hora, e.nota].filter(Boolean).join(' · '), href: e.href || '#/agenda' });
+    add({ id: `agenda:${e.id}:${e.fecha}`, tipo: 'recordatorio', titulo: `${etiquetaDia(e.fecha, hoyIso)} · ${e.titulo}`, texto: [e.hora, e.nota].filter(Boolean).join(' · '), href: e.href || '#/agenda' });
   }
 
   // ----- cumpleaños (de hoy a 3 días) -----
@@ -99,7 +99,7 @@ export function calcularAvisos(s, { hoy = new Date(), ultimoRespaldo = null, con
   // ----- respaldo -----
   if (conRespaldo && ultimoRespaldo) {
     const dias3 = Math.floor((hoy.getTime() - Date.parse(ultimoRespaldo)) / DIA);
-    if (dias3 >= 3) add({ id: `respaldo:${hoyIso}`, tipo: 'recordatorio', titulo: `Hace ${dias3} días que no se respalda tu cuaderno`, texto: 'Conéctate a internet para que se guarde en la nube.', href: '#/ajustes' });
+    if (dias3 >= 3) add({ id: `respaldo:${hoyIso}`, tipo: 'recordatorio', titulo: `Hace ${dias3} días que no se respalda tu cuaderno`, texto: 'Conéctate a internet para que se guarde en la nube.', href: '#/ajustes?c=datos' });
   }
 
   return out.sort((a, b) => TIPOS_AVISO[a.tipo].orden - TIPOS_AVISO[b.tipo].orden);

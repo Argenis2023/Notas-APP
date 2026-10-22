@@ -198,7 +198,7 @@ export async function reportes(ctx, q) {
             <p>Cuando completes la lista de cotejo de alguna evaluación, aquí aparecerán los informes de cada estudiante y del curso.</p>
             <p><a class="btn primary" href="#/evaluar">Ir a Evaluar</a></p>
           </div>
-          <p><a class="btn secondary" href="#/reportes/banco">Mis recomendaciones</a></p>`}
+          <div class="acciones"><a class="btn secondary" href="#/reportes/banco">Mis recomendaciones</a></div>`}
       ${envio.html}`,
   };
 }
@@ -295,7 +295,7 @@ export async function reporteEstudiante(ctx, estId, q) {
             <p class="hint no-print">El borrador se arma con las notas y los indicadores. Edítalo con tus palabras antes de entregarlo.</p>
           </section>
           ${firmas(s)}`
-          : html`<p class="vacio">Este estudiante todavía no tiene notas en el lapso ${lapso.numero}. Pasa la lista de cotejo de alguna evaluación en <a class="btn secondary chico" href="#/evaluar">Evaluar</a>.</p>`}
+          : html`<div class="vacio"><p><strong>Este estudiante todavía no tiene notas en el lapso ${lapso.numero}.</strong></p><p>Pasa la lista de cotejo de alguna evaluación para que aparezcan aquí.</p><a class="btn primary" href="#/evaluar">Ir a Evaluar</a></div>`}
         </div>
       </article>`,
     mount(root) {
@@ -424,7 +424,7 @@ export async function reporteCurso(ctx, q) {
               : html`<p>Ningún estudiante está por debajo del mínimo en este lapso.</p>`}
           </section>
           ${firmas(s)}`
-          : html`<p class="vacio">Todavía no hay notas en el lapso ${lapso.numero}. Pasa la lista de cotejo de alguna evaluación en <a class="btn secondary chico" href="#/evaluar">Evaluar</a>.</p>`}
+          : html`<div class="vacio"><p><strong>Todavía no hay notas en el lapso ${lapso.numero}.</strong></p><p>Pasa la lista de cotejo de alguna evaluación para que aparezcan aquí.</p><a class="btn primary" href="#/evaluar">Ir a Evaluar</a></div>`}
         </div>
       </article>`,
     mount(root) {
@@ -452,7 +452,7 @@ export async function banco(ctx) {
     live: false,
     html: html`
       <p><a class="volver" href="#/reportes">${icon('atras', 18)} Reportes</a></p>
-      <p>Aquí guardas qué recomendar cuando un tema sale débil. Se usan en los informes de todos los estudiantes. Si un tema no tiene recomendación, el informe muestra una sugerencia general.</p>
+      <p class="lead">Aquí guardas qué recomendar cuando un tema sale débil. Se usan en los informes de todos los estudiantes. Si un tema no tiene recomendación, el informe muestra una sugerencia general.</p>
       ${s.asignaturas.length ? html`
         <form id="f-recom" class="stack" novalidate>
           <h2>Agregar una recomendación</h2>

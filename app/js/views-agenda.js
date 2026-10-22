@@ -35,10 +35,10 @@ export async function agenda(ctx) {
     title: 'Agenda',
     html: html`
       <section aria-labelledby="ag-t">
-        <h2 id="ag-t">Agenda del aula</h2>
-        <p>Anota lo que viene: entregas, reuniones, actividades. Las fechas de tus evaluaciones aparecen solas.</p>
+        <h2 class="oculto-visual" id="ag-t">Agenda del aula</h2>
+        <p class="lead">Anota lo que viene: entregas, reuniones, actividades. Las fechas de tus evaluaciones aparecen solas.</p>
         <form id="f-ag" class="stack" novalidate>
-          <div class="field"><label for="ag-titulo">Qué es</label>
+          <div class="field"><label for="ag-titulo">¿Qué es?</label>
             <input id="ag-titulo" name="titulo" type="text" autocomplete="off" placeholder="Por ejemplo: Entregar planificación"></div>
           <div class="field"><label for="ag-fecha">Fecha</label><input id="ag-fecha" name="fecha" type="date" value="${hoy}"></div>
           <div class="field"><label for="ag-hora">Hora (opcional)</label><input id="ag-hora" name="hora" type="time"></div>

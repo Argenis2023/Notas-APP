@@ -272,7 +272,7 @@ export async function evaluacion(ctx, id) {
     live: true,
     html: html`
       <p><a class="volver" href="#/evaluar/a/${asig?.id}?l=${lapso?.numero || 1}">${icon('atras', 18)} ${asig?.nombre || 'Asignatura'}</a></p>
-      <p class="hint meta">${[ev.tipo, fechaCorta(ev.fecha), lapso ? `lapso ${lapso.numero}` : ''].filter(Boolean).join(', ')} · <a class="btn secondary chico" href="#/evaluar/e/${ev.id}/editar">Editar datos</a></p>
+      <div class="meta-fila"><p class="hint meta">${[ev.tipo, fechaCorta(ev.fecha), lapso ? `lapso ${lapso.numero}` : ''].filter(Boolean).join(', ')}</p><a class="btn secondary chico" href="#/evaluar/e/${ev.id}/editar">Editar datos</a></div>
 
       <div class="acciones">
         ${puedeCotejar
@@ -292,7 +292,7 @@ export async function evaluacion(ctx, id) {
           <li><a href="#/evaluar/e/${ev.id}/indicador/${i.id}"><span>${i.texto}</span>${i.etiqueta ? html`<small>${i.etiqueta}</small>` : ''}</a></li>`)}</ol>`
         : html`<p class="vacio">Todavía no hay indicadores.</p>`}
       <form id="f-inds" class="stack" novalidate>
-        ${areaTexto({ id: 'nuevos', label: 'Agregar indicadores', rows: 3, placeholder: 'Un indicador por línea. Por ejemplo: Compara fracciones con igual denominador', hint: 'Uno por línea.' })}
+        ${areaTexto({ id: 'nuevos', label: 'Escribe los indicadores nuevos', rows: 3, placeholder: 'Un indicador por línea. Por ejemplo: Compara fracciones con igual denominador' })}
         ${errorBox('e-inds')}
         <button class="btn secondary" type="submit">Agregar indicadores</button>
       </form>
@@ -404,9 +404,9 @@ export async function cotejo(ctx, id, q) {
       ${pager(iInd + 1, inds.length, iInd > 0 ? `${base}?i=${iInd - 1}` : '', iInd < inds.length - 1 ? `${base}?i=${iInd + 1}` : '', 'Indicador')}
       <p class="indicador-texto">${ind.texto}</p>
       <div class="acciones">
-        <button type="button" class="btn secondary chico" id="b-todos">Marcar a todos como Logrado</button>
+        <button type="button" class="btn secondary chico" id="b-todos">Marcar a todos como logrado</button>
       </div>
-      <p class="leyenda-niv">L Logrado · P En proceso · N No logrado</p>
+      <p class="leyenda-niv">L logrado · P en proceso · N no logrado</p>
       <ol class="cotejo-lista cotejo-denso">${estudiantes.map(e => html`
         <li class="cotejo-fila ${e.id === (estudiantes.find(x => !(niveles[x.id] || {})[ind.id]) || {}).id ? 'sig' : ''}" data-fila="${e.id}">
           <p class="cotejo-nombre">${e.numero_lista ? html`<span class="cotejo-num">${e.numero_lista}</span>` : ''}${e.nombre_completo}</p>
@@ -444,11 +444,14 @@ export async function cotejo(ctx, id, q) {
         <a href="${base}?e=${estudiantes[0].id}" ${porEst ? raw('aria-current="page"') : ''}>Por estudiante</a>
       </nav>
       <p class="progreso" id="progreso" aria-live="polite"></p>
+      <span class="avance" aria-hidden="true"><span id="avance-rel" style="width:0%"></span></span>
       ${cuerpo}`,
     mount(root) {
       const progreso = () => {
         const m = marcadosTotal();
         $('#progreso', root).textContent = m === total ? `Todo marcado (${total} de ${total})` : `Marcado ${m} de ${total}`;
+        const rel = $('#avance-rel', root);
+        if (rel) rel.style.width = `${total ? Math.round((100 * m) / total) : 0}%`;
       };
       const pintarNota = () => {
         const el = $('#nota-vivo', root);
@@ -531,7 +534,7 @@ export async function bloqueCalculo() {
         <h2 id="t-calculo">Cómo se calcula la nota</h2>
         <p>Cada indicador marcado como <strong>logrado</strong> suma 1 punto y como <strong>no logrado</strong> suma 0. La nota va de 1 a 20: es 20 por el porcentaje de puntos obtenidos, redondeada.</p>
         <form id="f-calculo" class="stack" novalidate>
-          ${campo({ id: 'puntos_en_proceso', label: 'Puntos de "en proceso"', value: cfg.puntos_en_proceso ?? 0.5, type: 'number', hint: 'Entre 0 y 1. Con 0,5 vale la mitad de un logrado.', extra: 'inputmode="decimal" min="0" max="1" step="0.05"' })}
+          ${campo({ id: 'puntos_en_proceso', label: 'Puntos de «en proceso»', value: cfg.puntos_en_proceso ?? 0.5, type: 'number', hint: 'Entre 0 y 1. Con 0,5 vale la mitad de un logrado.', extra: 'inputmode="decimal" min="0" max="1" step="0.05"' })}
           ${campo({ id: 'minimo_aprobatorio', label: 'Nota mínima aprobatoria', value: cfg.minimo_aprobatorio ?? 10, type: 'number', extra: 'inputmode="numeric" min="1" max="20" step="1"' })}
           ${campo({ id: 'umbral_indicador_debil', label: 'Un indicador se considera débil por debajo de (%)', value: cfg.umbral_indicador_debil ?? 50, type: 'number', hint: 'Se usará en los reportes para señalar en qué falla el curso o un estudiante.', extra: 'inputmode="numeric" min="1" max="100" step="1"' })}
           ${errorBox('e-calculo')}

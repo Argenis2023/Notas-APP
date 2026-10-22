@@ -33,8 +33,8 @@ export async function diccionario(ctx) {
     html: html`
       
       <section aria-labelledby="dic-t">
-        <h2 id="dic-t">Diccionario para el aula</h2>
-        <p>Escribe una palabra y la IA te la explica con frases simples, un ejemplo y un sinónimo.${seccion && seccion.grado ? ` Se adapta a ${seccion.grado}.` : ''}</p>
+        <h2 class="oculto-visual" id="dic-t">Diccionario para el aula</h2>
+        <p class="lead">Escribe una palabra y la IA te la explica con frases simples, un ejemplo y un sinónimo.${seccion && seccion.grado ? ` Se adapta a ${seccion.grado}.` : ''}</p>
         <form id="f-dic" class="stack" novalidate autocomplete="off">
           ${campo({ id: 'dic_palabra', label: 'Palabra', placeholder: 'Por ejemplo: curioso', extra: 'maxlength="40" autocapitalize="none" autocorrect="off" spellcheck="false"' })}
           ${errorBox('e-dic')}
@@ -158,9 +158,9 @@ export async function pausas(ctx, query) {
     html: html`
       
       <section aria-labelledby="pa-h">
-        <h2 id="pa-h">Pausa activa</h2>
-        <p>Actividades cortas para despertar o calmar al curso. Funcionan sin internet.</p>
-        <nav class="lapso-tabs" aria-label="Tipo de pausa">${TIPOS.map(t => html`<a href="#/aula/pausas?t=${t.id}" ${t.id === tipo ? html`aria-current="page"` : ''}>${t.texto}</a>`)}</nav>
+        <h2 class="oculto-visual" id="pa-h">Pausa activa</h2>
+        <p class="lead">Actividades cortas para despertar o calmar al curso. Funcionan sin internet.</p>
+        <nav class="lapso-tabs" aria-label="Tipo de pausa">${TIPOS.map(t => html`<a href="#/aula/pausas?t=${t.id}" ${t.id === tipo ? html`aria-current="page"` : ''}>${t.corto || t.texto}</a>`)}</nav>
         <div class="acciones"><button type="button" class="btn primary" id="pa-azar">${icon('pausa', 20)} Sorpréndeme</button></div>
         <div id="pa-ficha" aria-live="polite">${inicial ? fichaPausa(inicial, conSonido) : ''}</div>
       </section>
