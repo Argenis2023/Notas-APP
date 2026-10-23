@@ -3,7 +3,7 @@ import { getSeccion, getMeta, setMeta } from './data.js';
 import { mensajeIA } from './ia.js';
 import { limpiarPalabra, claveDePalabra, datosDiccionario, leerRespuesta, enlaceRAE } from './diccionario.js';
 import { TIPOS, PAUSAS, filtrarPausas, pausaAlAzar, pausaPorId } from './pausas.js';
-import { html, icon, toast } from './ui.js';
+import { html, icon, toast, toastDeshacer } from './ui.js';
 import { $, $$, campo, errorBox, mostrarError } from './form.js';
 
 const MAX_HISTORIAL = 30;
@@ -85,11 +85,16 @@ export async function diccionario(ctx) {
         btn.disabled = false; btn.textContent = 'Buscar y explicar';
       }
       $('#b-dic-borrar', root).addEventListener('click', async () => {
+        const antes = lista;
         lista = [];
         await setMeta('diccionario', []);
         pintarHist();
         res.innerHTML = '';
-        toast('Historial borrado');
+        toastDeshacer('Historial borrado.', async () => {
+          lista = antes;
+          await setMeta('diccionario', antes);
+          pintarHist();
+        });
       });
       $('#f-dic', root).addEventListener('submit', ev => { ev.preventDefault(); buscar(inp.value); });
       $('#dic-hist', root).addEventListener('click', ev => {

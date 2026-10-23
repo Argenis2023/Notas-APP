@@ -1,13 +1,13 @@
 // Reportes: lista, informe de un estudiante, informe del curso y banco de recomendaciones.
 // Los informes se imprimen o se guardan como PDF con el diálogo de impresión del celular.
-import { getSeccion, create, update, remove, guardarConId, idPar, get } from './data.js';
+import { getSeccion, create, update, remove, eliminarConDeshacer, guardarConId, idPar, get } from './data.js';
 import { lapsoActual } from './data.js';
 import { aprueba } from './calc.js';
 import {
   cargarSnapshot, notaAsignatura, promedioGeneral, logroEstudiante, logroCurso, esDebil, esFuerte, enRiesgo, distribucion,
   buscarRecomendacion, sugerenciaGeneral, borradorDescriptivo, claveIndicador, resumenAsistencia,
 } from './analisis.js';
-import { html, raw, icon, toast, fechaLarga, fechaCorta } from './ui.js';
+import { html, raw, icon, toast, toastDeshacer, fechaLarga, fechaCorta } from './ui.js';
 import { anotacionesDe, tipoValido, nombreTipo } from './anotaciones.js';
 import { evolucionLapsos, cambiosDelCurso } from './graficos.js';
 import { $, $$, campo, areaTexto, errorBox, mostrarError } from './form.js';
@@ -498,9 +498,9 @@ export async function banco(ctx) {
           toast('Cambios guardados');
         });
         $('.b-borrar-r', li).addEventListener('click', async () => {
-          await remove('recomendaciones', li.dataset.id);
-          toast('Recomendación eliminada');
+          const deshacer = await eliminarConDeshacer('recomendaciones', li.dataset.id);
           ctx.refresh();
+          toastDeshacer('Recomendación eliminada.', async () => { await deshacer(); ctx.refresh(); });
         });
       });
     },

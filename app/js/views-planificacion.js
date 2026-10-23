@@ -1,10 +1,10 @@
 // Planificación diaria de aula: lista, formulario con ayuda de IA y hoja para imprimir o guardar como PDF.
-import { getSeccion, lapsoActual, create, update, remove, get, list } from './data.js';
+import { getSeccion, lapsoActual, create, update, eliminarConDeshacer, get, list } from './data.js';
 import { cargarSnapshot } from './analisis.js';
 import { SECCIONES, leerPlanificacion, completa, datosPlanificacion } from './planificacion.js';
 import { mensajeIA } from './ia.js';
 import { banda, firmas, botonImprimir } from './views-reportes.js';
-import { html, icon, toast, fechaLarga, fechaCorta } from './ui.js';
+import { html, icon, toast, toastDeshacer, fechaLarga, fechaCorta } from './ui.js';
 import { $, $$, errorBox, mostrarError } from './form.js';
 
 const pad = n => String(n).padStart(2, '0');
@@ -155,9 +155,8 @@ export async function planificacionForm(ctx, id) {
       });
       const bor = $('#pl-borrar', root);
       if (bor) bor.addEventListener('click', async () => {
-        if (bor.dataset.paso !== '1') { bor.dataset.paso = '1'; bor.textContent = 'Toca otra vez para eliminar'; return; }
-        await remove('planificaciones', guardada.id);
-        toast('Planificación eliminada.');
+        const deshacer = await eliminarConDeshacer('planificaciones', guardada.id);
+        toastDeshacer('Planificación eliminada.', async () => { await deshacer(); location.hash = `#/planificacion/${guardada.id}`; });
         location.hash = '#/planificacion';
       });
     },

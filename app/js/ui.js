@@ -81,6 +81,31 @@ export function toast(texto, tipo = 'ok') {
   toastTimer = setTimeout(() => { el.hidden = true; }, tipo === 'error' ? 7000 : 3500);
 }
 
+// Aviso con un botón para revertir lo que se acaba de hacer.
+// Se usa al eliminar cosas sueltas: en vez de preguntar antes, se elimina y se perdona después.
+export function toastDeshacer(texto, alDeshacer, segundos = 7) {
+  const el = document.getElementById('toast');
+  if (!el) return toast(texto);
+  el.className = 'toast con-accion';
+  el.textContent = '';
+  const t = document.createElement('span');
+  t.className = 'toast-txt';
+  t.textContent = texto;
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'toast-accion';
+  b.textContent = 'Deshacer';
+  b.addEventListener('click', async () => {
+    clearTimeout(toastTimer);
+    el.hidden = true;
+    try { await alDeshacer(); } catch { toast('No se pudo deshacer.', 'error'); }
+  });
+  el.append(t, b);
+  el.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.hidden = true; }, segundos * 1000);
+}
+
 // ---------- estado de sincronización ----------
 export function infoEstado(state, { configurado, sesion }) {
   if (!configurado) return { clase: 'local', texto: 'Solo en este celular' };

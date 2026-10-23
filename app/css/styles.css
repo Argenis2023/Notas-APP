@@ -1120,3 +1120,17 @@ a.fila::after {
 .bloque { margin-bottom: 1.5rem; padding-bottom: 1.25rem; }
 .bloque > :last-child { margin-bottom: 0; }
 .bloque + .vacio, .bloque + .acciones { margin-top: 0; }
+
+/* aviso con acción: "Eliminado · Deshacer" */
+.toast.con-accion { display: flex; align-items: center; gap: 0.9rem; text-align: left; padding: 0.6rem 0.6rem 0.6rem 1.1rem; }
+.toast-txt { flex: 1; min-width: 0; }
+.toast-accion {
+  flex: none; font: inherit; font-size: 0.95rem; font-weight: 700;
+  min-height: 2.5rem; padding: 0 0.85rem;
+  color: var(--papel); background: transparent;
+  border: 1.5px solid currentColor; border-radius: var(--r-chico); cursor: pointer;
+}
+
+/* el aviso se sube por encima del botón de consultas, que ocupa esa misma esquina */
+.toast { bottom: calc(var(--nav-alto) + 5rem + env(safe-area-inset-bottom)); }
+.toast.con-accion { width: min(92vw, 26rem); }

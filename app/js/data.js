@@ -412,3 +412,16 @@ export async function eliminarAsignatura(asignaturaId) {
 export async function recalcularTodo(seccionId) {
   for (const a of await listAsignaturas(seccionId)) for (const ev of await listEvaluaciones(a.id)) await recalcularEvaluacion(ev.id);
 }
+
+// Elimina una fila y devuelve una función que la restaura.
+// `remove` marca deleted: true, así que deshacer es volver a ponerla en false:
+// mismo id, sin duplicar nada en la nube.
+export async function eliminarConDeshacer(table, id) {
+  await remove(table, id);
+  return async () => {
+    const cur = await db[table].get(id);
+    if (!cur) return;
+    await db[table].put({ ...cur, deleted: false, updated_at: nowIso(), _dirty: 1 });
+    changed([table]);
+  };
+}

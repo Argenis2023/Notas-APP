@@ -1,7 +1,7 @@
 // Pantalla "Anotaciones": escribir una nota rápida sobre un estudiante y ver las recientes.
-import { getSeccion, listEstudiantes, list, create, remove } from './data.js';
+import { getSeccion, listEstudiantes, list, create, eliminarConDeshacer } from './data.js';
 import { TIPOS, tipoValido, nombreTipo } from './anotaciones.js';
-import { html, icon, toast, fechaCorta } from './ui.js';
+import { html, icon, toast, toastDeshacer, fechaCorta } from './ui.js';
 import { $, $$, errorBox, mostrarError } from './form.js';
 
 const pad = n => String(n).padStart(2, '0');
@@ -66,10 +66,9 @@ export async function anotaciones(ctx, query) {
       });
       $('#an-est', root).addEventListener('change', ev => { location.hash = ev.target.value ? `#/anotaciones?e=${ev.target.value}` : '#/anotaciones'; });
       $$('.an-borrar', root).forEach(b => b.addEventListener('click', async () => {
-        if (b.dataset.paso !== '1') { b.dataset.paso = '1'; b.textContent = 'Toca otra vez para eliminar'; return; }
-        await remove('anotaciones', b.dataset.id);
-        const li = b.closest('li'); if (li) li.remove();
-        toast('Anotación eliminada.');
+        const deshacer = await eliminarConDeshacer('anotaciones', b.dataset.id);
+        const li = b.closest('li'); if (li) li.hidden = true;
+        toastDeshacer('Anotación eliminada.', async () => { await deshacer(); ctx.refresh(); });
       }));
     },
   };

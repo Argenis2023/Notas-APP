@@ -1,8 +1,8 @@
 // Pantalla "Agenda": lo que viene en el aula (eventos, entregas, reuniones) junto con las fechas de evaluaciones.
-import { getSeccion, create, update, remove } from './data.js';
+import { getSeccion, create, update, eliminarConDeshacer } from './data.js';
 import { cargarSnapshot } from './analisis.js';
 import { TIPOS_EVENTO, tipoEvento, nombreTipoEvento, todosLosEventos, etiquetaDia, rango } from './agenda.js';
-import { html, icon, toast } from './ui.js';
+import { html, icon, toast, toastDeshacer } from './ui.js';
 import { $, $$, errorBox, mostrarError } from './form.js';
 
 const pad = n => String(n).padStart(2, '0');
@@ -66,10 +66,9 @@ export async function agenda(ctx) {
       });
       $$('.ag-hecho-b', root).forEach(b => b.addEventListener('click', async () => { await update('agenda', b.dataset.id, { hecho: b.dataset.hecho === '1' }); ctx.refresh(); }));
       $$('.ag-borrar', root).forEach(b => b.addEventListener('click', async () => {
-        if (b.dataset.paso !== '1') { b.dataset.paso = '1'; b.textContent = 'Toca otra vez para eliminar'; return; }
-        await remove('agenda', b.dataset.id);
-        const li = b.closest('li'); if (li) li.remove();
-        toast('Eliminado.');
+        const deshacer = await eliminarConDeshacer('agenda', b.dataset.id);
+        const li = b.closest('li'); if (li) li.hidden = true;
+        toastDeshacer('Eliminado de la agenda.', async () => { await deshacer(); ctx.refresh(); });
       }));
     },
   };
