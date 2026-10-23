@@ -1139,3 +1139,13 @@ a.fila::after {
    Los que comparten fila con otro boton (.acciones) se reparten el ancho como siempre. */
 .btn.borrar:not(.chico) { width: 100%; }
 .acciones > .btn.borrar { width: auto; }
+
+/* botón de consultas: se encoge a círculo con solo el ícono al hacer scroll */
+.chat-fab-txt { display: inline-block; max-width: 8rem; overflow: hidden; white-space: nowrap; }
+.chat-fab { transition: padding 0.2s ease, gap 0.2s ease, min-width 0.2s ease; }
+.chat-fab.mini { gap: 0; min-width: 3.2rem; padding: 0; justify-content: center; }
+.chat-fab.mini .chat-fab-txt { max-width: 0; opacity: 0; }
+.chat-fab.mini .chat-globo, .chat-fab.mini .chat-mano { display: none; }
+@media (prefers-reduced-motion: no-preference) {
+  .chat-fab-txt { transition: max-width 0.2s ease, opacity 0.15s ease; }
+}

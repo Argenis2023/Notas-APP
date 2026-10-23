@@ -39,6 +39,13 @@ export function montarChat() {
     <div class="chat-preguntas" id="chat-preguntas" role="group" aria-label="Preguntas sobre el estudiante"></div>`.toString();
   shell.append(fab, panel);
 
+  // Al bajar por la pantalla el botón se encoge a solo el ícono para no tapar el contenido;
+  // al volver arriba recupera la palabra "Consultas".
+  const ajustarTamano = () => fab.classList.toggle('mini', (window.scrollY || document.documentElement.scrollTop || 0) > 48);
+  window.addEventListener('scroll', ajustarTamano, { passive: true });
+  window.addEventListener('hashchange', () => setTimeout(ajustarTamano, 60));
+  ajustarTamano();
+
   const msgs = $('#chat-msgs', panel), sel = $('#chat-est', panel), pregs = $('#chat-preguntas', panel);
   let estudiantes = [];
   let ocupado = false;
