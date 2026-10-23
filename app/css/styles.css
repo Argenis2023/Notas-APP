@@ -150,7 +150,7 @@ main:focus { outline: none; }
 .btn.primary { background: var(--acento); color: var(--sobre-acento); }
 .btn.secondary { background: var(--hoja); color: var(--acento); border-color: var(--acento); }
 .btn.danger { background: var(--rojo); color: var(--hoja); }
-.btn.borrar { background: transparent; color: var(--rojo); border-color: transparent; padding-left: 0; justify-content: flex-start; }
+.btn.borrar { background: var(--hoja); color: var(--rojo); border-color: var(--rojo); }
 .btn.chico { min-height: 2.5rem; padding: 0.4rem 0.9rem; font-size: 0.95rem; }
 .btn[disabled] { opacity: 0.55; cursor: default; }
 .acciones { display: flex; flex-wrap: wrap; gap: 0.6rem; margin: 0 0 1rem; }
@@ -1134,3 +1134,8 @@ a.fila::after {
 /* el aviso se sube por encima del botón de consultas, que ocupa esa misma esquina */
 .toast { bottom: calc(var(--nav-alto) + 5rem + env(safe-area-inset-bottom)); }
 .toast.con-accion { width: min(92vw, 26rem); }
+
+/* los botones de eliminar van a todo el ancho, como el resto de las acciones de la vista.
+   Los que comparten fila con otro boton (.acciones) se reparten el ancho como siempre. */
+.btn.borrar:not(.chico) { width: 100%; }
+.acciones > .btn.borrar { width: auto; }
