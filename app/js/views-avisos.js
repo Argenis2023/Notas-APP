@@ -33,7 +33,7 @@ export async function avisosPendientes(s, ctx) {
 
 export async function avisos(ctx) {
   const seccion = await getSeccion();
-  if (!seccion) return { title: 'Avisos', html: html`<p class="vacio">Primero crea tu sección en <a class="btn secondary chico" href="#/">Inicio</a>.</p>` };
+  if (!seccion) return { title: 'Avisos', html: html`<div class="vacio"><p>Primero crea tu sección.</p><a class="btn primary" href="#/">Ir a Inicio</a></div>` };
   const s = await cargarSnapshot(seccion);
   const { visibles, ocultos } = await avisosPendientes(s, ctx);
   const grupos = Object.entries(TIPOS_AVISO).sort((a, b) => a[1].orden - b[1].orden).map(([id, t]) => ({ id, t, items: visibles.filter(a => a.tipo === id) })).filter(g => g.items.length);

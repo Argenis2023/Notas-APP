@@ -3,7 +3,7 @@ import {
   getSeccion, crearSeccion, getLapsos, lapsoActual, listEstudiantes, addEstudiante, get, update, remove,
   getConfig, importEstudiantes, nombrePropio, anioEscolarActual, exportAll, restoreAll, validateBackup, listAsignaturas, listEvaluaciones,
 } from './data.js';
-import { html, raw, icon, toast, fechaCorta, haceCuanto, infoEstado } from './ui.js';
+import { html, raw, icon, toast, fechaCorta, haceCuanto, fechaHora, infoEstado } from './ui.js';
 import { VERSION } from './version.js';
 
 import { bloqueCalculo, bloqueIA } from './views-eval.js';
@@ -112,7 +112,7 @@ export async function inicio(ctx, q = '') {
 // =====================================================================
 export async function estudiantes(ctx) {
   const seccion = await getSeccion();
-  if (!seccion) return { title: 'Estudiantes', html: html`<p class="vacio">Primero crea tu sección en <a class="btn secondary chico" href="#/">Inicio</a>.</p>` };
+  if (!seccion) return { title: 'Estudiantes', html: html`<div class="vacio"><p>Primero crea tu sección.</p><a class="btn primary" href="#/">Ir a Inicio</a></div>` };
   const todos = await listEstudiantes(seccion.id);
 
   const fila = e => html`
@@ -168,11 +168,11 @@ export async function estudiantes(ctx) {
 // =====================================================================
 export async function estudianteForm(ctx, id) {
   const seccion = await getSeccion();
-  if (!seccion) return { title: 'Estudiante', html: html`<p class="vacio">Primero crea tu sección en <a class="btn secondary chico" href="#/">Inicio</a>.</p>` };
+  if (!seccion) return { title: 'Estudiante', html: html`<div class="vacio"><p>Primero crea tu sección.</p><a class="btn primary" href="#/">Ir a Inicio</a></div>` };
   const todos = await listEstudiantes(seccion.id);
   const nuevo = !id || id === 'nuevo';
   const e = nuevo ? null : await get('estudiantes', id);
-  if (!nuevo && (!e || e.deleted)) return { title: 'Estudiante', html: html`<p class="vacio">No encontré a este estudiante. <a class="btn secondary chico" href="#/estudiantes">Volver a la lista</a></p>` };
+  if (!nuevo && (!e || e.deleted)) return { title: 'Estudiante', html: html`<div class="vacio"><p>No encontré a este estudiante.</p><a class="btn primary" href="#/estudiantes">Volver a la lista</a></div>` };
   const siguiente = Math.max(0, ...todos.map(x => x.numero_lista || 0)) + 1;
 
   return {
@@ -250,7 +250,7 @@ export async function estudianteForm(ctx, id) {
 // =====================================================================
 export async function importar(ctx) {
   const seccion = await getSeccion();
-  if (!seccion) return { title: 'Importar', html: html`<p class="vacio">Primero crea tu sección en <a class="btn secondary chico" href="#/">Inicio</a>.</p>` };
+  if (!seccion) return { title: 'Importar', html: html`<div class="vacio"><p>Primero crea tu sección.</p><a class="btn primary" href="#/">Ir a Inicio</a></div>` };
 
   return {
     title: 'Importar de Excel',
@@ -419,7 +419,7 @@ export async function ajustes(ctx, query = '') {
         ${errorBox('e-ajustes')}
         <button class="btn primary" type="submit">Guardar sección y lapsos</button>
       </form>
-    </section>` : html`<section class="bloque"><h2>Sección y lapsos</h2><p>Primero crea tu sección en <a class="btn secondary chico" href="#/">Inicio</a>.</p></section>`;
+    </section>` : html`<section class="bloque"><h2>Sección y lapsos</h2><p>Primero crea tu sección.</p><div class="acciones"><a class="btn secondary" href="#/">Ir a Inicio</a></div></section>`;
 
   const respaldo = html`
     <section class="bloque" aria-labelledby="t-respaldo">
@@ -455,7 +455,7 @@ export async function ajustes(ctx, query = '') {
               <button class="btn secondary" type="button" id="b-salir-no">No, seguir</button>
             </div>
           </div>`
-        : html`<p>No has iniciado sesión. <a class="btn secondary chico" href="${location.pathname}" id="a-recargar">Entrar</a></p>`}
+        : html`<p>No has iniciado sesión.</p><div class="acciones"><a class="btn secondary" href="${location.pathname}" id="a-recargar">Entrar</a></div>`}
     </section>`;
 
   const pinActivo = await hayPin();
@@ -490,7 +490,7 @@ export async function ajustes(ctx, query = '') {
     notas: `Nota mínima ${cfgMin ?? 10} y redacción con IA`,
     avisos: 'Reporte semanal por correo y avisos',
     seguridad: pinActivo ? 'Bloqueo con PIN activado' : 'Bloqueo con PIN',
-    datos: 'Respaldo, copias y restaurar',
+    datos: ctx.syncState().lastSync ? `Último respaldo: ${fechaHora(ctx.syncState().lastSync)}` : 'Respaldo, copias y restaurar',
     cuenta: ctx.sesion ? ctx.sesion.email : 'Sin sesión iniciada',
     app: `Versión ${VERSION}`,
   };
@@ -688,7 +688,7 @@ export async function ajustes(ctx, query = '') {
     }
     const info = infoEstado(st, { configurado: true, sesion: true });
     const partes = [info.texto + '.'];
-    if (st.lastSync) partes.push(`Último respaldo: ${haceCuanto(st.lastSync)}.`);
+    if (st.lastSync) partes.push(`Último respaldo: ${fechaHora(st.lastSync)} (${haceCuanto(st.lastSync)}).`);
     if (st.status === 'error' && st.error) partes.push(`Detalle: ${st.error}`);
     el.textContent = partes.join(' ');
     el.className = 'estado ' + info.clase;

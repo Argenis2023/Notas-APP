@@ -11,7 +11,7 @@ const GRUPOS = [['hoy', 'Hoy'], ['manana', 'Mañana'], ['semana', 'Esta semana']
 
 export async function agenda(ctx) {
   const seccion = await getSeccion();
-  if (!seccion) return { title: 'Agenda', html: html`<p class="vacio">Primero crea tu sección en <a class="btn secondary chico" href="#/">Inicio</a>.</p>` };
+  if (!seccion) return { title: 'Agenda', html: html`<div class="vacio"><p>Primero crea tu sección.</p><a class="btn primary" href="#/">Ir a Inicio</a></div>` };
   const s = await cargarSnapshot(seccion);
   const hoy = hoyIso();
   const todos = todosLosEventos(s, hoy);

@@ -38,6 +38,19 @@ export function haceCuanto(iso) {
   return rtf.format(Math.round(seg / 86400), 'day');
 }
 
+// "hoy, 3:42 p. m." · "ayer, 9:05 a. m." · "22 oct., 3:42 p. m."
+const fmtHora = new Intl.DateTimeFormat('es', { hour: 'numeric', minute: '2-digit' });
+const fmtDiaCorto = new Intl.DateTimeFormat('es', { day: 'numeric', month: 'short' });
+export function fechaHora(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  const dia = x => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+  const dif = Math.round((dia(new Date()) - dia(d)) / 86400000);
+  const cuando = dif === 0 ? 'hoy' : dif === 1 ? 'ayer' : fmtDiaCorto.format(d);
+  return `${cuando}, ${fmtHora.format(d)}`;
+}
+
 // ---------- íconos (trazo, 24x24) ----------
 const P = {
   inicio: '<path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9.5h13V10"/><path d="M10 19.5v-5h4v5"/>',

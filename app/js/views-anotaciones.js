@@ -9,9 +9,9 @@ const hoyIso = () => { const d = new Date(); return `${d.getFullYear()}-${pad(d.
 
 export async function anotaciones(ctx, query) {
   const seccion = await getSeccion();
-  if (!seccion) return { title: 'Anotaciones', html: html`<p class="vacio">Primero crea tu sección en <a class="btn secondary chico" href="#/">Inicio</a>.</p>` };
+  if (!seccion) return { title: 'Anotaciones', html: html`<div class="vacio"><p>Primero crea tu sección.</p><a class="btn primary" href="#/">Ir a Inicio</a></div>` };
   const estudiantes = await listEstudiantes(seccion.id);
-  if (!estudiantes.length) return { title: 'Anotaciones', html: html`<p class="vacio">Todavía no hay estudiantes. <a class="btn secondary chico" href="#/estudiantes">Agrégalos</a> para poder anotar.</p>` };
+  if (!estudiantes.length) return { title: 'Anotaciones', html: html`<div class="vacio"><p>Todavía no hay estudiantes.</p><a class="btn primary" href="#/estudiantes">Agregar estudiantes</a></div>` };
   const q = new URLSearchParams(query || '');
   const elegido = estudiantes.find(e => e.id === q.get('e'));
   const ids = new Set(estudiantes.map(e => e.id));

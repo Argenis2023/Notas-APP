@@ -13,7 +13,7 @@ const AREAS = ['Lenguaje, Comunicación y Cultura', 'Matemática', 'Ciencias Nat
 
 export async function planificaciones(ctx) {
   const seccion = await getSeccion();
-  if (!seccion) return { title: 'Planificación', html: html`<p class="vacio">Primero crea tu sección en <a class="btn secondary chico" href="#/">Inicio</a>.</p>` };
+  if (!seccion) return { title: 'Planificación', html: html`<div class="vacio"><p>Primero crea tu sección.</p><a class="btn primary" href="#/">Ir a Inicio</a></div>` };
   const todas = (await list('planificaciones')).filter(p => p.seccion_id === seccion.id)
     .sort((a, b) => String(b.fecha).localeCompare(String(a.fecha)) || String(b.created_at).localeCompare(String(a.created_at)));
   return {
@@ -37,10 +37,10 @@ export async function planificaciones(ctx) {
 
 export async function planificacionForm(ctx, id) {
   const seccion = await getSeccion();
-  if (!seccion) return { title: 'Planificación', html: html`<p class="vacio">Primero crea tu sección en <a class="btn secondary chico" href="#/">Inicio</a>.</p>` };
+  if (!seccion) return { title: 'Planificación', html: html`<div class="vacio"><p>Primero crea tu sección.</p><a class="btn primary" href="#/">Ir a Inicio</a></div>` };
   const nueva = !id || id === 'nueva';
   const guardada = nueva ? null : await get('planificaciones', id);
-  if (!nueva && (!guardada || guardada.deleted)) return { title: 'Planificación', html: html`<p class="vacio">No encontré esta planificación. <a class="btn secondary chico" href="#/planificacion">Volver</a></p>` };
+  if (!nueva && (!guardada || guardada.deleted)) return { title: 'Planificación', html: html`<div class="vacio"><p>No encontré esta planificación.</p><a class="btn primary" href="#/planificacion">Volver</a></div>` };
   const s = await cargarSnapshot(seccion);
   const previas = (await list('planificaciones')).filter(p => p.seccion_id === seccion.id).sort((a, b) => String(b.created_at).localeCompare(String(a.created_at)));
   const ult = previas[0] || {};

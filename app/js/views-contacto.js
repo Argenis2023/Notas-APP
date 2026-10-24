@@ -65,7 +65,7 @@ export async function representantes(ctx, query) {
                 ${errorBox('e-rp')}
                 <div class="acciones"><button type="button" class="btn primary" id="rp-enviar">Enviar y redactar</button><button type="button" class="btn secondary" id="rp-cancelar">Cancelar</button></div>
               </section>` : ''}`
-          : html`<p class="vacio">Falta un teléfono válido del representante. <a class="btn primary" href="#/estudiantes/${elegido.id}">Agregar el contacto</a></p>`}`
+          : html`<div class="vacio"><p>Falta un teléfono válido del representante.</p><a class="btn primary" href="#/estudiantes/${elegido.id}">Agregar el contacto</a></div>`}`
         : ''}
       </section>
       ${sinContacto.length ? html`

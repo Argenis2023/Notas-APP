@@ -16,7 +16,7 @@ import { lineasEncabezado } from './institucion.js';
 import { bloqueEnvioSemanal } from './views-reporte-semanal.js';
 import { datosDescripcion, datosRecomendacion, mensajeIA } from './ia.js';
 
-const sinSeccion = titulo => ({ title: titulo, html: html`<p class="vacio">Primero crea tu sección en <a class="btn secondary chico" href="#/">Inicio</a>.</p>` });
+const sinSeccion = titulo => ({ title: titulo, html: html`<div class="vacio"><p>Primero crea tu sección.</p><a class="btn primary" href="#/">Ir a Inicio</a></div>` });
 const textoNota = n => (n === null || n === undefined ? '–' : String(n));
 const claseNota = (n, s) => (n === null || n === undefined ? '' : aprueba(n, s.cfg) ? 'nota-ok' : 'nota-baja');
 const queryDe = q => new URLSearchParams(q || '');
@@ -213,7 +213,7 @@ export async function reporteEstudiante(ctx, estId, q) {
   if (!seccion) return sinSeccion('Informe');
   const s = await cargarSnapshot(seccion);
   const e = s.estudiantes.find(x => x.id === estId);
-  if (!e) return { title: 'Informe', html: html`<p class="vacio">No encontré a este estudiante. <a class="btn secondary chico" href="#/reportes">Volver</a></p>` };
+  if (!e) return { title: 'Informe', html: html`<div class="vacio"><p>No encontré a este estudiante.</p><a class="btn primary" href="#/reportes">Volver</a></div>` };
   const lapso = lapsoElegido(s, q);
   const base = `#/reportes/e/${e.id}`;
   const iaOk = ctx.iaDisponible();
@@ -465,7 +465,7 @@ export async function banco(ctx) {
           ${areaTexto({ id: 'r-texto', label: 'Recomendación', rows: 3, placeholder: 'Qué actividades se sugieren para reforzar este tema, en el aula y en casa.' })}
           ${errorBox('e-recom')}
           <button class="btn primary" type="submit">Guardar recomendación</button>
-        </form>` : html`<p class="vacio">Primero agrega asignaturas en <a class="btn secondary chico" href="#/evaluar">Evaluar</a>.</p>`}
+        </form>` : html`<div class="vacio"><p>Primero agrega asignaturas.</p><a class="btn primary" href="#/evaluar">Ir a Evaluar</a></div>`}
 
       ${porAsig.map(g => html`
         <section class="bloque">

@@ -12,7 +12,7 @@ const plural = (n, uno, varios) => `${n} ${n === 1 ? uno : varios}`;
 
 export async function sorteo(ctx, query) {
   const seccion = await getSeccion();
-  if (!seccion) return { title: 'Sorteo y grupos', html: html`<p class="vacio">Primero crea tu sección en <a class="btn secondary chico" href="#/">Inicio</a>.</p>` };
+  if (!seccion) return { title: 'Sorteo y grupos', html: html`<div class="vacio"><p>Primero crea tu sección.</p><a class="btn primary" href="#/">Ir a Inicio</a></div>` };
   const q = new URLSearchParams(query || '');
   const modo = MODOS.some(m => m[0] === q.get('m')) ? q.get('m') : 'uno';
   const estudiantes = await listEstudiantes(seccion.id);
@@ -23,7 +23,7 @@ export async function sorteo(ctx, query) {
   return {
     title: 'Sorteo y grupos',
     html: !estudiantes.length
-      ? html`<p class="vacio">Todavía no hay estudiantes. <a class="btn secondary chico" href="#/estudiantes">Agrégalos</a> para poder sortear.</p>`
+      ? html`<div class="vacio"><p>Todavía no hay estudiantes para sortear.</p><a class="btn primary" href="#/estudiantes">Agregar estudiantes</a></div>`
       : html`
       
       <section aria-labelledby="so-t">

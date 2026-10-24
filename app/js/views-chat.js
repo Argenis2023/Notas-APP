@@ -95,7 +95,7 @@ export function montarChat() {
     sel.disabled = !hay;
     pregs.innerHTML = hay
       ? PREGUNTAS.map(p => html`<button type="button" class="chat-q" data-q="${p.id}">${p.corta}</button>`.toString()).join('')
-      : html`<p class="hint">Primero agrega estudiantes en <a class="btn secondary chico" href="#/estudiantes" data-cerrar>Estudiantes</a>.</p>`.toString();
+      : html`<p class="hint">Primero agrega estudiantes.</p><div class="acciones"><a class="btn secondary" href="#/estudiantes" data-cerrar>Ir a Estudiantes</a></div>`.toString();
   }
 
   async function preguntar(id) {
