@@ -1166,3 +1166,14 @@ a.fila::after {
 .calor-leyenda .sw.ok { background: color-mix(in srgb, var(--verde) 55%, var(--hoja)); }
 .calor-leyenda .sw.baja { background: color-mix(in srgb, var(--rojo) 55%, var(--hoja)); }
 @media print { .calor-scroll { overflow: visible; border: 0; } .calor-tabla tbody th, .calor-tabla thead th:first-child { position: static; } .calor-bloque { break-inside: avoid; } }
+
+/* Píldora deslizante de la barra inferior */
+.tabs-pildora { display: none; }
+@media screen and (max-width: 47.99rem) {
+  .tabs { position: fixed; }
+  .tabs-pildora { display: block; position: absolute; left: 0; top: 0; border-radius: 999px; background: var(--acento-suave); opacity: 0; pointer-events: none; z-index: 0; transition: transform 0.3s cubic-bezier(0.3, 0.8, 0.3, 1), opacity 0.15s; }
+  .tabs-pildora.ver { opacity: 1; }
+  .tabs a { position: relative; z-index: 1; }
+  .tabs a[aria-current='page'] svg { background: transparent; }
+}
+@media (prefers-reduced-motion: reduce) { .tabs-pildora { transition: none; } }

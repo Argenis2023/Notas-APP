@@ -87,10 +87,29 @@ async function render({ suave = false } = {}) {
   const main = $('#view');
   main.innerHTML = vista.html.toString();
   $$('.tabs a').forEach(a => { if (a.dataset.ruta !== ruta[2]) a.removeAttribute('aria-current'); else a.setAttribute('aria-current', 'page'); });
+  moverPildora();
   if (!suave) { window.scrollTo(0, 0); main.focus({ preventScroll: true }); entrada(main); }
   if (vista.mount) vista.mount(main);
   pintarCampana();
 }
+
+// Píldora de la barra inferior: se desliza hasta la pestaña activa (solo en el celular).
+let pildoraLista = false;
+function moverPildora() {
+  const pil = document.querySelector('.tabs-pildora');
+  const nav = document.querySelector('.tabs');
+  if (!pil || !nav) return;
+  const ico = nav.querySelector('a[aria-current="page"] svg');
+  const lateral = window.matchMedia && window.matchMedia('(min-width: 48rem)').matches;
+  if (!ico || lateral) { pil.classList.remove('ver'); return; }
+  const n = nav.getBoundingClientRect(), r = ico.getBoundingClientRect();
+  pil.style.width = `${r.width}px`; pil.style.height = `${r.height}px`;
+  pil.style.transform = `translate(${r.left - n.left}px, ${r.top - n.top}px)`;
+  if (!pildoraLista) { pil.style.transition = 'none'; pil.classList.add('ver'); void pil.offsetWidth; pil.style.transition = ''; pildoraLista = true; }
+  else pil.classList.add('ver');
+}
+window.addEventListener('resize', moverPildora);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(moverPildora);
 
 // ---------- movimiento sutil ----------
 const sinMovimiento = () => !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);

@@ -390,6 +390,11 @@ export async function reporteCurso(ctx, q) {
   const dist = distribucion(conNota.map(p => p.prom));
   const maxDist = Math.max(1, ...dist.map(d => d.cantidad));
   const riesgo = enRiesgo(s, lapso.id);
+  const asisCurso = (() => {
+    const r = s.estudiantes.map(e => resumenAsistencia(s, lapso, e.id));
+    const pres = r.reduce((a, x) => a + x.presentes, 0), marc = r.reduce((a, x) => a + x.marcados, 0);
+    return marc ? Math.round((100 * pres) / marc) : null;
+  })();
   const asigs = s.asignaturas.map(a => {
     const notas = s.estudiantes.map(e => notaAsignatura(s, a.id, lapso.id, e.id));
     return { a, prom: promedio(notas), n: notas.filter(x => x !== null).length, aprobados: notas.filter(x => x !== null && aprueba(x, s.cfg)).length, logro: logroCurso(s, a.id, lapso.id) };
@@ -410,6 +415,7 @@ export async function reporteCurso(ctx, q) {
             ${kpi(textoNota(promCurso), 'promedio del curso', claseNota(promCurso, s))}
             ${kpi(`${aprobados} de ${conNota.length}`, `aprobados (${s.cfg.minimo_aprobatorio} o más)`)}
             ${kpi(String(riesgo.length), 'necesitan apoyo', riesgo.length ? 'nota-baja' : '')}
+            ${asisCurso !== null ? kpi(`${asisCurso}%`, 'asistencia del curso') : ''}
           </section>
 
           <section>
