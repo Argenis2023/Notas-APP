@@ -1149,3 +1149,20 @@ a.fila::after {
 @media (prefers-reduced-motion: no-preference) {
   .chat-fab-txt { transition: max-width 0.2s ease, opacity 0.15s ease; }
 }
+
+/* Cuadrícula de calor (informe del curso) */
+.calor-scroll { overflow-x: auto; border: 1px solid var(--linea); border-radius: var(--r-medio); }
+.calor-tabla { border-collapse: separate; border-spacing: 2px; width: 100%; font-size: 0.85rem; font-variant-numeric: tabular-nums; }
+.calor-tabla thead th { font-weight: 600; font-size: 0.75rem; padding: 0.35rem 0.3rem; text-align: center; max-width: 5.5rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.calor-tabla tbody th { text-align: left; font-weight: 500; padding: 0.3rem 0.5rem; white-space: nowrap; position: sticky; left: 0; background: var(--hoja); }
+.calor-tabla thead th:first-child { text-align: left; padding-left: 0.5rem; position: sticky; left: 0; background: var(--hoja); }
+.calor { text-align: center; padding: 0.4rem 0.3rem; min-width: 2.4rem; border-radius: 6px; font-weight: 600; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.calor.ok, .calor.baja { color: var(--tinta); background-color: color-mix(in srgb, var(--c) calc(14% + var(--t) * 0.5), var(--hoja)); }
+.calor.ok { --c: var(--verde); }
+.calor.baja { --c: var(--rojo); }
+.calor.vacia { color: var(--tinta-suave); font-weight: 400; }
+.calor-leyenda { font-size: 0.8rem; margin: 0.5rem 0 0; }
+.calor-leyenda .sw { display: inline-block; width: 0.8rem; height: 0.8rem; border-radius: 3px; vertical-align: -1px; margin-right: 0.2rem; }
+.calor-leyenda .sw.ok { background: color-mix(in srgb, var(--verde) 55%, var(--hoja)); }
+.calor-leyenda .sw.baja { background: color-mix(in srgb, var(--rojo) 55%, var(--hoja)); }
+@media print { .calor-scroll { overflow: visible; border: 0; } .calor-tabla tbody th, .calor-tabla thead th:first-child { position: static; } .calor-bloque { break-inside: avoid; } }

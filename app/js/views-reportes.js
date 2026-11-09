@@ -70,6 +70,27 @@ const identidad = (s, lapso, titulo, campos = []) => {
       <dl class="ident-datos">${datos.map(([k, v]) => html`<div><dt>${k}</dt><dd>${v}</dd></div>`)}</dl>
     </section>`;
 };
+// Cuadrícula de calor: estudiantes en filas, evaluaciones en columnas, color según la nota.
+function cuadriculaCalor(s, a, lapso) {
+  const evs = s.evaluaciones.filter(e => e.asignatura_id === a.id && e.lapso_id === lapso.id)
+    .sort((x, y) => String(x.fecha || x.created_at || '').localeCompare(String(y.fecha || y.created_at || '')));
+  if (!evs.length) return '';
+  const min = s.cfg.minimo_aprobatorio;
+  const celda = n => {
+    if (n === null || n === undefined) return html`<td class="calor vacia" aria-label="sin nota">–</td>`;
+    const t = n < min ? Math.max(0, Math.min(1, (min - n) / Math.max(1, min - 1))) : Math.max(0, Math.min(1, (n - min) / Math.max(1, 20 - min)));
+    return html`<td class="calor ${n < min ? 'baja' : 'ok'}" style="--t:${Math.round(t * 100)}%">${n}</td>`;
+  };
+  return html`<section class="informe-asig calor-bloque">
+    <h3 class="informe-h">${a.nombre}: notas por evaluación</h3>
+    <div class="calor-scroll"><table class="calor-tabla">
+      <thead><tr><th scope="col">Estudiante</th>${evs.map(e => html`<th scope="col" title="${e.nombre}">${e.nombre}</th>`)}<th scope="col">Prom.</th></tr></thead>
+      <tbody>${s.estudiantes.map(e => html`<tr><th scope="row">${e.nombre_completo}</th>${evs.map(ev => celda(s.nota[`${ev.id}|${e.id}`]))}${celda(notaAsignatura(s, a.id, lapso.id, e.id))}</tr>`)}</tbody>
+    </table></div>
+    <p class="calor-leyenda"><span class="sw baja"></span> Bajo ${min} <span class="sw ok"></span> ${min} o más. Más intenso, más lejos del mínimo.</p>
+  </section>`;
+}
+
 const kpi = (num, txt, clase = '') => html`<div class="kpi"><span class="kpi-num ${clase}">${num}</span><span class="kpi-txt">${txt}</span></div>`;
 const chipNota = (n, cfg) => (n === null || n === undefined ? html`<span class="chip-nota">–</span>` : html`<span class="chip-nota ${aprueba(n, cfg) ? 'ok' : 'baja'}">${n}</span>`);
 const chipSituacion = (ok, ok1 = 'Aprobada', no = 'Por reforzar') => html`<span class="chip-sit ${ok ? 'ok' : 'baja'}">${ok ? ok1 : no}</span>`;
@@ -408,6 +429,8 @@ export async function reporteCurso(ctx, q) {
               <tbody>${asigs.map(({ a, prom, n, aprobados: ap }) => html`<tr><th scope="row">${a.nombre}</th><td class="${claseNota(prom, s)}">${textoNota(prom)}</td><td>${ap} de ${n}</td></tr>`)}</tbody>
             </table>
           </section>
+
+          ${asigs.map(({ a }) => cuadriculaCalor(s, a, lapso))}
 
           ${asigs.map(({ a, logro }) => html`
             <section class="informe-asig">
