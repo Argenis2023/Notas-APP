@@ -3,6 +3,7 @@ import { getSeccion, listEstudiantes, list, create, eliminarConDeshacer } from '
 import { TIPOS, tipoValido, nombreTipo } from './anotaciones.js';
 import { html, icon, toast, toastDeshacer, fechaCorta } from './ui.js';
 import { $, $$, errorBox, mostrarError } from './form.js';
+import { vozDisponible, crearDictado, limpiarDictado, unirTexto, detectarEstudiante, detectarTipo, mensajeVoz } from './voz.js';
 
 const pad = n => String(n).padStart(2, '0');
 const hoyIso = () => { const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
@@ -37,7 +38,9 @@ export async function anotaciones(ctx, query) {
             ${TIPOS.map(([id, texto], i) => html`<label class="check"><input type="radio" name="tipo" value="${id}" ${i === 0 ? 'checked' : ''}> <span>${texto}</span></label>`)}
           </fieldset>
           <div class="field"><label for="an-texto">¿Qué pasó?</label>
-            <textarea id="an-texto" name="texto" rows="3" placeholder="Por ejemplo: ayudó a un compañero con la suma; no trajo el material."></textarea></div>
+            <textarea id="an-texto" name="texto" rows="3" placeholder="Por ejemplo: ayudó a un compañero con la suma; no trajo el material."></textarea>
+            ${vozDisponible() ? html`<div class="acciones acciones-voz"><button type="button" class="btn secondary chico" id="an-voz" aria-pressed="false">${icon('microfono', 18)} <span>Dictar</span></button></div>
+            <p class="hint" id="an-voz-ayuda">Di el nombre del estudiante y lo que pasó. El dictado lo procesa el servicio de voz del navegador.</p>` : ''}</div>
           <div class="field"><label for="an-fecha">Fecha</label><input id="an-fecha" name="fecha" type="date" value="${hoyIso()}"></div>
           ${errorBox('e-an')}
           <div class="acciones"><button class="btn primary" type="submit">Guardar anotación</button></div>
@@ -64,6 +67,37 @@ export async function anotaciones(ctx, query) {
         toast('Anotación guardada.');
         location.hash = `#/anotaciones?e=${d.estudiante_id}&r=${Date.now()}`;
       });
+      const bVoz = $('#an-voz', root);
+      if (bVoz) {
+        const texto = $('#an-texto', root), ayuda = $('#an-voz-ayuda', root);
+        let base = '', dictado = null, huboError = false;
+        const pintarBoton = on => { texto.readOnly = on; bVoz.setAttribute('aria-pressed', String(on)); bVoz.classList.toggle('grabando', on); $('span', bVoz).textContent = on ? 'Detener' : 'Dictar'; };
+        const crear = () => crearDictado({
+          alTexto: (fin, parcial) => { texto.value = unirTexto(base, [fin, parcial].filter(Boolean).join(' ')); },
+          alEstado: (on, pidio) => {
+            pintarBoton(on);
+            if (on) { huboError = false; ayuda.textContent = 'Escuchando… habla con normalidad.'; return; }
+            if (huboError) return;
+            const dicho = texto.value.slice(base.length).trim();
+            if (dicho) {
+              texto.value = unirTexto(base, limpiarDictado(dicho));
+              const sel = $('#an-est', root);
+              if (!sel.value) { const id = detectarEstudiante(dicho, estudiantes); if (id) sel.value = id; }
+              { const tipo = detectarTipo(dicho); const r = form.querySelector(`input[name=tipo][value=${tipo}]`); if (r && tipo !== 'nota') r.checked = true; }
+              ayuda.textContent = 'Revisa el texto, el estudiante y el tipo antes de guardar.';
+            } else ayuda.textContent = 'No se escuchó nada. Toca Dictar e inténtalo otra vez.';
+          },
+          alError: c => { huboError = true; ayuda.textContent = mensajeVoz(c); },
+        });
+        bVoz.addEventListener('click', () => {
+          if (!dictado) dictado = crear();
+          if (!dictado) return;
+          if (bVoz.getAttribute('aria-pressed') === 'true') { dictado.parar(); return; }
+          base = texto.value.trimEnd();
+          dictado.iniciar();
+        });
+        window.addEventListener('hashchange', () => { if (dictado) dictado.parar(); }, { once: true });
+      }
       $('#an-est', root).addEventListener('change', ev => { location.hash = ev.target.value ? `#/anotaciones?e=${ev.target.value}` : '#/anotaciones'; });
       $$('.an-borrar', root).forEach(b => b.addEventListener('click', async () => {
         const deshacer = await eliminarConDeshacer('anotaciones', b.dataset.id);

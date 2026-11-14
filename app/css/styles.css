@@ -1177,3 +1177,11 @@ a.fila::after {
   .tabs a[aria-current='page'] svg { background: transparent; }
 }
 @media (prefers-reduced-motion: reduce) { .tabs-pildora { transition: none; } }
+
+/* Dictado por voz */
+#an-voz { display: inline-flex; align-items: center; gap: 0.4rem; }
+#an-voz.grabando { background: var(--rojo-suave, #fde8e8); color: var(--rojo, #b3261e); border-color: var(--rojo, #b3261e); }
+#an-voz.grabando .ico { animation: voz-pulso 1.1s ease-in-out infinite; }
+@keyframes voz-pulso { 50% { transform: scale(1.18); opacity: 0.6; } }
+@media (prefers-reduced-motion: reduce) { #an-voz.grabando .ico { animation: none; } }
+.acciones-voz { margin-top: 0.6rem; }
