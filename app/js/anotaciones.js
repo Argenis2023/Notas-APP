@@ -1,5 +1,5 @@
 // Anotaciones rápidas por estudiante: funciones puras (sin pantalla) para filtrar y ordenar.
-export const TIPOS = [['nota', 'Nota'], ['positivo', 'Logro o aspecto positivo'], ['mejorar', 'Por mejorar']];
+export const TIPOS = [['nota', 'Nota'], ['positivo', 'Logro o aspecto positivo'], ['mejorar', 'Por mejorar'], ['incidencia', 'Incidencia']];
 export const tipoValido = t => (TIPOS.some(x => x[0] === t) ? t : 'nota');
 export const nombreTipo = t => (TIPOS.find(x => x[0] === t) || TIPOS[0])[1];
 

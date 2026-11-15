@@ -1185,3 +1185,10 @@ a.fila::after {
 @keyframes voz-pulso { 50% { transform: scale(1.18); opacity: 0.6; } }
 @media (prefers-reduced-motion: reduce) { #an-voz.grabando .ico { animation: none; } }
 .acciones-voz { margin-top: 0.6rem; }
+
+.an-incidencia { border-left-color: var(--rojo); }
+.dictado { margin: 0 0 1rem; padding: 0.9rem; background: var(--hoja); border: 1px solid var(--linea); border-radius: var(--r-grande); box-shadow: var(--elev-1); }
+.dictado > .acciones { margin: 0; }
+.dictado-vivo { margin: 0.5rem 0 0; padding: 0.7rem 0.8rem; background: var(--fondo-suave); border-radius: var(--r-medio); font-size: 0.95rem; min-height: 2.6rem; }
+.propuesta { margin-top: 0.9rem; padding-top: 0.9rem; border-top: 1px solid var(--linea); }
+#an-voz { width: 100%; justify-content: center; }

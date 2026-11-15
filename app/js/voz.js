@@ -88,3 +88,72 @@ export function crearDictado({ alTexto, alEstado, alError, idioma = 'es-VE' }, w
     parar() { pidioParar = true; try { rec.stop(); } catch { /* ya estaba detenido */ } },
   };
 }
+
+// ---------- ordenar el dictado con la IA ----------
+// A la IA nunca van nombres: cada estudiante nombrado pasa a ser su código ("Estudiante 3").
+const escapar = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const palabrasDe = nombre => sinTildes(nombre).split(/\s+/).filter(p => p.length >= 3);
+const rxPalabra = p => new RegExp(`(?<![a-z0-9ñ])${escapar(p)}(?![a-z0-9ñ])`, 'g');
+
+export function anonimizarDictado(texto, estudiantes) {
+  const lista = (estudiantes || []).map((e, i) => ({ e, codigo: e.codigo_ia || `Estudiante ${i + 1}`, palabras: palabrasDe(e.nombre_completo) }));
+  const mapa = {};
+  // Se trabaja sobre el texto sin tildes ni mayúsculas, pero se reemplaza posición por posición en el original.
+  let original = String(texto ?? '');
+  const base = () => sinTildes(original);
+  const reemplazar = (rx, destino) => {
+    let m, out = '', ultimo = 0; const b = base();
+    rx.lastIndex = 0;
+    while ((m = rx.exec(b))) { out += original.slice(ultimo, m.index) + destino; ultimo = m.index + m[0].length; if (m[0].length === 0) rx.lastIndex++; }
+    const hubo = ultimo > 0; original = out + original.slice(ultimo); return hubo;
+  };
+  // 1) nombres completos, 2) palabras que identifican a un solo estudiante, 3) palabras compartidas
+  for (const x of lista) if (x.palabras.length > 1) { if (reemplazar(new RegExp(x.palabras.map(escapar).join('\\s+'), 'g'), x.codigo)) mapa[x.codigo] = x.e; }
+  const cuenta = {};
+  for (const x of lista) for (const p of new Set(x.palabras)) cuenta[p] = (cuenta[p] || 0) + 1;
+  for (const x of lista) for (const p of x.palabras) {
+    if (cuenta[p] === 1 && reemplazar(rxPalabra(p), x.codigo)) mapa[x.codigo] = x.e;
+  }
+  for (const p of Object.keys(cuenta)) if (cuenta[p] > 1) reemplazar(rxPalabra(p), 'otro estudiante');
+  original = original.replace(/[\w.+-]+@[\w-]+\.[\w.-]+/g, '[correo]').replace(/\+?\d[\d\s.-]{5,}\d/g, '[número]');
+  return { texto: original.replace(/\s+/g, ' ').trim(), mapa };
+}
+
+const DIAS = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+export function datosDictado(texto, estudiantes, hoy = new Date()) {
+  const { texto: anon, mapa } = anonimizarDictado(texto, estudiantes);
+  const fecha = `Hoy es ${DIAS[hoy.getDay()]} ${hoy.getDate()} de ${MESES[hoy.getMonth()]} de ${hoy.getFullYear()}.`;
+  return { datos: `${fecha}\nDictado de la docente: ${anon}`, mapa };
+}
+
+const pad2 = n => String(n).padStart(2, '0');
+export const sumarDias = (hoy, n) => { const d = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate() + n); return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`; };
+
+// Convierte la respuesta de la IA en una propuesta. Si no se entiende, devuelve null.
+export function interpretarDictado(respuesta, mapa, hoy = new Date()) {
+  const campos = {};
+  for (const linea of String(respuesta ?? '').split(/\r?\n/)) {
+    const m = linea.match(/^\s*(Tipo|Subtipo|Estudiante|Titulo|Título|Texto|Dias|Días|Hora)\s*:\s*(.*)$/i);
+    if (m) campos[sinTildes(m[1])] = m[2].trim();
+  }
+  if (!campos.texto) return null;
+  const tipo = ['anotacion', 'incidencia', 'reunion'].includes(sinTildes(campos.tipo || '')) ? sinTildes(campos.tipo) : 'anotacion';
+  const subtipo = ['nota', 'positivo', 'mejorar'].includes(sinTildes(campos.subtipo || '')) ? sinTildes(campos.subtipo) : 'nota';
+  const restaurar = s => String(s || '').replace(/Estudiante\s+(\d+)/gi, (m, n) => {
+    const e = mapa[`Estudiante ${n}`] || Object.values(mapa).find(x => x.codigo_ia === `Estudiante ${n}`);
+    return e ? String(e.nombre_completo).trim().split(/\s+/)[0] : 'un estudiante';
+  });
+  const codigo = (campos.estudiante || '').match(/Estudiante\s+(\d+)/i);
+  const est = codigo ? (mapa[`Estudiante ${codigo[1]}`] || null) : null;
+  const dias = Number.parseInt(campos.dias, 10);
+  const hora = /^\d{1,2}:\d{2}$/.test(campos.hora || '') ? campos.hora.padStart(5, '0') : '';
+  return {
+    tipo, subtipo,
+    estudianteId: est ? est.id : null,
+    titulo: restaurar(campos.titulo),
+    texto: restaurar(campos.texto),
+    fecha: sumarDias(hoy, Number.isFinite(dias) && dias >= 0 && dias <= 365 ? dias : 0),
+    hora,
+  };
+}
