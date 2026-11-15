@@ -21,6 +21,14 @@ const GRUPOS = [
   ] },
 ];
 
+// Una fila de lista con ícono, título, apoyo y flecha: se usa en Más y en Reportes.
+export const filaMas = (ic, nombre, sub, href) => html`
+  <li><a class="mas-fila" href="${href}">
+    <span class="mas-ico" aria-hidden="true">${icon(ic, 20)}</span>
+    <span class="mas-txt"><span class="mas-nombre">${nombre}</span>${sub ? html`<span class="mas-sub">${sub}</span>` : ''}</span>
+    <span class="mas-flecha" aria-hidden="true">${icon('chevron', 18)}</span>
+  </a></li>`;
+
 export async function mas() {
   return {
     title: 'Más',
@@ -28,12 +36,7 @@ export async function mas() {
       ${GRUPOS.map(g => html`
         <section class="mas-grupo" aria-labelledby="mas-${g.id}">
           <h2 id="mas-${g.id}" class="mas-t">${g.titulo}</h2>
-          <ul class="mas-lista">${g.filas.map(([ic, nombre, sub, href]) => html`
-            <li><a class="mas-fila" href="${href}">
-              <span class="mas-ico" aria-hidden="true">${icon(ic, 20)}</span>
-              <span class="mas-txt"><span class="mas-nombre">${nombre}</span><span class="mas-sub">${sub}</span></span>
-              <span class="mas-flecha" aria-hidden="true">${icon('chevron', 18)}</span>
-            </a></li>`)}</ul>
+          <ul class="mas-lista">${g.filas.map(([ic, nombre, sub, href]) => filaMas(ic, nombre, sub, href))}</ul>
         </section>`)}`,
   };
 }

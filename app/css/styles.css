@@ -1350,3 +1350,24 @@ h3 { font-size: 1rem; font-weight: 650; }
   .rapido { right: 1.5rem; }
 }
 .aviso, .aviso-atencion, .aviso-felicitar, .aviso-recordatorio { border-left-color: var(--linea); }
+
+/* ---------- ficha del estudiante ---------- */
+.seg button {
+  flex: 1; min-height: 2.5rem; display: flex; align-items: center; justify-content: center; padding: 0.3rem 0.4rem;
+  border: 0; border-radius: 9px; background: none; color: var(--tinta-suave); font: inherit; font-size: 0.92rem; font-weight: 500; cursor: pointer;
+}
+.seg button[aria-selected='true'] { background: var(--hoja); color: var(--tinta); font-weight: 650; box-shadow: 0 1px 2px rgba(20, 24, 31, 0.14); }
+.ficha-cab { display: flex; align-items: center; gap: 0.8rem; margin: 0 0 0.9rem; }
+.avatar { flex: none; width: 3.2rem; height: 3.2rem; display: grid; place-items: center; border-radius: 50%; background: var(--acento-suave); color: var(--acento); font-weight: 700; font-size: 1.05rem; }
+.ficha-id { flex: 1; min-width: 0; }
+.ficha-nombre { margin: 0; max-width: none; font-size: 1.2rem; font-weight: 700; letter-spacing: -0.01em; line-height: 1.2; overflow-wrap: anywhere; }
+.ficha-sub { margin: 0.1rem 0 0; max-width: none; font-size: 0.88rem; color: var(--tinta-suave); }
+.etiqueta { flex: none; padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.78rem; font-weight: 650; }
+.etiqueta.riesgo { background: var(--rojo-suave); color: var(--rojo); }
+.ficha-acc { margin: 0 0 1rem; }
+.ficha-acc .btn { flex: 1 1 9rem; }
+#p-resumen .hoja .fila { min-height: 3.4rem; }
+#p-resumen .mas-t { margin-top: 1.2rem; }
+#p-datos > form > .mas-t:first-child { margin-top: 0.2rem; }
+form .mas-t { margin-top: 1.2rem; }
+@media screen and (min-width: 64rem) { main:has(.ficha-cab) { max-width: 46rem; } }

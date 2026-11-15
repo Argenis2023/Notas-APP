@@ -9,6 +9,7 @@ import {
 } from './analisis.js';
 import { html, raw, icon, toast, toastDeshacer, fechaLarga, fechaCorta } from './ui.js';
 import { anotacionesDe, tipoValido, nombreTipo } from './anotaciones.js';
+import { filaMas } from './views-mas.js';
 import { evolucionLapsos, cambiosDelCurso } from './graficos.js';
 import { $, $$, campo, areaTexto, errorBox, mostrarError } from './form.js';
 import { promedio } from './calc.js';
@@ -192,18 +193,17 @@ export async function reportes(ctx, q) {
     mount(root) { envio.mount(root); },
     html: html`
       ${tabsLapso(s, lapso, base)}
-      <section class="bloque" aria-labelledby="com-t">
-        <h2 id="com-t">Seguimiento y familias</h2>
-        <div class="acciones">
-          <a class="btn secondary" href="#/anotaciones">${icon('nota', 20)} Anotaciones</a>
-          <a class="btn secondary" href="#/representantes">${icon('whatsapp', 20)} Representantes</a>
-        </div>
+      <section class="mas-grupo" aria-labelledby="com-t">
+        <h2 id="com-t" class="mas-t">Informes y seguimiento</h2>
+        <ul class="mas-lista">
+          ${hayDatos ? filaMas('reportes', 'Informe del curso', 'Notas, asistencia y puntos débiles del lapso', `#/reportes/curso?l=${lapso.numero}`) : ''}
+          ${filaMas('libro', 'Mis recomendaciones', 'Qué sugerir cuando un tema sale débil', '#/reportes/banco')}
+          ${filaMas('nota', 'Anotaciones', 'Observaciones, incidencias y reuniones', '#/anotaciones')}
+          ${filaMas('whatsapp', 'Representantes', 'Escribirles por WhatsApp', '#/representantes')}
+        </ul>
       </section>
       ${hayDatos ? html`
-        <div class="acciones">
-          <a class="btn primary" href="#/reportes/curso?l=${lapso.numero}">Informe del curso</a>
-          <a class="btn secondary" href="#/reportes/banco">Mis recomendaciones</a>
-        </div>
+        <h2 class="mas-t">Informe de cada estudiante</h2>
         <ol class="hoja">${filas.map(({ e, prom, debiles, bajas }) => html`
           <li><a class="fila" href="#/reportes/e/${e.id}?l=${lapso.numero}">
             <span class="margen ${claseNota(prom, s)}">${textoNota(prom)}</span>
@@ -218,8 +218,7 @@ export async function reportes(ctx, q) {
             <p><strong>Todavía no hay notas en el lapso ${lapso?.numero ?? ''}.</strong></p>
             <p>Cuando completes la lista de cotejo de alguna evaluación, aquí aparecerán los informes de cada estudiante y del curso.</p>
             <p><a class="btn primary" href="#/evaluar">Ir a Evaluar</a></p>
-          </div>
-          <div class="acciones"><a class="btn secondary" href="#/reportes/banco">Mis recomendaciones</a></div>`}
+          </div>`}
       ${envio.html}`,
   };
 }

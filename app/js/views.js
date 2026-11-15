@@ -6,6 +6,8 @@ import {
 import { html, raw, icon, toast, fechaCorta, haceCuanto, fechaHora, infoEstado } from './ui.js';
 import { VERSION } from './version.js';
 
+import { cargarSnapshot, promedioGeneral, notaAsignatura, resumenAsistencia, enRiesgo } from './analisis.js';
+import { anotacionesDe, nombreTipo } from './anotaciones.js';
 import { bloqueCalculo, bloqueIA } from './views-eval.js';
 import { panelInicio } from './views-inicio.js';
 import { montarAvisos } from './views-avisos.js';
@@ -175,25 +177,34 @@ export async function estudianteForm(ctx, id) {
   if (!nuevo && (!e || e.deleted)) return { title: 'Estudiante', html: html`<div class="vacio"><p>No encontré a este estudiante.</p><a class="btn primary" href="#/estudiantes">Volver a la lista</a></div>` };
   const siguiente = Math.max(0, ...todos.map(x => x.numero_lista || 0)) + 1;
 
-  return {
-    title: nuevo ? 'Nuevo estudiante' : 'Estudiante',
-    html: html`
-      <p><a class="volver" href="#/estudiantes">${icon('atras', 18)} Estudiantes</a></p>
-      ${e ? html`<div class="acciones">
-        <a class="btn secondary chico" href="#/asistencia/calendario?e=${e.id}">Su asistencia</a>
-        <a class="btn secondary chico" href="#/representantes?e=${e.id}">Escribir al representante</a>
-        <a class="btn secondary chico" href="#/anotaciones?e=${e.id}">Sus anotaciones</a>
-      </div>` : ''}
+  // Resumen del estudiante (solo al editar): promedio, asistencia y anotaciones del lapso actual.
+  let res = null;
+  if (e) {
+    const sn = await cargarSnapshot(seccion);
+    const lapso = lapsoActual(sn.lapsos);
+    const prom = lapso ? promedioGeneral(sn, lapso.id, e.id) : null;
+    const asis = lapso ? resumenAsistencia(sn, lapso, e.id) : null;
+    res = {
+      lapso, prom, asis,
+      minimo: sn.cfg.minimo_aprobatorio ?? 10,
+      riesgo: !!lapso && enRiesgo(sn, lapso.id).some(r => r.estudiante.id === e.id),
+      anotaciones: anotacionesDe(sn, e.id, null),
+      asignaturas: lapso ? sn.asignaturas.map(a => ({ nombre: a.nombre, nota: notaAsignatura(sn, a.id, lapso.id, e.id) })).filter(x => x.nota !== null && x.nota !== undefined) : [],
+    };
+  }
+  const iniciales = n => String(n || '').trim().split(/\s+/).slice(0, 2).map(x => x[0] || '').join('').toUpperCase();
+
+  const formulario = html`
       <form id="f-est" class="stack" novalidate>
-        <h2 class="grupo-t">Datos del estudiante</h2>
+        <h2 class="mas-t">Datos del estudiante</h2>
         ${campo({ id: 'nombre_completo', label: 'Nombre completo', value: e?.nombre_completo, required: true, placeholder: 'Por ejemplo: María Pérez', extra: 'autocomplete="off"' })}
         ${campo({ id: 'numero_lista', label: 'N.º de lista', value: e ? e.numero_lista : siguiente, type: 'number', placeholder: 'Por ejemplo: 7', extra: 'inputmode="numeric" min="1" step="1"' })}
         ${campo({ id: 'cedula', label: 'Cédula o cédula escolar', value: e?.cedula, placeholder: 'Por ejemplo: V-31234567 o cédula escolar', extra: 'autocomplete="off"' })}
         ${campo({ id: 'fecha_nacimiento', label: 'Fecha de nacimiento', value: e?.fecha_nacimiento, type: 'date' })}
-        <h2 class="grupo-t">Representante</h2>
+        <h2 class="mas-t">Representante</h2>
         ${campo({ id: 'representante_nombre', label: 'Nombre del representante', value: e?.representante_nombre, placeholder: 'Por ejemplo: Carmen Gil', extra: 'autocomplete="off"' })}
         ${campo({ id: 'representante_contacto', label: 'Contacto del representante', value: e?.representante_contacto, type: 'tel', placeholder: 'Teléfono, por ejemplo: 0412 123 4567', extra: 'autocomplete="off"' })}
-        <h2 class="grupo-t">Para tus informes</h2>
+        <h2 class="mas-t">Para tus informes</h2>
         ${areaTexto({ id: 'necesidades_educativas', label: 'Necesidades educativas', value: e?.necesidades_educativas, placeholder: 'Opcional. Por ejemplo: necesita sentarse cerca del pizarrón; apoyo en lectura.' })}
         ${areaTexto({ id: 'observaciones_conducta', label: 'Observaciones de conducta', value: e?.observaciones_conducta, placeholder: 'Opcional. Por ejemplo: colabora con sus compañeros; conversa durante las explicaciones.' })}
         ${e ? html`<p class="hint codigo">Código para la IA: <strong>${e.codigo_ia}</strong>. Cuando se use IA, verá este código y nunca el nombre.</p>` : ''}
@@ -213,8 +224,60 @@ export async function estudianteForm(ctx, id) {
               <button class="btn secondary" type="button" id="b-no">No, conservar</button>
             </div>
           </div>
-        </section>`}`,
+        </section>`}`;
+
+  const cabecera = !e ? '' : html`
+      <div class="ficha-cab">
+        <span class="avatar" aria-hidden="true">${iniciales(e.nombre_completo)}</span>
+        <div class="ficha-id">
+          <p class="ficha-nombre">${e.nombre_completo}</p>
+          <p class="ficha-sub">${[e.numero_lista ? `N.º ${e.numero_lista} de lista` : '', e.cedula].filter(Boolean).join(' · ') || 'Sin número de lista'}</p>
+        </div>
+        ${res.riesgo ? html`<span class="etiqueta riesgo">Necesita apoyo</span>` : ''}
+      </div>
+      <dl class="resumen ficha-stats">
+        <div><dt>Promedio${res.lapso ? ` L${res.lapso.numero}` : ''}</dt><dd class="${res.prom === null ? '' : res.prom >= res.minimo ? 'bien' : 'mal'}">${res.prom === null ? '–' : res.prom}</dd></div>
+        <div><dt>Asistencia</dt><dd class="${res.asis && res.asis.pct !== null && res.asis.pct < 80 ? 'mal' : ''}">${res.asis && res.asis.pct !== null ? `${res.asis.pct}%` : '–'}</dd></div>
+        <div><dt>Anotaciones</dt><dd>${res.anotaciones.length}</dd></div>
+      </dl>
+      <div class="acciones ficha-acc">
+        <a class="btn secondary chico" href="#/reportes/e/${e.id}">Ver su informe</a>
+        <a class="btn secondary chico" href="#/asistencia/calendario?e=${e.id}">Su asistencia</a>
+        <a class="btn secondary chico" href="#/representantes?e=${e.id}">Escribir al representante</a>
+        <a class="btn secondary chico" href="#/anotaciones?e=${e.id}">Sus anotaciones</a>
+      </div>
+      <div class="seg" role="tablist" aria-label="Qué ver del estudiante">
+        <button type="button" role="tab" id="t-datos" aria-controls="p-datos" aria-selected="true">Datos</button>
+        <button type="button" role="tab" id="t-resumen" aria-controls="p-resumen" aria-selected="false" tabindex="-1">Resumen</button>
+      </div>`;
+
+  const resumen = !e ? '' : html`
+      <div id="p-resumen" role="tabpanel" aria-labelledby="t-resumen" hidden>
+        <h2 class="mas-t">Nota por asignatura${res.lapso ? `, lapso ${res.lapso.numero}` : ''}</h2>
+        ${res.asignaturas.length ? html`<ol class="hoja">${res.asignaturas.map(a => html`
+          <li class="fila"><span class="margen ${a.nota >= res.minimo ? 'nota-ok' : 'nota-baja'}">${a.nota}</span><span class="fila-texto"><span class="fila-nombre">${a.nombre}</span><span class="fila-sub">${a.nota >= res.minimo ? 'Aprobada' : 'Por debajo del mínimo'}</span></span></li>`)}</ol>`
+          : html`<p class="hint">Todavía no tiene notas en este lapso.</p>`}
+        <h2 class="mas-t">Asistencia</h2>
+        <p>${res.asis && res.asis.marcados ? `Asistió ${res.asis.presentes} de ${res.asis.marcados} ${res.asis.marcados === 1 ? 'día' : 'días'} con lista${res.asis.faltas ? `, faltó ${res.asis.faltas}` : ''}${res.asis.justificadas ? `, ${res.asis.justificadas} justificada${res.asis.justificadas === 1 ? '' : 's'}` : ''}.` : 'Todavía no tiene asistencia marcada en este lapso.'}</p>
+        <h2 class="mas-t">Últimas anotaciones</h2>
+        ${res.anotaciones.length ? html`<ul class="an-lista">${res.anotaciones.slice(0, 3).map(a => html`<li class="an-item an-${a.tipo || 'nota'}"><p class="an-cab"><span class="hint">${fechaCorta(a.fecha)} · ${nombreTipo(a.tipo)}</span></p><p class="an-texto">${a.texto}</p></li>`)}</ul>` : html`<p class="hint">Todavía no tiene anotaciones.</p>`}
+      </div>`;
+
+  return {
+    title: nuevo ? 'Nuevo estudiante' : e.nombre_completo,
+    html: html`
+      <p><a class="volver" href="#/estudiantes">${icon('atras', 18)} Estudiantes</a></p>
+      ${cabecera}
+      <div id="p-datos" ${e ? raw('role="tabpanel" aria-labelledby="t-datos"') : ''}>${formulario}</div>
+      ${resumen}`,
     mount(root) {
+      const pestañas = $$('.seg [role=tab]', root);
+      const ver = id => pestañas.forEach(t => {
+        const on = t.id === id;
+        t.setAttribute('aria-selected', on ? 'true' : 'false'); t.tabIndex = on ? 0 : -1;
+        $('#' + t.getAttribute('aria-controls'), root).hidden = !on;
+      });
+      pestañas.forEach(t => t.addEventListener('click', () => ver(t.id)));
       const form = $('#f-est', root);
       form.addEventListener('submit', async ev => {
         ev.preventDefault();
@@ -366,7 +429,7 @@ export async function ajustes(ctx, query = '') {
       <h2 id="t-inst">Mi institución</h2>
       <p class="hint">Estos datos aparecen en la parte de arriba de la app y en el encabezado de tus informes. Puedes cambiarlos cuando quieras.</p>
       <form id="f-inst" class="stack" novalidate>
-        <p class="hint">Así se ve la barra de arriba de la app:</p>
+        <p class="hint">Así se verá tu institución en el encabezado de los informes (el logo y el nombre también salen arriba en la app):</p>
         <div id="inst-prev" class="inst-prev" aria-label="Vista previa de la cabecera"></div>
         ${campo({ id: 'inst_nombre', label: 'Nombre de la institución', value: inst.nombre, extra: 'autocomplete="off" placeholder="Por ejemplo: U.E.E. Nombre del colegio"' })}
         ${campo({ id: 'inst_subtitulo', label: 'Ubicación o lema', value: inst.subtitulo, extra: 'autocomplete="off" placeholder="Por ejemplo: El Bambú, estado Miranda"' })}
