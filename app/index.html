@@ -6,8 +6,8 @@
 <title>Cuaderno docente</title>
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://*.supabase.co wss://*.supabase.co; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="description" content="Cuaderno de evaluación para docentes: estudiantes, listas de cotejo y reportes.">
-<meta name="theme-color" content="#0B4F44" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0F2B26" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F4F5F7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0E1514" media="(prefers-color-scheme: dark)">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
@@ -23,22 +23,34 @@
   <header class="top">
     <img id="top-logo" class="top-logo" alt="" hidden>
     <div class="top-texto">
-      <h1 id="titulo">CUADERNO DOCENTE</h1>
-      <p id="top-inst" class="top-inst" hidden></p>
+      <h1 id="titulo">Hoy</h1>
+      <div class="top-sub">
+        <p id="top-inst" class="top-inst" hidden></p>
+        <button id="chip" class="chip local" type="button"><span class="punto" aria-hidden="true"></span><span id="chip-texto">Solo en este celular</span></button>
+      </div>
     </div>
-    <a id="campana" class="campana" href="#/avisos" hidden aria-label="Avisos"><svg class="ico" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg><span id="campana-n" class="campana-n"></span></a>
-    <button id="chip" class="chip local" type="button"><span class="punto" aria-hidden="true"></span><span id="chip-texto">Solo en este celular</span></button>
+    <div class="top-acciones" id="top-acciones">
+      <a id="campana" class="campana top-btn" href="#/avisos" hidden aria-label="Avisos"><svg class="ico" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg><span id="campana-n" class="campana-n"></span></a>
+      <button id="rapido" class="top-btn top-mas" type="button" aria-label="Crear o anotar algo nuevo" aria-haspopup="true" aria-expanded="false" aria-controls="rapido-menu"><svg class="ico" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 5v14M5 12h14"/></svg></button>
+    </div>
+    <div id="rapido-menu" class="rapido" hidden>
+      <p class="rapido-t">Nuevo</p>
+      <a class="rapido-i" id="rapido-lista" href="#/asistencia">Asistencia de hoy</a>
+      <a class="rapido-i" href="#/anotaciones">Anotar algo de un estudiante</a>
+      <a class="rapido-i" href="#/evaluar">Evaluar</a>
+      <a class="rapido-i" href="#/agenda">Agenda</a>
+      <a class="rapido-i" href="#/estudiantes/nuevo">Agregar un estudiante</a>
+    </div>
   </header>
   <div id="banner" class="banner" hidden></div>
   <main id="view" tabindex="-1"></main>
   <nav class="tabs" aria-label="Secciones del cuaderno">
     <span class="tabs-pildora" aria-hidden="true"></span>
-    <a href="#/" data-ruta="inicio"><svg class="ico" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9.5h13V10"/><path d="M10 19.5v-5h4v5"/></svg><span>Inicio</span></a>
-    <a href="#/estudiantes" data-ruta="estudiantes"><svg class="ico" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 19.5c.4-3.4 3-5.3 6-5.3s5.6 1.9 6 5.3"/><path d="M16 5.2a3.2 3.2 0 0 1 0 5.6"/><path d="M18 14.6c1.8.7 2.9 2.3 3.1 4.4"/></svg><span>Estudiantes</span></a>
-    <a href="#/asistencia" data-ruta="asistencia"><svg class="ico" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5.5" width="16" height="14.5" rx="2"/><path d="M4 10h16M8.5 3.5v4M15.5 3.5v4"/><path d="m9.5 15 1.8 1.8 3.4-3.6"/></svg><span>Asistencia</span></a>
+    <a href="#/" data-ruta="inicio"><svg class="ico" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9.5h13V10"/><path d="M10 19.5v-5h4v5"/></svg><span>Hoy</span></a>
+    <a href="#/estudiantes" data-ruta="curso"><svg class="ico" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 19.5c.4-3.4 3-5.3 6-5.3s5.6 1.9 6 5.3"/><path d="M16 5.2a3.2 3.2 0 0 1 0 5.6"/><path d="M18 14.6c1.8.7 2.9 2.3 3.1 4.4"/></svg><span>Curso</span></a>
     <a href="#/evaluar" data-ruta="evaluar"><svg class="ico" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3.5h9l3 3v14H6z"/><path d="m9 13 2 2 4-4.5"/><path d="M9 8h4"/></svg><span>Evaluar</span></a>
     <a href="#/reportes" data-ruta="reportes"><svg class="ico" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h16"/><path d="M7 20v-7"/><path d="M12 20V5"/><path d="M17 20v-10"/></svg><span>Reportes</span></a>
-    <a href="#/ajustes" data-ruta="ajustes"><svg class="ico" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h9"/><path d="M17 7h3"/><circle cx="15" cy="7" r="2"/><path d="M4 17h3"/><path d="M11 17h9"/><circle cx="9" cy="17" r="2"/></svg><span>Ajustes</span></a>
+    <a href="#/mas" data-ruta="mas"><svg class="ico" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.5 12h.01M12 12h.01M18.5 12h.01" stroke-width="3.2"/></svg><span>Más</span></a>
   </nav>
 </div>
 

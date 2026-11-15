@@ -22,9 +22,9 @@ export function montarChat() {
   fab.id = 'chat-fab'; fab.type = 'button'; fab.className = 'chat-fab';
   fab.setAttribute('aria-label', 'Abrir consultas sobre un estudiante');
   fab.setAttribute('aria-expanded', 'false');
-  // Al abrir la app, una manito "toca" el botón y un globo invita a preguntar. Se repite hasta que se abran las consultas.
-  fab.innerHTML = html`${icon('chat', 26)}<span class="chat-fab-txt">Consultas</span><span class="chat-punto" hidden></span><span class="chat-globo" aria-hidden="true">Pregúntame por un estudiante</span><span class="chat-mano" aria-hidden="true">${icon('mano', 30)}</span>`.toString();
-  fab.classList.add('llama');
+  fab.classList.add('top-btn');
+  fab.title = 'Consultas';
+  fab.innerHTML = html`${icon('chat', 24)}<span class="chat-punto" hidden></span>`.toString();
   const panel = document.createElement('section');
   panel.id = 'chat'; panel.className = 'chat'; panel.hidden = true;
   panel.setAttribute('role', 'dialog'); panel.setAttribute('aria-label', 'Consultas sobre un estudiante');
@@ -37,14 +37,10 @@ export function montarChat() {
     <div class="chat-est"><label for="chat-est">Estudiante</label><select id="chat-est"></select></div>
     <div class="chat-msgs" id="chat-msgs" role="log" aria-live="polite"></div>
     <div class="chat-preguntas" id="chat-preguntas" role="group" aria-label="Preguntas sobre el estudiante"></div>`.toString();
-  shell.append(fab, panel);
-
-  // Al bajar por la pantalla el botón se encoge a solo el ícono para no tapar el contenido;
-  // al volver arriba recupera la palabra "Consultas".
-  const ajustarTamano = () => fab.classList.toggle('mini', (window.scrollY || document.documentElement.scrollTop || 0) > 48);
-  window.addEventListener('scroll', ajustarTamano, { passive: true });
-  window.addEventListener('hashchange', () => setTimeout(ajustarTamano, 60));
-  ajustarTamano();
+  // El botón vive en la barra superior, junto a los avisos; el panel se abre sobre la pantalla.
+  const acciones = $('#top-acciones');
+  if (acciones) acciones.prepend(fab); else shell.append(fab);
+  shell.append(panel);
 
   const msgs = $('#chat-msgs', panel), sel = $('#chat-est', panel), pregs = $('#chat-preguntas', panel);
   let estudiantes = [];
@@ -129,10 +125,6 @@ export function montarChat() {
   }
 
   async function abrir() {
-    fab.classList.remove('llama');
-    const mano = fab.querySelector('.chat-mano'), globo = fab.querySelector('.chat-globo');
-    if (mano) mano.remove();
-    if (globo) globo.remove();
     const preferido = estudianteDeLaRuta();
     await cargarEstudiantes(preferido);
     await actualizarAlerta();

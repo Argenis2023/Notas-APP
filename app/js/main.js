@@ -1,7 +1,7 @@
 // Arranque de la app: base de datos, sesión, sincronización, rutas y actualizaciones.
 import { db, bus, getSeccion, borrarTodoLocal, countPending, TABLE_NAMES, normalizarNombresGuardados } from './data.js';
 import { createSync } from './sync.js';
-import { html, toast, infoEstado, mensajeError } from './ui.js';
+import { html, raw, toast, infoEstado, mensajeError } from './ui.js';
 import * as V from './views.js';
 import * as E from './views-eval.js';
 import * as R from './views-reportes.js';
@@ -19,6 +19,7 @@ import { leerInstitucion, aplicarInstitucion } from './institucion.js';
 import { iniciarBloqueo } from './bloqueo.js';
 import { montarChat } from './views-chat.js';
 import { cargarSnapshot } from './analisis.js';
+import { mas } from './views-mas.js';
 
 const $ = (s, r = document) => r.querySelector(s);
 
@@ -54,23 +55,24 @@ const RUTAS = [
   [/^#\/reportes\/curso(?:\?(.*))?$/, m => R.reporteCurso(ctx, m[1]), 'reportes'],
   [/^#\/reportes\/banco$/, () => R.banco(ctx), 'reportes'],
   [/^#\/reportes\/e\/([^/?]+)(?:\?(.*))?$/, m => R.reporteEstudiante(ctx, m[1], m[2]), 'reportes'],
-  [/^#\/estudiantes\/importar$/, () => V.importar(ctx), 'estudiantes'],
-  [/^#\/estudiantes\/nuevo$/, () => V.estudianteForm(ctx, 'nuevo'), 'estudiantes'],
-  [/^#\/estudiantes\/([^/]+)$/, m => V.estudianteForm(ctx, m[1]), 'estudiantes'],
-  [/^#\/estudiantes$/, () => V.estudiantes(ctx), 'estudiantes'],
-  [/^#\/asistencia\/calendario(?:\?(.*))?$/, m => A.asistenciaCalendario(ctx, m[1]), 'asistencia'],
-  [/^#\/asistencia\/resumen(?:\?(.*))?$/, m => A.asistenciaResumen(ctx, m[1]), 'asistencia'],
-  [/^#\/asistencia(?:\?(.*))?$/, m => A.asistenciaDia(ctx, m[1]), 'asistencia'],
-  [/^#\/aula\/diccionario$/, () => AU.diccionario(ctx), 'inicio'],
-  [/^#\/aula\/pausas(?:\?(.*))?$/, m => AU.pausas(ctx, m[1]), 'inicio'],
-  [/^#\/planificacion$/, () => planificaciones(ctx), 'inicio'],
-  [/^#\/planificacion\/([^/?]+)$/, m => planificacionForm(ctx, m[1]), 'inicio'],
+  [/^#\/estudiantes\/importar$/, () => V.importar(ctx), 'curso'],
+  [/^#\/estudiantes\/nuevo$/, () => V.estudianteForm(ctx, 'nuevo'), 'curso'],
+  [/^#\/estudiantes\/([^/]+)$/, m => V.estudianteForm(ctx, m[1]), 'curso'],
+  [/^#\/estudiantes$/, () => V.estudiantes(ctx), 'curso'],
+  [/^#\/asistencia\/calendario(?:\?(.*))?$/, m => A.asistenciaCalendario(ctx, m[1]), 'curso'],
+  [/^#\/asistencia\/resumen(?:\?(.*))?$/, m => A.asistenciaResumen(ctx, m[1]), 'curso'],
+  [/^#\/asistencia(?:\?(.*))?$/, m => A.asistenciaDia(ctx, m[1]), 'curso'],
+  [/^#\/aula\/diccionario$/, () => AU.diccionario(ctx), 'mas'],
+  [/^#\/aula\/pausas(?:\?(.*))?$/, m => AU.pausas(ctx, m[1]), 'mas'],
+  [/^#\/planificacion$/, () => planificaciones(ctx), 'mas'],
+  [/^#\/planificacion\/([^/?]+)$/, m => planificacionForm(ctx, m[1]), 'mas'],
   [/^#\/agenda$/, () => agenda(ctx), 'inicio'],
-  [/^#\/representantes(?:\?(.*))?$/, m => representantes(ctx, m[1]), 'reportes'],
-  [/^#\/anotaciones(?:\?(.*))?$/, m => anotaciones(ctx, m[1]), 'reportes'],
-  [/^#\/aula\/sorteo(?:\?(.*))?$/, m => sorteo(ctx, m[1]), 'inicio'],
+  [/^#\/representantes(?:\?(.*))?$/, m => representantes(ctx, m[1]), 'curso'],
+  [/^#\/anotaciones(?:\?(.*))?$/, m => anotaciones(ctx, m[1]), 'curso'],
+  [/^#\/aula\/sorteo(?:\?(.*))?$/, m => sorteo(ctx, m[1]), 'mas'],
   [/^#\/avisos$/, () => AV.avisos(ctx), 'inicio'],
-  [/^#\/ajustes(?:\?(.*))?$/, m => V.ajustes(ctx, m[1]), 'ajustes'],
+  [/^#\/ajustes(?:\?(.*))?$/, m => V.ajustes(ctx, m[1]), 'mas'],
+  [/^#\/mas$/, () => mas(ctx), 'mas'],
 ];
 
 async function render({ suave = false } = {}) {
@@ -82,15 +84,55 @@ async function render({ suave = false } = {}) {
   if (token !== ficha) return;
   try { aplicarInstitucion(await leerInstitucion()); } catch { /* sin datos de la institución: se ve el tema base */ }
   actual = vista;
-  $('#titulo').textContent = vista.title === 'Cuaderno docente' ? 'Inicio' : vista.title;
+  $('#titulo').textContent = vista.title === 'Cuaderno docente' ? 'Hoy' : vista.title;
   document.title = vista.title === 'Cuaderno docente' ? 'Cuaderno docente' : `${vista.title} | Cuaderno docente`;
   const main = $('#view');
-  main.innerHTML = vista.html.toString();
+  const seg = selectorCurso(hash);
+  if (seg) { $('#titulo').textContent = 'Curso'; document.title = 'Curso | Cuaderno docente'; }
+  main.innerHTML = seg + vista.html.toString();
+  cerrarRapido();
   $$('.tabs a').forEach(a => { if (a.dataset.ruta !== ruta[2]) a.removeAttribute('aria-current'); else a.setAttribute('aria-current', 'page'); });
   moverPildora();
   if (!suave) { window.scrollTo(0, 0); main.focus({ preventScroll: true }); entrada(main); }
   if (vista.mount) vista.mount(main);
   pintarCampana();
+}
+
+// Dentro de "Curso": un selector para pasar de la lista de estudiantes a la asistencia.
+function selectorCurso(hash) {
+  const [ruta, q = ''] = hash.split('?');
+  const enLista = ruta === '#/estudiantes';
+  const enAsistencia = ruta === '#/asistencia' && !new URLSearchParams(q).get('f');
+  if (!enLista && !enAsistencia) return '';
+  return html`<nav class="seg" aria-label="Qué ver del curso">
+    <a href="#/estudiantes" ${enLista ? raw('aria-current="page"') : ''}>Estudiantes</a>
+    <a href="#/asistencia" ${enAsistencia ? raw('aria-current="page"') : ''}>Asistencia</a>
+  </nav>`.toString();
+}
+
+// Menú "+" de la barra superior: atajos para crear algo nuevo.
+function hoyIso() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+function cerrarRapido() {
+  const m = $('#rapido-menu'), b = $('#rapido');
+  if (!m || m.hidden) return;
+  m.hidden = true;
+  b.setAttribute('aria-expanded', 'false');
+}
+function iniciarRapido() {
+  const m = $('#rapido-menu'), b = $('#rapido');
+  b.addEventListener('click', () => {
+    if (!m.hidden) { cerrarRapido(); return; }
+    $('#rapido-lista').setAttribute('href', `#/asistencia?f=${hoyIso()}`);
+    m.hidden = false;
+    b.setAttribute('aria-expanded', 'true');
+    ($('.rapido-i', m)).focus();
+  });
+  m.addEventListener('click', ev => { if (ev.target.closest('.rapido-i')) cerrarRapido(); });
+  document.addEventListener('click', ev => { if (!m.hidden && !m.contains(ev.target) && !b.contains(ev.target)) cerrarRapido(); });
+  document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && !m.hidden) { cerrarRapido(); b.focus(); } });
 }
 
 // Píldora de la barra inferior: se desliza hasta la pestaña activa (solo en el celular).
@@ -364,6 +406,7 @@ async function boot() {
   try { await normalizarNombresGuardados(); } catch { /* si falla, los nombres quedan como estaban */ }
 
   $('#shell').hidden = false;
+  iniciarRapido();
   montarChat();
   $('#chip').addEventListener('click', () => {
     if (ctx.sesion && sync.enabled) sync.syncNow().then(r => {
@@ -377,7 +420,7 @@ async function boot() {
   // Dispositivo nuevo con sesión: se traen primero los datos de la nube, para no ofrecer crear un cuaderno que ya existe.
   let yaSincronizo = false;
   if (ctx.sesion && sync.enabled && !(await getSeccion()) && navigator.onLine !== false) {
-    $('#titulo').textContent = 'Inicio';
+    $('#titulo').textContent = 'Hoy';
     $('#view').innerHTML = html`<p class="vacio" role="status">Buscando tu cuaderno en la nube…</p>`.toString();
     await Promise.race([sync.syncNow(), new Promise(r => setTimeout(r, 12000))]);
     yaSincronizo = true;

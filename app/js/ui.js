@@ -78,6 +78,7 @@ const P = {
   chat: '<path d="M5 5h14a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H10l-4.5 3.5V16H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/><path d="M8.5 9.5h7M8.5 12.5h4"/>',
   cerrar: '<path d="M6 6l12 12M18 6 6 18"/>',
   microfono: '<rect x="9" y="3.5" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0"/><path d="M12 18v2.5"/>',
+  chevron: '<path d="m9.5 6 6 6-6 6"/>',
   libro: '<path d="M5 4.5h9a3 3 0 0 1 3 3V20H8a3 3 0 0 1-3-3z"/><path d="M9 9h5"/>',
 };
 export const icon = (name, size = 22) =>

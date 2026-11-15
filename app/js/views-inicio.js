@@ -91,14 +91,13 @@ export async function panelInicio(ctx, seccion, completo, q = '') {
         : html`<p class="lapso-linea"><a class="btn secondary chico" href="#/ajustes?c=colegio">Poner las fechas del lapso</a></p>`) : ''}
     </section>
 
-    <section aria-labelledby="aula-t">
-      <h2 id="aula-t">Para el aula</h2>
-      <div class="acciones">
-        <a class="btn secondary" href="#/aula/diccionario">${icon('diccionario', 20)} Diccionario</a>
-        <a class="btn secondary" href="#/aula/pausas">${icon('pausa', 20)} Pausa activa</a>
-        <a class="btn secondary" href="#/aula/sorteo">${icon('sorteo', 20)} Sorteo y grupos</a>
-      </div>
-    </section>
+    <div class="acc">
+      <a class="acc-grande" href="#/asistencia?f=${hoyIso}">${icon('calendario', 26)}
+        <strong>${asisHoy.n ? 'Lista de hoy' : 'Pasar lista'}</strong>
+        <small>${asisHoy.n ? `${asisHoy.n - asisHoy.faltaron} de ${nEst} asistieron` : plural(nEst, 'estudiante', 'estudiantes')}</small></a>
+      <a class="acc-cuad" href="#/anotaciones">${icon('nota', 22)}<strong>Anotar</strong></a>
+      <a class="acc-cuad" href="#/evaluar">${icon('evaluar', 22)}<strong>Evaluar</strong></a>
+    </div>
 
     <div class="inicio-cols">
     <div class="col">
@@ -122,7 +121,6 @@ export async function panelInicio(ctx, seccion, completo, q = '') {
       <section class="asistencia-hoy" aria-labelledby="as-t">
         <h2 id="as-t">Asistencia de hoy</h2>
         <p>${asisHoy.n ? `${asisHoy.n - asisHoy.faltaron} de ${nEst} asistieron${asisHoy.faltaron ? `, ${plural(asisHoy.faltaron, 'faltó', 'faltaron')}` : ''}${asisHoy.n < nEst ? `, ${nEst - asisHoy.n} sin marcar` : ''}.` : 'Todavía no has pasado lista hoy.'}</p>
-        <a class="btn ${asisHoy.n ? 'secondary' : 'primary'}" href="#/asistencia?f=${hoyIso}">${asisHoy.n ? 'Ver o corregir la lista' : 'Pasar lista'}</a>
       </section>` : ''}
 
     ${quedaste ? html`

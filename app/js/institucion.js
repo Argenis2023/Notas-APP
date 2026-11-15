@@ -165,7 +165,7 @@ export function aplicarInstitucion(inst) {
   let st = document.getElementById('tema-institucion');
   if (!st) { st = document.createElement('style'); st.id = 'tema-institucion'; document.head.appendChild(st); }
   st.textContent = cssTema(inst.color);
-  const cab = inst.color ? paleta(inst.color).claro.cabecera : '#0b4f44';
+  const cab = inst.color ? paleta(inst.color).claro.papel : '#f4f5f7';
   const meta = document.querySelector('meta[name="theme-color"][media*="light"]');
   if (meta) meta.setAttribute('content', cab);
   const logo = document.getElementById('top-logo');
