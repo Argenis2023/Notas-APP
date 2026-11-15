@@ -140,10 +140,14 @@ export function interpretarDictado(respuesta, mapa, hoy = new Date()) {
   if (!campos.texto) return null;
   const tipo = ['anotacion', 'incidencia', 'reunion'].includes(sinTildes(campos.tipo || '')) ? sinTildes(campos.tipo) : 'anotacion';
   const subtipo = ['nota', 'positivo', 'mejorar'].includes(sinTildes(campos.subtipo || '')) ? sinTildes(campos.subtipo) : 'nota';
-  const restaurar = s => String(s || '').replace(/Estudiante\s+(\d+)/gi, (m, n) => {
-    const e = mapa[`Estudiante ${n}`] || Object.values(mapa).find(x => x.codigo_ia === `Estudiante ${n}`);
-    return e ? String(e.nombre_completo).trim().split(/\s+/)[0] : 'un estudiante';
-  });
+  // La IA a veces escribe "el Estudiante 3" o "al Estudiante 3": con el nombre de pila sobran los artículos.
+  const restaurar = s => String(s || '')
+    .replace(/\b(del|al|el|la)\s+Estudiante\s+(\d+)/gi, (m, art, n) => `${/^del$/i.test(art) ? 'de ' : /^al$/i.test(art) ? 'a ' : ''}Estudiante ${n}`)
+    .replace(/Estudiante\s+(\d+)/gi, (m, n) => {
+      const e = mapa[`Estudiante ${n}`] || Object.values(mapa).find(x => x.codigo_ia === `Estudiante ${n}`);
+      return e ? String(e.nombre_completo).trim().split(/\s+/)[0] : 'un estudiante';
+    })
+    .replace(/\s{2,}/g, ' ').trim();
   const codigo = (campos.estudiante || '').match(/Estudiante\s+(\d+)/i);
   const est = codigo ? (mapa[`Estudiante ${codigo[1]}`] || null) : null;
   const dias = Number.parseInt(campos.dias, 10);
