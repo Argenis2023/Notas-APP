@@ -1371,3 +1371,8 @@ h3 { font-size: 1rem; font-weight: 650; }
 #p-datos > form > .mas-t:first-child { margin-top: 0.2rem; }
 form .mas-t { margin-top: 1.2rem; }
 @media screen and (min-width: 64rem) { main:has(.ficha-cab) { max-width: 46rem; } }
+
+/* Lápices que salen del icono al cambiar de pestaña (solo móvil; main.js los crea y los quita) */
+.tabs .lapiz { position: absolute; z-index: 3; pointer-events: none; display: block; opacity: 0; filter: drop-shadow(0 1px 1px rgba(16, 24, 31, 0.18)); }
+.tabs .lapiz svg { display: block; width: 100%; height: 100%; padding: 0; border-radius: 0; background: none; }
+@media screen and (min-width: 48rem), print { .tabs .lapiz { display: none; } }

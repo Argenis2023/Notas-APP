@@ -93,6 +93,7 @@ async function render({ suave = false } = {}) {
   cerrarRapido();
   $$('.tabs a').forEach(a => { if (a.dataset.ruta !== ruta[2]) a.removeAttribute('aria-current'); else a.setAttribute('aria-current', 'page'); });
   moverPildora();
+  lapicesTab();
   if (!suave) { window.scrollTo(0, 0); main.focus({ preventScroll: true }); entrada(main); }
   if (vista.mount) vista.mount(main);
   pintarCampana();
@@ -151,6 +152,40 @@ function moverPildora() {
   else pil.classList.add('ver');
 }
 window.addEventListener('resize', moverPildora);
+
+// Al cambiar de pestaña: el icono se "presiona" y suben unos lápices pequeños que giran y se desvanecen.
+const LAPIZ = '<svg viewBox="0 0 8 24" aria-hidden="true"><rect x="1" y="0.5" width="6" height="4" rx="1.4" fill="var(--acento-suave)" stroke="var(--acento)" stroke-width="0.8"/><rect x="1" y="5" width="6" height="12" fill="var(--acento)"/><path d="M1 17h6l-3 6.2z" fill="var(--acento-suave)" stroke="var(--acento)" stroke-width="0.8" stroke-linejoin="round"/><path d="M3 21.6h2L4 23.6z" fill="var(--tinta)"/></svg>';
+let rutaPrev = null;
+function lapicesTab() {
+  const nav = document.querySelector('.tabs');
+  const a = nav && nav.querySelector('a[aria-current="page"]');
+  if (!a) return;
+  const ruta = a.dataset.ruta;
+  const cambio = rutaPrev !== null && rutaPrev !== ruta;
+  rutaPrev = ruta;
+  if (!cambio || sinMovimiento() || !nav.animate) return;
+  if (window.matchMedia && window.matchMedia('(min-width: 48rem)').matches) return;
+  const ico = a.querySelector('svg');
+  const n = nav.getBoundingClientRect(), r = ico.getBoundingClientRect();
+  ico.animate([{ transform: 'scale(1)' }, { transform: 'scale(0.82)', offset: 0.25 }, { transform: 'scale(1.1)', offset: 0.6 }, { transform: 'scale(1)' }], { duration: 420, easing: 'ease-out' });
+  const cx = r.left - n.left + r.width / 2, cy = r.top - n.top + r.height / 2;
+  for (let i = 0; i < 6; i++) {
+    const el = document.createElement('span');
+    el.className = 'lapiz'; el.setAttribute('aria-hidden', 'true'); el.innerHTML = LAPIZ;
+    const tam = 0.8 + Math.random() * 0.5;
+    el.style.cssText = `left:${cx}px;top:${cy}px;width:${(0.62 * tam).toFixed(2)}rem;height:${(1.85 * tam).toFixed(2)}rem`;
+    nav.appendChild(el);
+    const dx = (i - 2.5) * 11 + (Math.random() * 10 - 5), subir = 46 + Math.random() * 30, giro = (Math.random() * 140 - 70);
+    const dur = 650 + Math.random() * 300;
+    const anim = el.animate([
+      { transform: 'translate(-50%,-50%) translate(0,0) rotate(0deg) scale(0.3)', opacity: 0 },
+      { transform: `translate(-50%,-50%) translate(${dx * 0.4}px,${-subir * 0.45}px) rotate(${giro * 0.4}deg) scale(1)`, opacity: 1, offset: 0.25 },
+      { transform: `translate(-50%,-50%) translate(${dx}px,${-subir}px) rotate(${giro}deg) scale(0.85)`, opacity: 0 }
+    ], { duration: dur, delay: Math.random() * 90, easing: 'cubic-bezier(0.2, 0.7, 0.3, 1)', fill: 'both' });
+    anim.onfinish = () => el.remove();
+  }
+}
+
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(moverPildora);
 
 // ---------- movimiento sutil ----------
