@@ -21,6 +21,20 @@ const GRUPOS = [
   ] },
 ];
 
+// Menú lateral completo de PC: las secciones que en el celular viven en "Más" y en "Curso", a la vista.
+// Cada fila: [ícono, nombre, ruta]. Hoy, Evaluar y Reportes ya están en el HTML (sirven también al celular).
+export const MENU_PC = {
+  despuesDeHoy: [
+    { grupo: 'Curso', filas: [['personas', 'Estudiantes', '#/estudiantes'], ['check', 'Asistencia', '#/asistencia'], ['nota', 'Anotaciones', '#/anotaciones'], ['chat', 'Representantes', '#/representantes']] },
+    { grupo: 'Evaluación', filas: [] }, // aquí siguen Evaluar y Reportes
+  ],
+  despuesDeReportes: [
+    { grupo: 'Mi día a día', filas: [['calendario', 'Agenda', '#/agenda'], ['libro', 'Planificación diaria', '#/planificacion'], ['campana', 'Avisos', '#/avisos']] },
+    { grupo: 'Para el aula', filas: [['diccionario', 'Diccionario', '#/aula/diccionario'], ['pausa', 'Pausa activa', '#/aula/pausas'], ['sorteo', 'Sorteo y grupos', '#/aula/sorteo']] },
+    { grupo: '', filas: [['ajustes', 'Ajustes', '#/ajustes']], abajo: true },
+  ],
+};
+
 // Una fila de lista con ícono, título, apoyo y flecha: se usa en Más y en Reportes.
 export const filaMas = (ic, nombre, sub, href) => html`
   <li><a class="mas-fila" href="${href}">

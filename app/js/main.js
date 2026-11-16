@@ -1,7 +1,7 @@
 // Arranque de la app: base de datos, sesión, sincronización, rutas y actualizaciones.
 import { db, bus, getSeccion, borrarTodoLocal, countPending, TABLE_NAMES, normalizarNombresGuardados } from './data.js';
 import { createSync } from './sync.js';
-import { html, raw, toast, infoEstado, mensajeError } from './ui.js';
+import { html, raw, icon, toast, infoEstado, mensajeError } from './ui.js';
 import * as V from './views.js';
 import * as E from './views-eval.js';
 import * as R from './views-reportes.js';
@@ -19,7 +19,7 @@ import { leerInstitucion, aplicarInstitucion } from './institucion.js';
 import { iniciarBloqueo } from './bloqueo.js';
 import { montarChat } from './views-chat.js';
 import { cargarSnapshot } from './analisis.js';
-import { mas } from './views-mas.js';
+import { mas, MENU_PC } from './views-mas.js';
 import { iniciarClima } from './clima.js';
 
 const $ = (s, r = document) => r.querySelector(s);
@@ -77,6 +77,38 @@ const RUTAS = [
 ];
 
 let clima = null; // indicador del clima (solo se ve en Hoy)
+let claveActiva = 'inicio';
+
+// Menú lateral de PC: se arma con todas las secciones (en el celular siguen las 5 pestañas).
+const enPc = () => !!(window.matchMedia && window.matchMedia('(min-width: 48rem)').matches);
+function armarMenuPc() {
+  const nav = $('.tabs');
+  if (!nav || nav.dataset.menu) return;
+  nav.dataset.menu = '1';
+  const grupo = t => { const e = document.createElement('p'); e.className = 'tabs-grupo solo-pc'; e.textContent = t; return e; };
+  const fila = ([ic, nombre, href], abajo) => {
+    const a = document.createElement('a');
+    a.href = href; a.dataset.pc = href; a.className = 'solo-pc' + (abajo ? ' tabs-abajo' : '');
+    a.innerHTML = icon(ic, 24).toString() + '<span></span>'; a.querySelector('span').textContent = nombre;
+    return a;
+  };
+  const piezas = bloques => bloques.flatMap(b => [...(b.grupo ? [grupo(b.grupo)] : []), ...b.filas.map(f => fila(f, b.abajo))]);
+  const hoy = nav.querySelector('[data-ruta="inicio"]'), rep = nav.querySelector('[data-ruta="reportes"]');
+  if (hoy) hoy.after(...piezas(MENU_PC.despuesDeHoy));
+  if (rep) rep.after(...piezas(MENU_PC.despuesDeReportes));
+}
+// Marca la sección actual: en el celular por pestaña, en PC por la ruta exacta de cada enlace.
+function marcarActivo() {
+  const ruta = (location.hash || '#/').split('?')[0];
+  const lateral = enPc();
+  const coincide = pref => pref === '#/' ? (ruta === '#/' || ruta === '#') : (ruta === pref || ruta.startsWith(pref + '/'));
+  $$('.tabs a').forEach(a => {
+    const on = lateral ? (a.dataset.pc ? coincide(a.dataset.pc) : false) : a.dataset.ruta === claveActiva;
+    if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
+  });
+}
+armarMenuPc();
+if (window.matchMedia) window.matchMedia('(min-width: 48rem)').addEventListener('change', () => { marcarActivo(); moverPildora(); });
 async function render({ suave = false } = {}) {
   const hash = location.hash || '#/';
   const ruta = RUTAS.find(r => r[0].test(hash));
@@ -95,7 +127,8 @@ async function render({ suave = false } = {}) {
   if (seg) { $('#titulo').textContent = 'Curso'; document.title = 'Curso | Cuaderno docente'; }
   main.innerHTML = seg + vista.html.toString();
   cerrarRapido();
-  $$('.tabs a').forEach(a => { if (a.dataset.ruta !== ruta[2]) a.removeAttribute('aria-current'); else a.setAttribute('aria-current', 'page'); });
+  claveActiva = ruta[2];
+  marcarActivo();
   moverPildora();
   lapicesTab();
   if (!suave) { window.scrollTo(0, 0); main.focus({ preventScroll: true }); entrada(main); }
@@ -198,7 +231,7 @@ function lapicesTab() {
   const nav = document.querySelector('.tabs');
   const a = nav && nav.querySelector('a[aria-current="page"]');
   if (!a) return;
-  const ruta = a.dataset.ruta;
+  const ruta = a.getAttribute('href');
   const cambio = rutaPrev !== null && rutaPrev !== ruta;
   rutaPrev = ruta;
   if (!cambio || sinMovimiento() || !nav.animate) return;

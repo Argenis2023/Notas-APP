@@ -1456,3 +1456,15 @@ form .mas-t { margin-top: 1.2rem; }
   .cinta-lista { padding: 1rem 2rem 0.3rem; }
   .cinta-lista .pasos { max-width: 46rem; }
 }
+
+/* Menú lateral completo en PC; en el celular siguen las 5 pestañas */
+@media screen and (max-width: 47.99rem) { .tabs .solo-pc { display: none; } }
+@media screen and (min-width: 48rem) {
+  #shell { padding-left: 15rem; }
+  .tabs { width: 15rem; padding: 1rem 0.75rem 1.25rem; gap: 0.15rem; overflow-y: auto; overscroll-behavior: contain; }
+  .tabs .solo-movil { display: none; }
+  .tabs a { padding: 0.42rem 0.8rem; font-size: 0.92rem; flex: none; }
+  .tabs-grupo { margin: 0.8rem 0.5rem 0.15rem; font: 600 0.78rem/1.2 var(--sans); color: var(--tinta-suave); }
+  .tabs a.tabs-abajo { margin-top: auto; }
+  .toast { left: calc(50% + 7.5rem); }
+}
