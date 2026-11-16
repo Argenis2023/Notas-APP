@@ -20,6 +20,7 @@ import { iniciarBloqueo } from './bloqueo.js';
 import { montarChat } from './views-chat.js';
 import { cargarSnapshot } from './analisis.js';
 import { mas } from './views-mas.js';
+import { iniciarClima } from './clima.js';
 
 const $ = (s, r = document) => r.querySelector(s);
 
@@ -75,6 +76,7 @@ const RUTAS = [
   [/^#\/mas$/, () => mas(ctx), 'mas'],
 ];
 
+let clima = null; // indicador del clima (solo se ve en Hoy)
 async function render({ suave = false } = {}) {
   const hash = location.hash || '#/';
   const ruta = RUTAS.find(r => r[0].test(hash));
@@ -84,6 +86,8 @@ async function render({ suave = false } = {}) {
   if (token !== ficha) return;
   try { aplicarInstitucion(await leerInstitucion()); } catch { /* sin datos de la institución: se ve el tema base */ }
   actual = vista;
+  if (!clima && $('#clima')) clima = iniciarClima($('#clima'));
+  if (clima) clima.mostrar(!!vista.clima);
   $('#titulo').textContent = vista.title === 'Cuaderno docente' ? 'Hoy' : vista.title;
   document.title = vista.title === 'Cuaderno docente' ? 'Cuaderno docente' : `${vista.title} | Cuaderno docente`;
   const main = $('#view');
@@ -198,26 +202,34 @@ function lapicesTab() {
   const cambio = rutaPrev !== null && rutaPrev !== ruta;
   rutaPrev = ruta;
   if (!cambio || sinMovimiento() || !nav.animate) return;
-  if (window.matchMedia && window.matchMedia('(min-width: 48rem)').matches) return;
+  const lateral = !!(window.matchMedia && window.matchMedia('(min-width: 48rem)').matches);
   const pil = nav.querySelector('.tabs-pildora');
-  if (!pil || !pil.classList.contains('ver')) return;
   const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
   const ico = a.querySelector('svg');
-  const [cx, cy0] = centroIcono(nav, ico);
-  const cy = cy0 - ELEVA * rem - pil.offsetHeight / 2;
+  let cx, cy;
+  if (lateral) {
+    // Menú lateral (PC): los lápices salen hacia el lado desde el icono de la sección nueva.
+    [cx, cy] = centroIcono(nav, ico);
+  } else {
+    if (!pil || !pil.classList.contains('ver')) return;
+    const [x0, y0] = centroIcono(nav, ico);
+    cx = x0; cy = y0 - ELEVA * rem - pil.offsetHeight / 2;
+  }
   for (let i = 0; i < 6; i++) {
     const el = document.createElement('span');
     el.className = 'lapiz'; el.setAttribute('aria-hidden', 'true'); el.innerHTML = LAPIZ;
     const tam = 0.8 + Math.random() * 0.5;
     el.style.cssText = `left:${cx}px;top:${cy}px;width:${(0.62 * tam).toFixed(2)}rem;height:${(1.85 * tam).toFixed(2)}rem`;
     nav.appendChild(el);
-    const dx = (i - 2.5) * 11 + (Math.random() * 10 - 5), subir = 46 + Math.random() * 30, giro = (Math.random() * 140 - 70);
+    let dx = (i - 2.5) * 11 + (Math.random() * 10 - 5), subir = 46 + Math.random() * 30;
+    const giro = (Math.random() * 140 - 70);
+    if (lateral) { dx = 40 + Math.random() * 80; subir = -((i - 2.5) * 9 + (Math.random() * 8 - 4)); } // hacia la derecha y abierto en abanico
     const dur = 650 + Math.random() * 300;
     const anim = el.animate([
       { transform: 'translate(-50%,-50%) translate(0,0) rotate(0deg) scale(0.3)', opacity: 0 },
       { transform: `translate(-50%,-50%) translate(${dx * 0.4}px,${-subir * 0.45}px) rotate(${giro * 0.4}deg) scale(1)`, opacity: 1, offset: 0.25 },
       { transform: `translate(-50%,-50%) translate(${dx}px,${-subir}px) rotate(${giro}deg) scale(0.85)`, opacity: 0 }
-    ], { duration: dur, delay: 300 + Math.random() * 90, easing: 'cubic-bezier(0.2, 0.7, 0.3, 1)', fill: 'both' });
+    ], { duration: dur, delay: (lateral ? 0 : 300) + Math.random() * 90, easing: 'cubic-bezier(0.2, 0.7, 0.3, 1)', fill: 'both' });
     anim.onfinish = () => el.remove();
   }
 }

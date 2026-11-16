@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Cuaderno docente</title>
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://*.supabase.co wss://*.supabase.co; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.open-meteo.com https://geocoding-api.open-meteo.com https://api.bigdatacloud.net; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="description" content="Cuaderno de evaluación para docentes: estudiantes, listas de cotejo y reportes.">
 <meta name="theme-color" content="#F4F5F7" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0E1514" media="(prefers-color-scheme: dark)">
@@ -23,7 +23,7 @@
   <header class="top">
     <img id="top-logo" class="top-logo" alt="" hidden>
     <div class="top-texto">
-      <h1 id="titulo">Hoy</h1>
+      <div class="top-fila"><h1 id="titulo">Hoy</h1><button id="clima" class="clima-chip" type="button" aria-haspopup="dialog" hidden></button></div>
       <div class="top-sub">
         <p id="top-inst" class="top-inst" hidden></p>
         <button id="chip" class="chip local" type="button"><span class="punto" aria-hidden="true"></span><span id="chip-texto">Solo en este celular</span></button>

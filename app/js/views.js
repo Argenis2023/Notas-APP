@@ -67,6 +67,7 @@ export async function inicio(ctx, q = '') {
   return {
     title: 'Cuaderno docente',
     live: true,
+    clima: true,
     html: html`
       ${completo ? '' : html`
         <section class="cinta" aria-label="Para dejar el cuaderno listo">
