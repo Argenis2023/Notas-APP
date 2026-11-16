@@ -138,18 +138,52 @@ function iniciarRapido() {
 
 // Píldora de la barra inferior: se desliza hasta la pestaña activa (solo en el celular).
 let pildoraLista = false;
+// Disco de la pestaña activa (floating notch): salta hasta la pestaña nueva y deja una muesca en la barra.
+const ELEVA = 1.1; // rem que sube el icono activo (debe coincidir con --eleva del CSS)
+let posDisco = null, rutaDisco = null;
+// Centro del icono activo en la barra, sin la elevación (que puede estar a medio animar).
+function centroIcono(nav, ico) {
+  const n = nav.getBoundingClientRect(), r = ico.getBoundingClientRect();
+  const ty = new DOMMatrixReadOnly(getComputedStyle(ico).transform).m42 || 0;
+  return [r.left - n.left + r.width / 2, r.top - n.top + r.height / 2 - ty];
+}
 function moverPildora() {
   const pil = document.querySelector('.tabs-pildora');
   const nav = document.querySelector('.tabs');
   if (!pil || !nav) return;
-  const ico = nav.querySelector('a[aria-current="page"] svg');
+  const a = nav.querySelector('a[aria-current="page"]');
+  const ico = a && a.querySelector('svg');
   const lateral = window.matchMedia && window.matchMedia('(min-width: 48rem)').matches;
-  if (!ico || lateral) { pil.classList.remove('ver'); return; }
-  const n = nav.getBoundingClientRect(), r = ico.getBoundingClientRect();
-  pil.style.width = `${r.width}px`; pil.style.height = `${r.height}px`;
-  pil.style.transform = `translate(${r.left - n.left}px, ${r.top - n.top}px)`;
-  if (!pildoraLista) { pil.style.transition = 'none'; pil.classList.add('ver'); void pil.offsetWidth; pil.style.transition = ''; pildoraLista = true; }
-  else pil.classList.add('ver');
+  if (!ico || lateral) { pil.classList.remove('ver'); nav.style.removeProperty('--nx'); nav.style.removeProperty('--ny'); posDisco = null; return; }
+  const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+  const d = pil.offsetWidth || 3.1 * rem;
+  // centro del disco: el del icono sin elevar, menos lo que sube (medido por diseño, no por la animación en curso)
+  const [cx0, cy0] = centroIcono(nav, ico);
+  const cx = cx0, cy = cy0 - ELEVA * rem;
+  const x = cx - d / 2, y = cy - d / 2;
+  const ruta = a.dataset.ruta, cambio = posDisco && rutaDisco !== ruta;
+  rutaDisco = ruta;
+  if (!pildoraLista) {
+    pil.style.transition = 'none'; nav.style.transition = 'none';
+    pil.style.transform = `translate(${x}px, ${y}px)`;
+    nav.style.setProperty('--nx', `${cx}px`); nav.style.setProperty('--ny', `${cy}px`);
+    pil.classList.add('ver'); void pil.offsetWidth; pil.style.transition = ''; nav.style.transition = ''; pildoraLista = true;
+  } else {
+    const [px, py] = posDisco || [x, y];
+    if (cambio && !sinMovimiento() && pil.animate) {
+      // salto en arco: sube un poco a mitad de camino y cae con un pequeño aplastamiento
+      pil.animate([
+        { transform: `translate(${px}px, ${py}px)` },
+        { transform: `translate(${(px + x) / 2}px, ${py - 0.9 * rem}px)`, offset: 0.5 },
+        { transform: `translate(${x}px, ${y}px)` }
+      ], { duration: 400, easing: 'cubic-bezier(0.3, 0.8, 0.3, 1)' });
+      pil.animate([{ scale: '1' }, { scale: '1', offset: 0.7 }, { scale: '1.14 0.86', offset: 0.85 }, { scale: '1' }], { duration: 400 });
+    }
+    pil.style.transform = `translate(${x}px, ${y}px)`;
+    nav.style.setProperty('--nx', `${cx}px`); nav.style.setProperty('--ny', `${cy}px`);
+    pil.classList.add('ver');
+  }
+  posDisco = [x, y];
 }
 window.addEventListener('resize', moverPildora);
 
@@ -165,10 +199,12 @@ function lapicesTab() {
   rutaPrev = ruta;
   if (!cambio || sinMovimiento() || !nav.animate) return;
   if (window.matchMedia && window.matchMedia('(min-width: 48rem)').matches) return;
+  const pil = nav.querySelector('.tabs-pildora');
+  if (!pil || !pil.classList.contains('ver')) return;
+  const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
   const ico = a.querySelector('svg');
-  const n = nav.getBoundingClientRect(), r = ico.getBoundingClientRect();
-  ico.animate([{ transform: 'scale(1)' }, { transform: 'scale(0.82)', offset: 0.25 }, { transform: 'scale(1.1)', offset: 0.6 }, { transform: 'scale(1)' }], { duration: 420, easing: 'ease-out' });
-  const cx = r.left - n.left + r.width / 2, cy = r.top - n.top + r.height / 2;
+  const [cx, cy0] = centroIcono(nav, ico);
+  const cy = cy0 - ELEVA * rem - pil.offsetHeight / 2;
   for (let i = 0; i < 6; i++) {
     const el = document.createElement('span');
     el.className = 'lapiz'; el.setAttribute('aria-hidden', 'true'); el.innerHTML = LAPIZ;
@@ -181,7 +217,7 @@ function lapicesTab() {
       { transform: 'translate(-50%,-50%) translate(0,0) rotate(0deg) scale(0.3)', opacity: 0 },
       { transform: `translate(-50%,-50%) translate(${dx * 0.4}px,${-subir * 0.45}px) rotate(${giro * 0.4}deg) scale(1)`, opacity: 1, offset: 0.25 },
       { transform: `translate(-50%,-50%) translate(${dx}px,${-subir}px) rotate(${giro}deg) scale(0.85)`, opacity: 0 }
-    ], { duration: dur, delay: Math.random() * 90, easing: 'cubic-bezier(0.2, 0.7, 0.3, 1)', fill: 'both' });
+    ], { duration: dur, delay: 300 + Math.random() * 90, easing: 'cubic-bezier(0.2, 0.7, 0.3, 1)', fill: 'both' });
     anim.onfinish = () => el.remove();
   }
 }
