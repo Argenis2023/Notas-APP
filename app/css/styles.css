@@ -1393,3 +1393,16 @@ form .mas-t { margin-top: 1.2rem; }
   .tabs a[aria-current='page']:active svg { transform: translateY(calc(var(--eleva) * -1)) scale(0.9); }
 }
 @media (prefers-reduced-motion: reduce) { .tabs { transition: none; } .tabs a[aria-current='page'] svg { transition: none; } }
+
+/* Cinta "Dejar el cuaderno listo": franja bajo el encabezado que despliega los pasos pendientes */
+.cinta { margin: -1.25rem -1rem 1rem; background: var(--acento-suave); border-bottom: 1px solid var(--linea); }
+.cinta-b { position: relative; display: flex; align-items: center; gap: 0.6rem; width: 100%; min-height: 3rem; padding: 0.6rem 1rem 0.7rem; background: none; border: 0; color: var(--acento); font: 600 0.92rem/1.2 var(--sans); text-align: left; cursor: pointer; }
+.cinta-t { flex: 1; min-width: 0; }
+.cinta-n { font-weight: 500; color: var(--tinta-suave); font-size: 0.84rem; }
+.cinta-flecha { display: inline-flex; transition: transform 0.2s ease; }
+.cinta-b[aria-expanded='true'] .cinta-flecha { transform: rotate(90deg); }
+.cinta-prog { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: var(--linea); }
+.cinta-prog i { display: block; height: 100%; background: var(--acento); transition: width 0.4s ease; }
+.cinta-lista { padding: 0.9rem 1rem 0.2rem; background: var(--papel); border-top: 1px solid var(--linea); }
+.cinta-lista .pasos { margin-bottom: 0.9rem; }
+@media (prefers-reduced-motion: reduce) { .cinta-flecha, .cinta-prog i { transition: none; } }

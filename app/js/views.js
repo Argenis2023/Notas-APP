@@ -19,6 +19,7 @@ import { leerInstitucion, guardarInstitucion, procesarLogo, coloresDelLogo, pale
 // =====================================================================
 // Inicio
 // =====================================================================
+let cintaAbierta = false; // se recuerda entre actualizaciones de la pantalla
 export async function inicio(ctx, q = '') {
   const seccion = await getSeccion();
 
@@ -62,13 +63,20 @@ export async function inicio(ctx, q = '') {
   const sinRespaldo = !ctx.configurado;
   const panel = await panelInicio(ctx, seccion, completo, q);
 
+  const hechos = 1 + [fechasListas, estudiantes.length > 0, asignaturas.length > 0, hayEvaluacion].filter(Boolean).length;
   return {
     title: 'Cuaderno docente',
     live: true,
     html: html`
       ${completo ? '' : html`
-        <section aria-labelledby="pasos-t">
-          <h2 id="pasos-t">Para dejar el cuaderno listo</h2>
+        <section class="cinta" aria-label="Para dejar el cuaderno listo">
+          <button type="button" class="cinta-b" id="cinta-b" aria-expanded="${cintaAbierta ? 'true' : 'false'}" aria-controls="cinta-lista">
+            <span class="cinta-t">Dejar el cuaderno listo</span>
+            <span class="cinta-n">${hechos} de 5</span>
+            <span class="cinta-flecha" aria-hidden="true">${icon('chevron', 18)}</span>
+            <span class="cinta-prog" aria-hidden="true"><i style="width:${hechos * 20}%"></i></span>
+          </button>
+          <div class="cinta-lista" id="cinta-lista" ${cintaAbierta ? '' : raw('hidden')}>
           <ul class="pasos">
             <li class="hecho"><span class="marca">${icon('check', 18)}</span><div><strong>Crear la sección</strong></div></li>
             <li class="${fechasListas ? 'hecho' : ''}">
@@ -99,13 +107,22 @@ export async function inicio(ctx, q = '') {
               </div>
             </li>
           </ul>
+          </div>
         </section>`}
 
       ${panel}
 
       ${sinRespaldo ? html`<aside class="nota" role="note"><strong>Tus datos solo están en este celular.</strong> El respaldo en la nube todavía no está activado. Mientras tanto, descarga una copia desde Ajustes de vez en cuando.</aside>` : ''}
     `,
-    mount(root) { montarAvisos(root); },
+    mount(root) {
+      montarAvisos(root);
+      const b = $('#cinta-b', root), l = $('#cinta-lista', root);
+      if (b && l) b.addEventListener('click', () => {
+        cintaAbierta = l.hidden;
+        l.hidden = !cintaAbierta;
+        b.setAttribute('aria-expanded', cintaAbierta ? 'true' : 'false');
+      });
+    },
   };
 }
 
