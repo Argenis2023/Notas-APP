@@ -4,11 +4,12 @@ import { cargarSnapshot } from './analisis.js';
 import { calcularAvisos, descartados, descartarAviso, restaurarAvisos, TIPOS_AVISO } from './avisos.js';
 import { html, icon, toast } from './ui.js';
 import { $ } from './form.js';
+import { avisoClimaActual } from './clima.js';
 
 export const tarjetaAviso = a => html`
   <li class="aviso aviso-${a.tipo}" data-aviso="${a.id}">
     <a class="aviso-cuerpo" href="${a.href}">
-      <span class="aviso-ico">${icon(TIPOS_AVISO[a.tipo].icono, 20)}</span>
+      <span class="aviso-ico">${icon(a.icono || TIPOS_AVISO[a.tipo].icono, 20)}</span>
       <span class="fila-texto"><span class="fila-nombre">${a.titulo}</span>${a.texto ? html`<span class="fila-sub">${a.texto}</span>` : ''}</span>
     </a>
     <button type="button" class="aviso-ok" data-descartar="${a.id}" aria-label="Entendido: ${a.titulo}">Entendido</button>
@@ -27,6 +28,8 @@ export function montarAvisos(root) {
 export async function avisosPendientes(s, ctx) {
   const est = ctx.syncState();
   const todos = calcularAvisos(s, { ultimoRespaldo: est.lastSync, conRespaldo: !!(ctx.configurado && ctx.sesion) });
+  const clima = avisoClimaActual(); // lluvia o tormenta cerca (solo con un pronóstico recién leído)
+  if (clima) todos.unshift(clima);
   const ocultos = await descartados();
   return { visibles: todos.filter(a => !ocultos.has(a.id)), ocultos: todos.filter(a => ocultos.has(a.id)).length };
 }

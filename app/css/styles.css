@@ -1468,3 +1468,54 @@ form .mas-t { margin-top: 1.2rem; }
   .tabs a.tabs-abajo { margin-top: auto; }
   .toast { left: calc(50% + 7.5rem); }
 }
+
+/* Íconos del clima: partes que se mueven despacio y sin parar (se frenan con "reducir movimiento") */
+.cl-ico * { transform-box: fill-box; transform-origin: center; }
+.cl-rayos { animation: cl-gira 16s linear infinite; }
+.cl-luna { animation: cl-brilla 4s ease-in-out infinite; }
+.cl-estrella { animation: cl-titila 2.6s ease-in-out infinite; }
+.cl-estrella.e2 { animation-delay: 1.2s; }
+.cl-gota { animation: cl-cae 1.3s ease-in infinite; }
+.cl-gota.g2 { animation-delay: 0.45s; }
+.cl-gota.g3 { animation-delay: 0.9s; }
+.cl-rayo { animation: cl-flash 3.2s linear infinite; }
+.cl-niebla { animation: cl-desliza 4s ease-in-out infinite alternate; }
+.cl-niebla.n1 { animation-direction: alternate-reverse; }
+.cl-viento { animation: cl-sopla 1.8s ease-in-out infinite; }
+.cl-viento.v2 { animation-delay: 0.3s; }
+.cl-viento.v3 { animation-delay: 0.6s; }
+.cl-deriva { animation: cl-deriva 5s ease-in-out infinite alternate; }
+@keyframes cl-gira { to { transform: rotate(360deg); } }
+@keyframes cl-brilla { 0%, 100% { opacity: 0.7; } 50% { opacity: 1; } }
+@keyframes cl-titila { 0%, 100% { opacity: 0.25; transform: scale(0.7); } 50% { opacity: 1; transform: scale(1); } }
+@keyframes cl-cae { 0% { opacity: 0; transform: translateY(-2px); } 30% { opacity: 1; } 100% { opacity: 0; transform: translateY(3px); } }
+@keyframes cl-flash { 0%, 58%, 72%, 100% { opacity: 0.3; } 60%, 66% { opacity: 1; } 63% { opacity: 0.4; } }
+@keyframes cl-desliza { from { transform: translateX(-1.6px); } to { transform: translateX(1.6px); } }
+@keyframes cl-sopla { 0%, 100% { transform: translateX(0); opacity: 0.65; } 50% { transform: translateX(2.4px); opacity: 1; } }
+@keyframes cl-deriva { from { transform: translateX(-0.8px); } to { transform: translateX(0.8px); } }
+@media (prefers-reduced-motion: reduce) { .cl-ico * { animation: none !important; } }
+
+/* El indicador llega desde el borde derecho, traído por el viento (una vez al abrir la app) */
+.clima-chip { position: relative; }
+.top.clima-llegando { overflow-x: clip; }
+.clima-chip.clima-entra { animation: clima-llega 1s cubic-bezier(0.2, 0.7, 0.25, 1) both; }
+.clima-chip.clima-entra::after {
+  content: ''; position: absolute; left: calc(100% + 2px); top: 50%; width: 2.6rem; height: 1.1rem; transform: translateY(-50%); pointer-events: none;
+  background:
+    linear-gradient(90deg, var(--acento), transparent) 0 8% / 100% 2px no-repeat,
+    linear-gradient(90deg, var(--acento), transparent) 20% 50% / 80% 2px no-repeat,
+    linear-gradient(90deg, var(--acento), transparent) 8% 92% / 92% 2px no-repeat;
+  animation: clima-rafaga 1s ease-out both;
+}
+@keyframes clima-llega {
+  0% { transform: translateX(min(75vw, 30rem)) rotate(7deg); opacity: 0; }
+  45% { opacity: 1; }
+  72% { transform: translateX(-7px) rotate(-2.5deg); }
+  88% { transform: translateX(2px) rotate(0.8deg); }
+  100% { transform: none; opacity: 1; }
+}
+@keyframes clima-rafaga { 0% { opacity: 0; } 25% { opacity: 0.9; } 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .clima-chip.clima-entra, .clima-chip.clima-entra::after { animation: none; } }
+
+/* Aviso de clima en la campana y en Avisos */
+.aviso-clima .aviso-ico { color: var(--acento); }

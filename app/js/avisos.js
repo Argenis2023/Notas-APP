@@ -13,6 +13,7 @@ const plural = (n, uno, varios) => `${n} ${n === 1 ? uno : varios}`;
 const DIAS = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
 
 export const TIPOS_AVISO = {
+  clima: { orden: -1, titulo: 'Clima', icono: 'lluvia' },
   atencion: { orden: 0, titulo: 'Necesitan tu atención', icono: 'alerta' },
   recordatorio: { orden: 1, titulo: 'Recordatorios', icono: 'evaluar' },
   felicitar: { orden: 2, titulo: 'Para felicitar', icono: 'check' },

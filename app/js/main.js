@@ -328,14 +328,17 @@ function $$(s, r = document) { return Array.from(r.querySelectorAll(s)); }
 
 // Las pantallas "vivas" se redibujan cuando cambian los datos, salvo que se esté escribiendo.
 let tRefresco;
-bus.addEventListener('change', () => {
+function redibujarVivas() {
   clearTimeout(tRefresco);
   tRefresco = setTimeout(() => {
     const el = document.activeElement;
     const escribiendo = el && $('#view').contains(el) && /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName);
     if (actual && actual.live && !escribiendo) render({ suave: true });
   }, 150);
-});
+}
+bus.addEventListener('change', redibujarVivas);
+// Un aviso de clima nuevo (o que ya no aplica): se actualiza la campana y la pantalla si es "viva".
+document.addEventListener('clima:cambio', () => { pintarCampana(); redibujarVivas(); });
 
 // ---------- estado de sincronización ----------
 function pintarEstado() {

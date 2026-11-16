@@ -1,11 +1,16 @@
 // Clima y radiación UV de la zona de la docente, para la pantalla Hoy.
 // - La ubicación se guarda solo en este celular (localStorage), nunca en la nube de la app.
 // - Datos: Open-Meteo (temperatura, UV, cielo). Nombre de la zona: BigDataCloud (solo recibe coordenadas).
-// - Todo falla en silencio: sin internet o sin permiso se ve la última lectura o una invitación a activarlo.
+// - Sin internet (o si la lectura falla) el indicador no se muestra; reaparece solo cuando vuelve la conexión.
+// - Se actualiza cada 15 minutos con la app abierta, al abrirla y al volver a ella. Si la docente dio permiso de
+//   ubicación, la ciudad se actualiza sola; si eligió la ciudad a mano, se respeta.
 import { html, raw, icon } from './ui.js';
 
 const LLAVE = 'cuaderno-clima';
-const VIGENCIA = 30 * 60 * 1000; // minutos que se considera "fresca" una lectura
+const VIGENCIA = 15 * 60 * 1000;  // cada cuánto se vuelve a pedir el clima
+const EDAD_MAX = 16.5 * 60 * 1000; // una lectura más vieja que esto no se muestra
+const REINTENTO = 2 * 60 * 1000;  // si falla, se vuelve a intentar pronto
+const MOVIDA_KM = 3;              // desde cuántos km se considera que cambió de zona
 const API = 'https://api.open-meteo.com/v1/forecast';
 const GEO = 'https://geocoding-api.open-meteo.com/v1/search';
 const REV = 'https://api.bigdatacloud.net/data/reverse-geocode-client';
@@ -29,13 +34,19 @@ export async function obtenerClima(lugar) {
     latitude: lugar.lat, longitude: lugar.lon,
     current: 'temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,weather_code,wind_speed_10m,is_day,uv_index',
     daily: 'uv_index_max,temperature_2m_max,temperature_2m_min',
+    hourly: 'precipitation_probability,precipitation,weather_code',
     timezone: 'auto', forecast_days: '1', wind_speed_unit: 'kmh',
   });
   const j = await pedir(`${API}?${q}`);
   const c = j && j.current, d = (j && j.daily) || {};
   if (!c || typeof c.temperature_2m !== 'number') throw new Error('Respuesta sin datos');
   const num = v => (typeof v === 'number' ? v : null);
+  const h = (j && j.hourly) || {};
+  const ahora = String(c.time || '').slice(0, 13);
+  const horas = (h.time || []).map((t, i) => ({ t, prob: num(h.precipitation_probability && h.precipitation_probability[i]) ?? 0, mm: num(h.precipitation && h.precipitation[i]) ?? 0, cod: num(h.weather_code && h.weather_code[i]) ?? 0 }))
+    .filter(x => String(x.t).slice(0, 13) >= ahora).slice(0, 8);
   return {
+    hora: String(c.time || ''), horas,
     temp: c.temperature_2m, sensacion: num(c.apparent_temperature) ?? c.temperature_2m,
     humedad: num(c.relative_humidity_2m), lluvia: num(c.precipitation) ?? 0, codigo: num(c.weather_code) ?? 0,
     viento: num(c.wind_speed_10m), dia: c.is_day !== 0, uv: num(c.uv_index) ?? 0,
@@ -58,7 +69,7 @@ function ubicar() {
     if (!navigator.geolocation) { mal(new Error('sin-gps')); return; }
     navigator.geolocation.getCurrentPosition(
       p => ok({ lat: Math.round(p.coords.latitude * 1000) / 1000, lon: Math.round(p.coords.longitude * 1000) / 1000 }),
-      e => mal(e), { enableHighAccuracy: false, timeout: 12000, maximumAge: 10 * 60 * 1000 });
+      e => mal(e), { enableHighAccuracy: false, timeout: 12000, maximumAge: 0 });
   });
 }
 
@@ -71,22 +82,71 @@ async function buscarCiudad(texto) {
 }
 
 // ---------- lectura del estado del cielo y de la radiación ----------
-export function cielo(codigo, dia = true) {
+const esLluviaCod = c => (c >= 51 && c <= 67) || (c >= 80 && c <= 82);
+export const VIENTO_FUERTE = 30; // km/h
+
+// Qué mostrar según el momento: tormenta > lluvia > nieve > viento fuerte > neblina > nubes > sol (día) o luna (noche).
+export function cielo(codigo, dia = true, viento = null, lluvia = 0) {
   const c = codigo;
-  if (c === 0) return { texto: dia ? 'Despejado' : 'Noche despejada', icono: dia ? 'sol' : 'luna' };
-  if (c === 1) return { texto: 'Mayormente despejado', icono: dia ? 'sol' : 'luna' };
-  if (c === 2) return { texto: 'Parcialmente nublado', icono: dia ? 'nubesol' : 'nube' };
-  if (c === 3) return { texto: 'Nublado', icono: 'nube' };
-  if (c === 45 || c === 48) return { texto: 'Neblina', icono: 'niebla' };
-  if (c >= 51 && c <= 57) return { texto: 'Llovizna', icono: 'lluvia' };
-  if (c === 61 || c === 80) return { texto: 'Lluvia ligera', icono: 'lluvia' };
-  if (c === 63 || c === 81) return { texto: 'Lluvia', icono: 'lluvia' };
-  if (c === 65 || c === 82 || c === 66 || c === 67) return { texto: 'Lluvia fuerte', icono: 'lluvia' };
-  if ((c >= 71 && c <= 77) || c === 85 || c === 86) return { texto: 'Nieve', icono: 'nieve' };
-  if (c === 95) return { texto: 'Tormenta eléctrica', icono: 'tormenta' };
-  if (c >= 96) return { texto: 'Tormenta con granizo', icono: 'tormenta' };
-  return { texto: 'Nublado', icono: 'nube' };
+  let r;
+  if (c === 0) r = { texto: dia ? 'Despejado' : 'Noche despejada', icono: dia ? 'sol' : 'luna' };
+  else if (c === 1) r = { texto: dia ? 'Mayormente despejado' : 'Noche mayormente despejada', icono: dia ? 'sol' : 'luna' };
+  else if (c === 2) r = { texto: 'Parcialmente nublado', icono: dia ? 'nubesol' : 'nube' };
+  else if (c === 3) r = { texto: 'Nublado', icono: 'nube' };
+  else if (c === 45 || c === 48) r = { texto: 'Neblina', icono: 'niebla' };
+  else if (c >= 51 && c <= 57) r = { texto: 'Llovizna', icono: 'lluvia' };
+  else if (c === 61 || c === 80) r = { texto: 'Lluvia ligera', icono: 'lluvia' };
+  else if (c === 63 || c === 81) r = { texto: 'Lluvia', icono: 'lluvia' };
+  else if (c === 65 || c === 82 || c === 66 || c === 67) r = { texto: 'Lluvia fuerte', icono: 'lluvia' };
+  else if ((c >= 71 && c <= 77) || c === 85 || c === 86) r = { texto: 'Nieve', icono: 'nieve' };
+  else if (c === 95) r = { texto: 'Tormenta eléctrica', icono: 'tormenta' };
+  else if (c >= 96) r = { texto: 'Tormenta con granizo', icono: 'tormenta' };
+  else r = { texto: 'Nublado', icono: 'nube' };
+  // lluvia medida aunque el código del cielo no la diga
+  if (lluvia > 0 && !['lluvia', 'tormenta', 'nieve'].includes(r.icono)) r = { texto: 'Lluvia', icono: 'lluvia' };
+  // viento fuerte: manda sobre el cielo, salvo tormenta, lluvia o nieve
+  if (viento != null && viento >= VIENTO_FUERTE && !['lluvia', 'tormenta', 'nieve'].includes(r.icono)) r = { texto: `${r.texto} con viento`, icono: 'viento' };
+  return r;
 }
+
+// Aviso de clima para la campana: lluvia o tormenta ahora o en las próximas horas del día. null si no hace falta.
+const hora12 = t => { const h = +String(t).slice(11, 13), m = String(t).slice(14, 16); return `${h % 12 || 12}${m && m !== '00' ? ':' + m : ''} ${h >= 12 ? 'p. m.' : 'a. m.'}`; };
+export function avisoClima(d) {
+  if (!d) return null;
+  const dia = String(d.hora || '').slice(0, 10) || 'hoy';
+  const horas = d.horas || [];
+  const tormentaYa = d.codigo >= 95;
+  const tormentaLuego = horas.find(x => x.cod >= 95);
+  if (tormentaYa || tormentaLuego) {
+    return { id: `clima:tormenta:${dia}`, tipo: 'clima', icono: 'tormenta', href: '#/',
+      titulo: tormentaYa ? 'Hay tormenta eléctrica ahora' : `Posible tormenta eléctrica hoy a partir de las ${hora12(tormentaLuego.t)}`,
+      texto: 'Mantén a los estudiantes dentro del salón y lejos de las ventanas, y deja para otro día las actividades al aire libre.' };
+  }
+  const llueveYa = d.lluvia > 0 || esLluviaCod(d.codigo);
+  const luego = horas.find(x => x.prob >= 60 || esLluviaCod(x.cod));
+  if (llueveYa || luego) {
+    return { id: `clima:lluvia:${dia}`, tipo: 'clima', icono: 'lluvia', href: '#/',
+      titulo: llueveYa ? 'Está lloviendo ahora' : `Puede llover hoy a partir de las ${hora12(luego.t)}`,
+      texto: `${!llueveYa && luego.prob ? `Probabilidad de ${Math.round(luego.prob)} %. ` : ''}Lleva paraguas o impermeable, cuida el piso mojado y piensa en mover las actividades al aire libre.` };
+  }
+  return null;
+}
+
+// Ícono animado del clima (las partes que se mueven llevan clases "cl-*"; el CSS las anima y las frena con "reducir movimiento").
+const NUBE = 'M7 15.5a4 4 0 0 1-.6-7.96A5.5 5.5 0 0 1 17 6a4.8 4.8 0 0 1 .5 9.5z';
+const PARTES = {
+  sol: '<g class="cl-rayos"><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6 7 7M17 17l1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4"/></g><circle cx="12" cy="12" r="4"/>',
+  luna: '<path class="cl-luna" d="M19 14.5A7.5 7.5 0 0 1 9.5 5a7.5 7.5 0 1 0 9.5 9.5z"/><path class="cl-estrella" d="M17.5 3.8v2.4M16.3 5h2.4"/><path class="cl-estrella e2" d="M20.6 8.6v1.8M19.7 9.5h1.8"/>',
+  nubesol: '<g class="cl-rayos" style="transform-box:view-box;transform-origin:8px 8px"><path d="M8 2.6v1M2.6 8h1M4.2 4.2l.7.7M11.8 4.2l-.7.7"/></g><circle cx="8" cy="8" r="2.6"/><path class="cl-deriva" d="M9 20a3.6 3.6 0 0 1-.4-7.2A5 5 0 0 1 18.3 13 3.5 3.5 0 0 1 18 20z"/>',
+  nube: `<path class="cl-deriva" d="${NUBE}"/><path class="cl-deriva" d="M7 19.5h10" opacity="0"/>`,
+  lluvia: `<path d="${NUBE}"/><path class="cl-gota g1" d="M8.5 18.2l-.8 2"/><path class="cl-gota g2" d="M12.5 18.2l-.8 2"/><path class="cl-gota g3" d="M16.5 18.2l-.8 2"/>`,
+  tormenta: `<path d="${NUBE}"/><path class="cl-rayo" d="m12.7 14.5-2 3h3l-1.6 3.2"/>`,
+  nieve: `<path d="${NUBE}"/><path class="cl-gota g1" d="M9 18.5v.01"/><path class="cl-gota g2" d="M12.5 20v.01"/><path class="cl-gota g3" d="M16 18.5v.01"/>`,
+  niebla: '<path class="cl-niebla n1" d="M5 9h14"/><path class="cl-niebla n2" d="M3 13h18"/><path class="cl-niebla n1" d="M6 17h12"/>',
+  viento: '<path class="cl-viento v1" d="M3 8h10a2.5 2.5 0 1 0-2.5-2.5"/><path class="cl-viento v2" d="M3 12h14a2.5 2.5 0 1 1-2.5 2.5"/><path class="cl-viento v3" d="M3 16h7"/>',
+};
+export const iconoClima = (nombre, tam = 22) =>
+  `<svg class="ico cl-ico" width="${tam}" height="${tam}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${PARTES[nombre] || PARTES.nube}</svg>`;
 
 export function nivelUV(uv) {
   const v = Math.round(uv ?? 0);
@@ -122,37 +182,111 @@ const hace = t => {
 };
 const grados = n => `${Math.round(n)}°`;
 
+// ---------- estado compartido con la campana de avisos ----------
+let avisoActual = null;
+export const avisoClimaActual = () => avisoActual;
+function publicarAviso(a) {
+  const antes = avisoActual && avisoActual.id;
+  avisoActual = a;
+  if (antes !== (a && a.id)) { try { document.dispatchEvent(new CustomEvent('clima:cambio')); } catch { /* sin documento */ } }
+}
+
+const enLinea = () => navigator.onLine !== false;
+const sinMov = () => !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+async function permisoGps() {
+  try { return (await navigator.permissions.query({ name: 'geolocation' })).state; } catch { return 'desconocido'; }
+}
+function km(a, b) {
+  const r = x => x * Math.PI / 180, dLat = r(b.lat - a.lat), dLon = r(b.lon - a.lon);
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(r(a.lat)) * Math.cos(r(b.lat)) * Math.sin(dLon / 2) ** 2;
+  return 12742 * Math.asin(Math.sqrt(h));
+}
+
 // ---------- control principal ----------
 export function iniciarClima(boton) {
-  let est = leer();               // { lugar: {lat, lon, nombre}, datos, t }
-  let cargando = false, visible = false, modo = 'datos', msg = '', resultados = [];
-  let dlg = null;
+  let est = leer();               // { lugar: {lat, lon, nombre, auto}, datos, t }
+  let cargando = false, visible = false, fallo = false, resolviendo = false, yaEntro = false;
+  let modo = 'datos', msg = '', resultados = [], dlg = null, tReintento = null, htmlBoton = '';
+
+  // El indicador solo se ve en Hoy, con internet y con una lectura reciente (o como invitación si aún no hay ciudad).
+  const fresco = () => !!(est.datos && !fallo && Date.now() - est.t <= EDAD_MAX);
+  const puedeVerse = () => visible && enLinea() && !resolviendo && (!est.lugar || fresco());
 
   const pintarBoton = () => {
     const d = est.datos;
+    let h, aria;
     if (!est.lugar || !d) {
-      boton.innerHTML = `${icon('nubesol', 20)}<span class="clima-t">Clima</span>`;
-      boton.setAttribute('aria-label', est.lugar ? 'Clima: no se pudo leer. Toca para ver o reintentar' : 'Activar el clima de tu zona');
+      h = `${iconoClima('nubesol', 20)}<span class="clima-t">Clima</span>`;
+      aria = 'Activar el clima de tu zona';
     } else {
-      const i = cielo(d.codigo, d.dia).icono;
-      boton.innerHTML = `${icon(i, 20)}<span class="clima-t">${grados(d.temp)} · UV ${Math.round(d.uv)}</span>`;
-      boton.setAttribute('aria-label', `Clima: ${Math.round(d.temp)} grados, radiación UV ${Math.round(d.uv)}, nivel ${nivelUV(d.uv).nombre.toLowerCase()}. Toca para ver detalles`);
+      const c = cielo(d.codigo, d.dia, d.viento, d.lluvia);
+      h = `${iconoClima(c.icono, 20)}<span class="clima-t">${grados(d.temp)} · UV ${Math.round(d.uv)}</span>`;
+      aria = `Clima: ${c.texto.toLowerCase()}, ${Math.round(d.temp)} grados, radiación UV ${Math.round(d.uv)}, nivel ${nivelUV(d.uv).nombre.toLowerCase()}. Toca para ver detalles`;
     }
-    boton.classList.toggle('cargando', cargando && !est.datos);
+    if (h !== htmlBoton) { boton.innerHTML = htmlBoton = h; } // solo si cambió, para no reiniciar las animaciones
+    boton.setAttribute('aria-label', aria);
   };
+
+  // Llega desde el borde derecho, como si lo trajera el viento. Solo la primera vez que aparece tras abrir la app.
+  function entrada() {
+    if (sinMov() || !boton.animate) return;
+    const top = boton.closest('.top');
+    if (top) top.classList.add('clima-llegando');
+    boton.classList.add('clima-entra');
+    const fin = () => { boton.classList.remove('clima-entra'); if (top) top.classList.remove('clima-llegando'); };
+    boton.addEventListener('animationend', e => { if (e.target === boton && e.animationName === 'clima-llega') fin(); });
+    setTimeout(fin, 1800);
+  }
+
+  function actualizarVista() {
+    const ver = puedeVerse();
+    const estabaOculto = boton.hidden;
+    if (ver) pintarBoton();
+    boton.hidden = !ver;
+    if (ver && estabaOculto && !yaEntro) { yaEntro = true; entrada(); }
+    publicarAviso(enLinea() && fresco() ? avisoClima(est.datos) : null);
+  }
 
   async function refrescar(forzar = false) {
     if (!est.lugar || cargando) return false;
-    if (!forzar && est.datos && Date.now() - est.t < VIGENCIA) return true;
-    cargando = true; pintarBoton(); if (dlg && dlg.open) pintarModal();
+    if (!enLinea()) { if (dlg && dlg.open) { msg = 'No hay conexión a internet.'; pintarModal(); } return false; }
+    if (!forzar && est.datos && !fallo && Date.now() - est.t < VIGENCIA) return true;
+    cargando = true; if (dlg && dlg.open) pintarModal();
     try {
       est = { ...est, datos: await obtenerClima(est.lugar), t: Date.now() };
-      guardar(est); msg = '';
+      guardar(est); fallo = false; msg = ''; clearTimeout(tReintento);
       return true;
     } catch {
-      msg = est.datos ? 'No hay conexión. Esta es la última lectura guardada.' : 'No pudimos leer el clima ahora. Revisa tu conexión e intenta de nuevo.';
+      fallo = true;
+      msg = 'No pudimos leer el clima ahora. Intenta de nuevo en un momento.';
+      clearTimeout(tReintento); tReintento = setTimeout(() => { if (enLinea()) refrescar(true); }, REINTENTO);
       return false;
-    } finally { cargando = false; pintarBoton(); if (dlg && dlg.open) pintarModal(); }
+    } finally { cargando = false; actualizarVista(); if (dlg && dlg.open) pintarModal(); }
+  }
+
+  // Si la docente ya dio permiso, la ciudad se mantiene al día sola. Nunca se pide el permiso por cuenta propia,
+  // y una ciudad elegida a mano se respeta.
+  async function ubicacionAuto() {
+    if (!enLinea() || (est.lugar && !est.lugar.auto)) return false;
+    if ((await permisoGps()) !== 'granted') return false;
+    const nueva = !est.lugar;
+    if (nueva) { resolviendo = true; actualizarVista(); }
+    try {
+      const p = await ubicar();
+      if (nueva || km(est.lugar, p) >= MOVIDA_KM) {
+        const nombre = await nombreLugar(p.lat, p.lon);
+        est = { lugar: { ...p, nombre, auto: true }, datos: null, t: 0 }; guardar(est); fallo = false;
+        return true;
+      }
+    } catch { /* sin posición por ahora: se conserva la que hay */ } finally { resolviendo = false; }
+    return false;
+  }
+
+  async function ciclo(forzar) {
+    if (!enLinea()) { actualizarVista(); return; }
+    const cambio = await ubicacionAuto();
+    await refrescar(forzar || cambio);
+    actualizarVista();
   }
 
   async function usarMiUbicacion() {
@@ -160,8 +294,9 @@ export function iniciarClima(boton) {
     try {
       const p = await ubicar();
       const nombre = await nombreLugar(p.lat, p.lon);
-      est = { lugar: { ...p, nombre }, datos: null, t: 0 }; guardar(est);
+      est = { lugar: { ...p, nombre, auto: true }, datos: null, t: 0 }; guardar(est); fallo = false;
       modo = 'datos'; msg = '';
+      actualizarVista();
       await refrescar(true);
     } catch (e) {
       modo = est.lugar ? 'datos' : 'inicio';
@@ -175,18 +310,19 @@ export function iniciarClima(boton) {
   async function elegir(i) {
     const r = resultados[i];
     if (!r) return;
-    est = { lugar: { lat: r.lat, lon: r.lon, nombre: r.nombre }, datos: null, t: 0 }; guardar(est);
+    est = { lugar: { lat: r.lat, lon: r.lon, nombre: r.nombre, auto: false }, datos: null, t: 0 }; guardar(est); fallo = false;
     modo = 'datos'; msg = ''; resultados = [];
+    actualizarVista();
     await refrescar(true);
   }
 
   // ---------- ventana ----------
   const cuerpoDatos = () => {
-    const d = est.datos, c = cielo(d.codigo, d.dia), k = consejos(d);
+    const d = est.datos, c = cielo(d.codigo, d.dia, d.viento, d.lluvia), k = consejos(d);
     const celda = (t, v) => v == null ? '' : html`<div class="clima-celda"><span class="clima-celda-t">${t}</span><strong>${v}</strong></div>`;
     return html`
       <div class="clima-grande">
-        <span class="clima-ico">${icon(c.icono, 44)}</span>
+        <span class="clima-ico">${raw(iconoClima(c.icono, 44))}</span>
         <div><div class="clima-temp">${grados(d.temp)}</div><div class="clima-cielo">${c.texto}</div></div>
       </div>
       <section class="clima-tarjeta" aria-labelledby="clima-uv-t">
@@ -294,13 +430,17 @@ export function iniciarClima(boton) {
   }
 
   boton.addEventListener('click', abrir);
-  document.addEventListener('visibilitychange', () => { if (visible && document.visibilityState === 'visible') refrescar(false); });
-  pintarBoton();
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') ciclo(false); });
+  window.addEventListener('online', () => { fallo = false; ciclo(true); });
+  window.addEventListener('offline', () => actualizarVista());
+  setInterval(() => { if (document.visibilityState === 'visible') ciclo(true); }, VIGENCIA);
+  ciclo(false);
 
   return {
     mostrar(v) {
-      visible = !!v; boton.hidden = !visible;
-      if (visible) { pintarBoton(); refrescar(false); }
+      visible = !!v;
+      actualizarVista();
+      if (visible && est.lugar) refrescar(false);
     },
   };
 }
